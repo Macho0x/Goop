@@ -1,5 +1,31 @@
 # Changelog
 
+## 1.10.0
+
+### Language
+
+- **First-class maps:** `map[K] V` lowers to Go `map[K]V`; prelude
+  `Map.make` / `get` / `add` / `remove` / `mem` / `size`; thin `std.map`.
+- **Zero-cost brands (H4c):** single-constructor ADTs with primitive/string
+  payloads emit Go defined types instead of interface+struct boxing.
+
+### Interop
+
+- **Bare-import `.gosig` autoload:** `import go "pkg"` loads project
+  `goop-sigs/` overrides or `$GOOP_HOME` cache (curated generate-on-miss).
+  Explicit `{ val … }` blocks stay authoritative.
+- **`obj` ≡ `any`** in stubs; **multi-result** Go returns emit Goop product
+  tuples when representable; **Go maps** in gosiggen.
+- Curated stubs under `goop-sigs/` for `os`, `path/filepath`, `bytes`,
+  `bufio`, `strings`, `encoding/json`.
+
+### CI / docs
+
+- Windows unit tests: explicit `.exe` binary paths; portable gosiggen path
+  assertions.
+- CI sig-corpus smoke (`gen-sig --smoke` + writing-tools/maps check).
+- Design docs: maps, freeze checklist; writing-tools guide; self-host lexer spike.
+
 ## 1.9.0
 
 ### Interop
