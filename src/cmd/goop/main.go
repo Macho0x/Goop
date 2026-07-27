@@ -5,6 +5,11 @@
 //	goop lex  <file.goop>    lexical analysis — print token stream
 //	goop parse <file.goop>    parse — pretty-print AST
 //	goop check <file.goop>    parse and report success/failure
+//	goop lint  <file-or-dir>  diagnostics with summary (exits non-zero on errors)
+//	goop doc   <file-or-dir>  emit Markdown docs for modules / .gosig
+//	goop gen-sig <pkg>        generate .gosig stubs for a Go package
+//	goop repl                 interactive read-eval-print loop
+//	goop version              print compiler version
 package main
 
 import (
@@ -36,6 +41,7 @@ import (
 	"goop.dev/compiler/internal/token"
 	"goop.dev/compiler/internal/typecheck"
 	"goop.dev/compiler/internal/typeinfo"
+	"goop.dev/compiler/internal/version"
 )
 
 // LSP types for protocol messages
@@ -135,10 +141,11 @@ func main() {
 		}
 	}
 
-	if len(filtered) < 2 && (len(filtered) == 0 || filtered[0] != "test") && filtered[0] != "lsp" && filtered[0] != "fmt" {
+	if len(filtered) == 0 || (len(filtered) < 2 && filtered[0] != "test" && filtered[0] != "lsp" && filtered[0] != "fmt" && filtered[0] != "version" && filtered[0] != "lint" && filtered[0] != "doc" && filtered[0] != "gen-sig" && filtered[0] != "get-go-sig" && filtered[0] != "repl") {
 		fmt.Fprintf(os.Stderr, "Usage: goop [--in-tree] [--emit-map] [--no-source-map] [--color] [-i] <command> <file.goop>\n")
-		fmt.Fprintf(os.Stderr, "Commands: lex, parse, check, compile, build, test, get, resolve, lsp, fmt (format)\n")
+		fmt.Fprintf(os.Stderr, "Commands: lex, parse, check, lint, compile, build, test, get, get-go-sig, gen-sig, resolve, lsp, fmt (format), doc, repl, version\n")
 		fmt.Fprintf(os.Stderr, "  compile/build write to $GOOP_HOME/build by default; --in-tree writes beside source\n")
+		fmt.Fprintf(os.Stderr, "  gen-sig / get-go-sig write .gosig stubs under $GOOP_HOME/build/go-sigs\n")
 		os.Exit(1)
 	}
 
@@ -155,20 +162,48 @@ func main() {
 	if cmd == "get" {
 		os.Exit(runGet(filtered[1:]))
 	}
+	if cmd == "get-go-sig" {
+		os.Exit(runGetGoSig(filtered[1:]))
+	}
+	if cmd == "gen-sig" {
+		os.Exit(runGenSig(filtered[1:]))
+	}
+	if cmd == "doc" {
+		os.Exit(runDoc(filtered[1:]))
+	}
 	if cmd == "lsp" {
 		runLSP()
 		return
 	}
+	if cmd == "repl" {
+		os.Exit(runREPL())
+	}
+	if cmd == "version" {
+		fmt.Printf("goop version %s\n", strings.TrimSpace(version.Version))
+		return
+	}
 
-	file := filtered[1]
+	file := "."
+	if len(filtered) >= 2 {
+		file = filtered[1]
+	} else if cmd != "lint" {
+		fmt.Fprintf(os.Stderr, "Usage: goop [--in-tree] [--emit-map] [--no-source-map] [--color] [-i] <command> <file.goop>\n")
+		fmt.Fprintf(os.Stderr, "Commands: lex, parse, check, lint, compile, build, test, get, get-go-sig, gen-sig, resolve, lsp, fmt (format), doc, repl, version\n")
+		os.Exit(1)
+	}
 
 	// Load project config (look for goop.toml near the source file or CWD)
 	cfg := loadProjectConfig(file)
 
-	src, err := os.ReadFile(file)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "error reading %s: %v\n", file, err)
-		os.Exit(1)
+	// lint accepts a file or directory; skip shared ReadFile for dirs
+	var src []byte
+	if cmd != "lint" {
+		var err error
+		src, err = os.ReadFile(file)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error reading %s: %v\n", file, err)
+			os.Exit(1)
+		}
 	}
 
 	// Helper to parse and desugar
@@ -240,6 +275,9 @@ func main() {
 		}
 
 		fmt.Printf("OK: %s parsed and type-checked successfully\n", file)
+
+	case "lint":
+		os.Exit(runLint(file))
 
 	case "compile":
 		if err := runCompile(file, src, cfg, parseAndDesugar); err != nil {
@@ -322,7 +360,7 @@ func main() {
 
 	default:
 		fmt.Fprintf(os.Stderr, "unknown command: %s\n", cmd)
-		fmt.Fprintf(os.Stderr, "Commands: lex, parse, check, compile, build, test, get, resolve, lsp, fmt\n")
+		fmt.Fprintf(os.Stderr, "Commands: lex, parse, check, lint, compile, build, test, get, get-go-sig, gen-sig, resolve, lsp, fmt, doc, repl, version\n")
 		os.Exit(1)
 	}
 }
@@ -1088,7 +1126,7 @@ func runBuildInTree(file, goSrc, genFile string, gen *codegen.Generator) error {
 
 	var cmd *exec.Cmd
 	cwd, _ := os.Getwd()
-	binOut := filepath.Join(cwd, "goop-out")
+	binOut := goopOutBinary(cwd)
 	if isMixed || hasGoMod {
 		if hasMainFunc(goSrc) {
 			cmd = exec.Command("go", "build", "-o", binOut, ".")
@@ -1142,10 +1180,14 @@ func runBuildCache(file, goSrc, genFile string, mod *ast.Module, cfg *config.Con
 		}
 	}
 
+	if err := tidyGoMod(buildDir); err != nil {
+		return err
+	}
+
 	cwd, _ := os.Getwd()
 	var cmd *exec.Cmd
 	if hasMainFunc(goSrc) {
-		binOut := filepath.Join(cwd, "goop-out")
+		binOut := goopOutBinary(cwd)
 		cmd = exec.Command("go", "build", "-o", binOut, genFile)
 	} else {
 		cmd = exec.Command("go", "build", genFile)
@@ -1272,6 +1314,12 @@ func runTests(dir string) int {
 		outFile := gen.GoFileName()
 		outPath := filepath.Join(tmpDir, outFile)
 		os.WriteFile(outPath, []byte(goSrc), 0644)
+
+		if err := tidyGoMod(tmpDir); err != nil {
+			fmt.Printf("--- FAIL: %s (go mod tidy)\n%v\n", name, err)
+			failed++
+			continue
+		}
 
 		binPath := filepath.Join(tmpDir, "testbin")
 		buildCmd := exec.Command("go", "build", "-o", binPath, outFile)

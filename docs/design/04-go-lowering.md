@@ -127,6 +127,22 @@ so `Record.Attrs r (fun a -> true)` lowers to `r.Attrs(func(a slog.Attr) bool
 
 Tuples → generated positional structs. `'a list` → `[]T` with `append` for cons.
 
+## Extern multi-value returns
+
+Go functions with 2+ results lower as a Goop tuple. Declare the return as
+`(T0, T1, …)` on an `import go` val or an `@[go]` binding; calls become a
+multi-value assignment into the generated `F0`/`F1`/… struct:
+
+```goop
+import go "strconv" { val Atoi : string -> (int, error) }
+(* … *)
+let pair = Atoi "42" in  (* pair.F0 : int, pair.F1 : error *)
+```
+
+Hand-written `@[go]` wrappers may return any mappable multi-value shape
+(e.g. `(int, string)` instead of `(int, error)`). Auto-sig generation (H5)
+is not required for this path — explicit declarations are enough.
+
 ## Arrays
 
 `'a array` → `[]T`.
@@ -183,7 +199,7 @@ import (
 val httpGetString : string -> string
 ```
 
-`@[go]` is emitted verbatim into the generated package. Names must match `val` bindings. Unit args are elided.
+`@[go]` is emitted verbatim into the generated package. Names must match `val` bindings. Unit args are elided. Multi-value Go returns are declared as Goop tuples (`(T0, T1, …)`); see [Extern multi-value returns](04-go-lowering.md#extern-multi-value-returns).
 
 `@[c]` concatenates into a cgo preamble + `import "C"` with auto-wrappers for primitive `val` types. See [15-lang-embeds.md](15-lang-embeds.md).
 

@@ -4,6 +4,11 @@ import (
 	"goop.dev/compiler/internal/ast"
 )
 
+// FormatType renders a type for display (signatures, docs, formatting).
+func FormatType(t ast.Type) string {
+	return formatType(t)
+}
+
 func formatType(t ast.Type) string {
 	if t == nil {
 		return ""

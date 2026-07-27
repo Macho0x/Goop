@@ -26,6 +26,7 @@
 - Branded IDs (single-ctor ADTs) so `order_id` ≠ `symbol`
 - Go interop and deploy — same runtime, stdlib, and binaries
 - Cache-only builds — edit `.goop`, run `goop build` / `goop test`
+- Editor support — [VS Code](editors/vscode/), [Zed](editors/zed/), [Neovim](editors/neovim/), [Helix](editors/helix/)
 
 ### Non-exhaustive match (EXHAUST003)
 
@@ -54,6 +55,7 @@ cd src && go build -o ../goop ./cmd/goop
 ../goop build docs/examples/hello.goop   # → ./goop-out (Go stays in $GOOP_HOME/build)
 ./goop-out
 ../goop test tests/
+../goop repl                 # interactive session (compile-to-Go)
 ```
 
 Generated `.go` never lands in your project tree by default. See
@@ -119,6 +121,7 @@ Everyday surface: [STYLE.md](docs/design/STYLE.md) · [`docs/examples/`](docs/ex
 |---|---|
 | [Tutorial](docs/tutorial/README.md) | Getting started through concurrency |
 | [Stdlib](docs/stdlib/README.md) | Prelude, builtins, `std.*` |
+| [Packages](docs/design/11-package-manager.md) | Go modules, `goop get`, `goop.lock` (no separate registry) |
 | [Design](docs/design/) | STYLE, CLI artifacts, FFI |
 | [Examples](docs/examples/) | Runnable; CI `goop check` |
 | [Contributing](CONTRIBUTING.md) | Build and test workflow |

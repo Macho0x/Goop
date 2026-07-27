@@ -135,13 +135,39 @@ func TestParseShapes(t *testing.T) {
 }
 
 func TestParseResult(t *testing.T) {
-	// result.goop still uses removed `result { }` CE syntax (PARSE-MIG013).
-	t.Skip("example uses removed computation-expression syntax; see PARSE-MIG013")
+	mod := mustParse(t, "result.goop")
+	if mod.Name != "main" {
+		t.Errorf("expected main, got %q", mod.Name)
+	}
+	if len(mod.Decls) < 4 {
+		t.Fatalf("expected several decls in result.goop, got %d", len(mod.Decls))
+	}
 }
 
 func TestParseOrderbook(t *testing.T) {
-	// orderbook.goop still uses removed `newtype` (PARSE-MIG015).
-	t.Skip("example uses removed newtype syntax; see PARSE-MIG015")
+	mod := mustParse(t, "orderbook.goop")
+	if mod.Name != "Trading.OrderBook" {
+		t.Errorf("expected Trading.OrderBook, got %q", mod.Name)
+	}
+	// Branded IDs as single-ctor ADTs (no newtype): order_id, symbol, plus Side/Order/Fill/Book.
+	var typeNames []string
+	for _, d := range mod.Decls {
+		if td, ok := d.(*ast.TypeDecl); ok {
+			typeNames = append(typeNames, td.Name)
+		}
+	}
+	for _, want := range []string{"order_id", "symbol", "Side", "Order", "Fill", "Book"} {
+		found := false
+		for _, n := range typeNames {
+			if n == want {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("expected type %q in orderbook decls, got %v", want, typeNames)
+		}
+	}
 }
 
 func TestLexHello(t *testing.T) {
@@ -155,11 +181,13 @@ func TestLexShapes(t *testing.T) {
 }
 
 func TestLexResult(t *testing.T) {
-	t.Skip("example uses removed computation-expression syntax; see PARSE-MIG013")
+	mod := mustParse(t, "result.goop")
+	_ = mod
 }
 
 func TestLexOrderbook(t *testing.T) {
-	t.Skip("example uses removed newtype syntax; see PARSE-MIG015")
+	mod := mustParse(t, "orderbook.goop")
+	_ = mod // lexing is tested implicitly via parse
 }
 
 func TestParseGoEmbedPointerReceiver(t *testing.T) {
@@ -311,6 +339,26 @@ import go "fmt" {
 	}
 	if !strings.Contains(err.Error(), "val") {
 		t.Errorf("expected val-only import block error, got: %v", err)
+	}
+}
+
+func TestImportGoRaw(t *testing.T) {
+	src := `module main
+import go raw "strconv" { val Atoi : string -> (int, error) }
+let main () = ()
+`
+	mod, err := parser.Parse("t.goop", []byte(src))
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	if len(mod.Imports) != 1 {
+		t.Fatalf("expected 1 import, got %d", len(mod.Imports))
+	}
+	if !mod.Imports[0].Raw {
+		t.Fatal("expected Raw=true for import go raw")
+	}
+	if mod.Imports[0].Path != "strconv" {
+		t.Fatalf("path = %q", mod.Imports[0].Path)
 	}
 }
 

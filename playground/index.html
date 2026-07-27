@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Goop Playground</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <h1>Goop</h1>
+      <p class="tag">type-check &amp; compile to Go in the browser</p>
+    </div>
+    <div class="actions">
+      <label class="example-label">
+        Example
+        <select id="examples"></select>
+      </label>
+      <button type="button" id="btn-check">Check</button>
+      <button type="button" id="btn-run" class="primary">Compile</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel editor-panel">
+      <div class="panel-head">Goop source</div>
+      <textarea id="source" spellcheck="false" aria-label="Goop source"></textarea>
+    </section>
+
+    <section class="side">
+      <div class="panel">
+        <div class="panel-head">
+          Diagnostics
+          <span id="status" class="status">loading…</span>
+        </div>
+        <pre id="diagnostics" class="out"></pre>
+      </div>
+      <div class="panel grow">
+        <div class="panel-head">Generated Go</div>
+        <pre id="go-out" class="out code"></pre>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    Browser playground shows Goop diagnostics and generated Go only — it does not run <code>go build</code>.
+  </footer>
+
+  <script src="wasm_exec.js"></script>
+  <script src="examples.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

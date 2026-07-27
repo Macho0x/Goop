@@ -1,0 +1,11 @@
+module main
+
+import goop . "std.ref"
+
+(* Smoke coverage for M4 thin std.ref re-export. *)
+let main () =
+  let r = make 0 in
+  begin
+    r := 1;
+    assert (!r = 1)
+  end

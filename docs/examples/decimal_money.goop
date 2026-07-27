@@ -1,0 +1,28 @@
+module main
+
+(* Money demo: fixed-point Decimal, not float64.
+ * See docs/design/25-decimal.md and docs/design/12-trading-bot-safety.md.
+ *)
+
+import goop . "std.decimal"
+
+let main () : unit =
+  let price = OfString "10.00" in
+  let fee = OfString "1.50" in
+  let qty = OfInt 3 in
+  let subtotal = price.Mul qty in
+  let total = subtotal.Add fee in
+  let change = total.Sub (OfString "20.00") in
+  let half = total.Div (OfInt 2) in
+  begin
+    assert (ToString subtotal = "30");
+    assert (ToString total = "31.5");
+    assert (ToString change = "11.5");
+    assert (Cmp total (OfString "31.50") = 0);
+    assert (ToString half = "15.75");
+    assert (Equal total (OfString "31.5"));
+    print_line ("subtotal=" ^ ToString subtotal);
+    print_line ("total=" ^ ToString total);
+    print_line ("change=" ^ ToString change);
+    print_line ("half=" ^ ToString half)
+  end

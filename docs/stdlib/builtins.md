@@ -15,7 +15,9 @@ Builtins are part of the type system — not modules and not prelude bindings.
 | `rune` | Unicode code point |
 | `'a ref` | Mutable reference cell |
 
-Prelude string ops: `string_concat`, `String.length`, `String.sub` — see [prelude](prelude.md).
+Optional import-style constructor: [`std.ref`](std-ref.md) (`make`). `!` / `:=` are language syntax.
+
+Prelude string ops: `string_concat`, `String.length`, `String.sub` — see [prelude](prelude.md). Optional import-style access: [`std.string`](std-string.md).
 
 ## Lists
 
@@ -64,6 +66,16 @@ Optional predicates: [`std.result`](std-result.md). Propagate with `match` (no `
 |---|---|
 | `'a chan` | `Chan.make` (prelude) |
 | `'a owned_chan` | `OwnedChan.make` (prelude, linear) |
+
+Optional import-style access: [`std.chan`](std-chan.md).
+
+## Lazy
+
+| Syntax / binding | Meaning |
+|---|---|
+| `'a lazy` | Deferred computation |
+| `lazy e` | Language syntax |
+| `Lazy.force` / `Lazy.from_val` | Prelude only (no `std.lazy` yet) |
 
 ## Type-level features
 

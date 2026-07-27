@@ -59,3 +59,51 @@ jobs:
             ls ../docs/examples/*.map.json
             exit 1
           fi
+
+  test-windows:
+    name: Test (Windows)
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: src
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: src/go.mod
+          cache-dependency-path: src/go.sum
+
+      - name: Go unit tests
+        run: go test ./...
+
+      - name: Build CLI
+        run: go build -o goop.exe ./cmd/goop
+
+      # Full `goop test` e2e is Linux-oriented (shell paths); keep a small smoke
+      # subset here: type-check one example and a cache-only build.
+      - name: Check hello example
+        run: ./goop.exe check ../docs/examples/hello.goop
+
+      - name: Cache-only build smoke
+        shell: pwsh
+        run: |
+          $env:GOOP_HOME = Join-Path $env:RUNNER_TEMP "goop-home"
+          New-Item -ItemType Directory -Force -Path $env:GOOP_HOME | Out-Null
+          ./goop.exe build ../docs/examples/hello.goop
+          if (-not (Test-Path ./goop-out.exe)) {
+            throw "expected goop-out.exe after build"
+          }
+          $out = & ./goop-out.exe
+          if ($out -notmatch "Hello") {
+            throw "unexpected goop-out output: $out"
+          }
+          Remove-Item -Force ./goop-out.exe
+          $strayGo = Get-ChildItem ../docs/examples/*.go -ErrorAction SilentlyContinue
+          if ($strayGo) {
+            throw "unexpected .go files left in docs/examples: $($strayGo.Name -join ', ')"
+          }
+          $strayMaps = Get-ChildItem ../docs/examples/*.map.json -ErrorAction SilentlyContinue
+          if ($strayMaps) {
+            throw "unexpected map files left in docs/examples: $($strayMaps.Name -join ', ')"
+          }

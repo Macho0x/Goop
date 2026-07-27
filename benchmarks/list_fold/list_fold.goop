@@ -1,0 +1,14 @@
+module Bench.ListFold
+
+(* Microbenchmark: recursive list fold and map.
+   Lists lower to Go slices; match lowers to len/index recursion. *)
+
+let rec fold_add (xs: int list) (acc: int) : int =
+  match xs with
+  | [] -> acc
+  | x :: rest -> fold_add rest (acc + x)
+
+let rec map_inc (xs: int list) : int list =
+  match xs with
+  | [] -> []
+  | x :: rest -> (x + 1) :: map_inc rest

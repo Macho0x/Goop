@@ -10,6 +10,7 @@ import (
 	"goop.dev/compiler/internal/desugar"
 	"goop.dev/compiler/internal/exhaustive"
 	"goop.dev/compiler/internal/parser"
+	"goop.dev/compiler/internal/token"
 	"goop.dev/compiler/internal/typecheck"
 	"goop.dev/compiler/internal/types"
 )
@@ -51,7 +52,13 @@ func TestTypeCheckShapes(t *testing.T) {
 }
 
 func TestTypeCheckResult(t *testing.T) {
-	t.Skip("result.goop still uses removed result { … } CE; awaiting example migration")
+	mod := mustParse(t, "result.goop")
+	errs := typecheck.Check(mod)
+	if len(errs) > 0 {
+		for _, e := range errs {
+			t.Errorf("type error: %v", e)
+		}
+	}
 }
 
 // Regression: Some must be polymorphic per use site (not one shared type variable).
@@ -76,7 +83,13 @@ let override_test : decision = { quote = Some q0; tag = "X" }
 }
 
 func TestTypeCheckOrderbook(t *testing.T) {
-	t.Skip("orderbook.goop still uses removed newtype; awaiting example migration")
+	mod := mustParse(t, "orderbook.goop")
+	errs := typecheck.Check(mod)
+	if len(errs) > 0 {
+		for _, e := range errs {
+			t.Errorf("type error: %v", e)
+		}
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -639,6 +652,109 @@ let result = identity (fun x -> x)
 	}
 }
 
+// TestExternDeclaredTupleReturn typechecks an @[go] binding that returns a
+// multi-value Goop tuple (explicit declaration; no gosig / H5 required).
+func TestExternDeclaredTupleReturn(t *testing.T) {
+	src := `module Test
+import go "strconv" {}
+@[go] {
+  func atoiPair(s string) (int, string) {
+    n, err := strconv.Atoi(s)
+    if err != nil { return 0, err.Error() }
+    return n, ""
+  }
+}
+val atoiPair : string -> (int, string)
+let pair = atoiPair "42"
+let main () = assert (pair.F0 = 42)
+`
+	mod, err := parser.Parse("test.goop", []byte(src))
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	mod = desugar.DesugarModule(mod)
+	_, vm, errs := typecheck.CheckWithTypes(mod)
+	if len(errs) > 0 {
+		for _, e := range errs {
+			t.Errorf("type error: %v", e)
+		}
+		t.Fatal("typecheck failed")
+	}
+	got := vm["pair"]
+	if got == nil {
+		t.Fatal("expected pair in var map")
+	}
+	tup, ok := got.(*types.TTuple)
+	if !ok || len(tup.Elems) != 2 {
+		t.Fatalf("expected (int, string) tuple, got %T (%v)", got, got)
+	}
+}
+
+// TestExternImportTupleReturn typechecks import go vals declared with a
+// multi-value (T, error) return. H6 coerces the call-site type to result.
+func TestExternImportTupleReturn(t *testing.T) {
+	src := `module Test
+import go "strconv" { val Atoi : string -> (int, error) }
+let pair = Atoi "42"
+let main () = match pair with | Ok n -> assert (n = 42) | Error _ -> assert false
+`
+	mod, err := parser.Parse("test.goop", []byte(src))
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	mod = desugar.DesugarModule(mod)
+	_, vm, errs := typecheck.CheckWithTypes(mod)
+	if len(errs) > 0 {
+		for _, e := range errs {
+			t.Errorf("type error: %v", e)
+		}
+		t.Fatal("typecheck failed")
+	}
+	got := vm["pair"]
+	if got == nil {
+		t.Fatal("expected pair in var map")
+	}
+	tc, ok := got.(*types.TCon)
+	if !ok || tc.Name != "result" || len(tc.Args) != 2 {
+		t.Fatalf("expected result<int, error>, got %T (%v)", got, got)
+	}
+	if _, ok := tc.Args[1].(*types.TError); !ok {
+		t.Fatalf("expected err type to be error, got %T (%v)", tc.Args[1], tc.Args[1])
+	}
+}
+
+// TestExternImportRawTupleReturn keeps (T, error) as a product under import go raw.
+func TestExternImportRawTupleReturn(t *testing.T) {
+	src := `module Test
+import go raw "strconv" { val Atoi : string -> (int, error) }
+let pair = Atoi "42"
+let main () = assert (pair.F0 = 42)
+`
+	mod, err := parser.Parse("test.goop", []byte(src))
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	mod = desugar.DesugarModule(mod)
+	_, vm, errs := typecheck.CheckWithTypes(mod)
+	if len(errs) > 0 {
+		for _, e := range errs {
+			t.Errorf("type error: %v", e)
+		}
+		t.Fatal("typecheck failed")
+	}
+	got := vm["pair"]
+	if got == nil {
+		t.Fatal("expected pair in var map")
+	}
+	tup, ok := got.(*types.TTuple)
+	if !ok || len(tup.Elems) != 2 {
+		t.Fatalf("expected (int, error) tuple under raw, got %T (%v)", got, got)
+	}
+	if _, ok := tup.Elems[1].(*types.TError); !ok {
+		t.Fatalf("expected F1 to be error, got %T (%v)", tup.Elems[1], tup.Elems[1])
+	}
+}
+
 // TestGoSigFallbackExtern verifies that the gosig fallback correctly
 // refines an extern binding's type using the real Go signature.
 // We use "strings.Contains" which has func(string, string) bool.
@@ -931,5 +1047,205 @@ let main () = assert (run () = true)
 		for _, e := range errs {
 			t.Errorf("type error: %v", e)
 		}
+	}
+}
+
+// ---------------------------------------------------------------------------
+// M5 — inference holes closed for 1.0
+// ---------------------------------------------------------------------------
+
+func checkOK(t *testing.T, src string) {
+	t.Helper()
+	mod, err := parser.Parse("test.goop", []byte(src))
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	mod = desugar.DesugarModule(mod)
+	errs := typecheck.Check(mod)
+	if len(errs) > 0 {
+		for _, e := range errs {
+			t.Errorf("type error: %v", e)
+		}
+	}
+}
+
+func TestInferEqEqOperator(t *testing.T) {
+	checkOK(t, `module Test
+let eq_int = 1 == 1
+let eq_str = "a" == "a"
+let main () = assert (eq_int = true)
+`)
+}
+
+func TestInferPipeOperatorBinary(t *testing.T) {
+	// Parser emits BinaryExpr for |>; must infer like application.
+	checkOK(t, `module Test
+let add1 x = x + 1
+let n = 41 |> add1
+let main () = assert (n = 42)
+`)
+}
+
+func TestInferPipeChained(t *testing.T) {
+	checkOK(t, `module Test
+let add1 x = x + 1
+let double x = x * 2
+let n = 20 |> add1 |> double
+let main () = assert (n = 42)
+`)
+}
+
+func TestInferSupportedBinaryOpsSmoke(t *testing.T) {
+	checkOK(t, `module Test
+let arith = 1 + 2 * 3 - 4 / 2
+let bit = (5 land 3) lor (1 lxor 0)
+let md = 7 mod 3
+let fl = 1.0 +. 2.0 *. 3.0 -. 4.0 /. 2.0
+let cmp = (1 < 2) && (3 >= 3) || (4 <> 5) && (6 != 7)
+let cat = "a" ^ "b"
+let lst = 1 :: [2; 3]
+let main () = ()
+`)
+}
+
+func TestUnsupportedBinaryOperatorRestriction(t *testing.T) {
+	// Construct a BinaryExpr with an operator the parser never emits as binary.
+	loc := token.SourceLoc{File: "test.goop", Line: 2, Column: 10}
+	mod := &ast.Module{
+		Name: "Test",
+		Decls: []ast.TopDecl{
+			&ast.LetDecl{Bindings: []ast.LetBinding{{
+				Name: "bad",
+				Body: &ast.BinaryExpr{
+					Left:  &ast.LitExpr{Value: int64(1), Kind: token.INT, Loc: loc},
+					Op:    token.AT,
+					Right: &ast.LitExpr{Value: int64(2), Kind: token.INT, Loc: loc},
+					Loc:   loc,
+				},
+			}}},
+		},
+	}
+	errs := typecheck.Check(mod)
+	if len(errs) == 0 {
+		t.Fatal("expected unsupported binary operator error")
+	}
+	msg := errs[0].Error()
+	if !strings.Contains(msg, "unsupported binary operator") {
+		t.Errorf("expected 'unsupported binary operator', got: %s", msg)
+	}
+	if !strings.Contains(msg, "@") {
+		t.Errorf("expected operator name in message, got: %s", msg)
+	}
+	if !strings.Contains(msg, "|>") {
+		t.Errorf("expected supported-ops list including |>, got: %s", msg)
+	}
+	if !strings.Contains(msg, "annotate") {
+		t.Errorf("expected annotation guidance, got: %s", msg)
+	}
+	if strings.Contains(msg, "not implemented") {
+		t.Errorf("must not use incomplete-inference wording, got: %s", msg)
+	}
+}
+
+func TestPercentBinaryRestrictionMessage(t *testing.T) {
+	loc := token.SourceLoc{File: "test.goop", Line: 2, Column: 10}
+	mod := &ast.Module{
+		Name: "Test",
+		Decls: []ast.TopDecl{
+			&ast.LetDecl{Bindings: []ast.LetBinding{{
+				Name: "bad",
+				Body: &ast.BinaryExpr{
+					Left:  &ast.LitExpr{Value: int64(5), Kind: token.INT, Loc: loc},
+					Op:    token.PERCENT,
+					Right: &ast.LitExpr{Value: int64(2), Kind: token.INT, Loc: loc},
+					Loc:   loc,
+				},
+			}}},
+		},
+	}
+	errs := typecheck.Check(mod)
+	if len(errs) == 0 {
+		t.Fatal("expected %% restriction error")
+	}
+	msg := errs[0].Error()
+	if !strings.Contains(msg, "mod") {
+		t.Errorf("expected guidance to use mod, got: %s", msg)
+	}
+	if strings.Contains(msg, "not implemented") {
+		t.Errorf("must not use incomplete-inference wording, got: %s", msg)
+	}
+}
+
+func TestRemovedConstructRestrictionMessages(t *testing.T) {
+	loc := token.SourceLoc{File: "test.goop", Line: 2, Column: 1}
+	cases := []struct {
+		name string
+		body ast.Expr
+		want []string
+	}{
+		{
+			name: "question",
+			body: &ast.QuestionExpr{Left: &ast.IdentExpr{Name: "x", Loc: loc}, Loc: loc},
+			want: []string{"?", "match", "result"},
+		},
+		{
+			name: "guard",
+			body: &ast.GuardExpr{Loc: loc},
+			want: []string{"guard", "match"},
+		},
+		{
+			name: "is",
+			body: &ast.IsExpr{Left: &ast.IdentExpr{Name: "x", Loc: loc}, Pattern: &ast.WildcardPattern{}, Loc: loc},
+			want: []string{"is", "match"},
+		},
+		{
+			name: "as_match",
+			body: &ast.AsMatchExpr{
+				Left:     &ast.IdentExpr{Name: "x", Loc: loc},
+				Pattern:  &ast.WildcardPattern{},
+				Body:     &ast.LitExpr{Value: int64(1), Kind: token.INT, Loc: loc},
+				ElseBody: &ast.LitExpr{Value: int64(0), Kind: token.INT, Loc: loc},
+				Loc:      loc,
+			},
+			want: []string{"as", "match"},
+		},
+		{
+			name: "comp",
+			body: &ast.CompExpr{Builder: "async", Loc: loc},
+			want: []string{"computation expressions", "async", "match"},
+		},
+		{
+			name: "region",
+			body: &ast.RegionExpr{Loc: loc},
+			want: []string{"region", "try"},
+		},
+		{
+			name: "module_app",
+			body: &ast.ModuleAppExpr{Func: "F", Arg: "M", Loc: loc},
+			want: []string{"functor application", "F(M)", "module"},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			mod := &ast.Module{
+				Name: "Test",
+				Decls: []ast.TopDecl{
+					&ast.LetDecl{Bindings: []ast.LetBinding{{Name: "x", Body: tc.body}}},
+				},
+			}
+			errs := typecheck.Check(mod)
+			if len(errs) == 0 {
+				t.Fatal("expected restriction error")
+			}
+			msg := errs[0].Error()
+			for _, w := range tc.want {
+				if !strings.Contains(msg, w) {
+					t.Errorf("expected %q in error, got: %s", w, msg)
+				}
+			}
+			if strings.Contains(msg, "not implemented") {
+				t.Errorf("must not use incomplete-inference wording, got: %s", msg)
+			}
+		})
 	}
 }

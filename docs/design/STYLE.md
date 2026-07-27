@@ -19,7 +19,7 @@ See also: [14-ocaml-parity.md](14-ocaml-parity.md), [03-syntax.md](03-syntax.md)
 | Mutation | `ref` / `!` / `:=`; `mutable` record fields; `arr.(i) <-` | `let mutable` locals; binding `<-` (non-array) |
 | Errors | `match` on `result`; `exception` / `raise` / `try/with`; `failwith` | `?`, `result { }`, `guard`, `panic`, `panic_message` |
 | Patterns | `match`, `when`, pattern `as`, `function` | expr `is`, expr `as … -> … else …` |
-| Branding | `private type` + single-ctor ADT | `newtype` keyword |
+| Branding | `private type` + single-ctor ADT | `newtype` keyword ([21-branded-ids.md](21-branded-ids.md)) |
 | Effects | `effect` / `perform` / handlers | `with { io }` on arrow types |
 | Monads / bind | plain `match` on `result` | `result { }`, `async { }`, `region { }`, `let*` / `let+` |
 | Blocks | `let … in`, `begin/end`, loops | Offside-as-primary; F# CE braces |

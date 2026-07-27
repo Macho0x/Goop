@@ -82,12 +82,13 @@ type Generator struct {
 	prelude *prelude.Prelude
 
 	// extern tracking
-	externImports  map[string]string   // Go import path → package name
-	externNames    map[string]string   // Goop name → Go qualified name (pkg.Name)
-	externRetTypes map[string]ast.Type // Goop extern val name → full function type
-	goTypeQual     map[string]string   // Goop type name → Go qualified name
-	externMethods  map[string]externMethod
-	externFields   map[string]map[string]string
+	externImports      map[string]string   // Go import path → package name
+	externNames        map[string]string   // Goop name → Go qualified name (pkg.Name)
+	externRetTypes     map[string]ast.Type // Goop extern val name → full function type
+	externResultCoerce map[string]bool     // H6: (T, error) → result wrapper at call site
+	goTypeQual         map[string]string   // Goop type name → Go qualified name
+	externMethods      map[string]externMethod
+	externFields       map[string]map[string]string
 
 	// row-polymorphic function params: funcName → field names
 	rowParams    map[string][]string
@@ -136,12 +137,13 @@ func NewGenerator(srcFile string, cfg *config.Config) *Generator {
 		goCol:            1,
 		cfg:              cfg,
 		prelude:          prelude.Default(),
-		externImports:    make(map[string]string),
-		externNames:      make(map[string]string),
-		externRetTypes:   make(map[string]ast.Type),
-		goTypeQual:       make(map[string]string),
-		externMethods:    make(map[string]externMethod),
-		externFields:     make(map[string]map[string]string),
+		externImports:      make(map[string]string),
+		externNames:        make(map[string]string),
+		externRetTypes:     make(map[string]ast.Type),
+		externResultCoerce: make(map[string]bool),
+		goTypeQual:         make(map[string]string),
+		externMethods:      make(map[string]externMethod),
+		externFields:       make(map[string]map[string]string),
 		rowParams:        make(map[string][]string),
 		rowParamName:     make(map[string]string),
 		resolvedImports:  make(map[string]string),
@@ -202,6 +204,19 @@ func (g *Generator) SetProvenSites(proven refine.ProvenSites) {
 // SetRefinementMeta stores per-function refinement metadata from the checker.
 func (g *Generator) SetRefinementMeta(funcAllProven map[string]bool) {
 	g.funcAllProven = funcAllProven
+}
+
+// errorfAt records a hard codegen error with a Goop source position.
+// No silent degradation: the compiler either succeeds or reports a
+// file:line diagnostic at Goop compile time — it never emits
+// known-broken Go that fails later at Go compile time.
+func (g *Generator) errorfAt(loc token.SourceLoc, format string, args ...interface{}) {
+	file := loc.File
+	if file == "" {
+		file = g.srcFile
+	}
+	pos := fmt.Sprintf("%s:%d:%d", file, loc.Line, loc.Column)
+	g.errs = append(g.errs, fmt.Sprintf(pos+": "+format, args...))
 }
 
 // typeOf returns the inferred type for an expression node, or nil if
@@ -960,6 +975,7 @@ func (g *Generator) collectImports(mod *ast.Module) {
 			for _, ev := range ge.Vals {
 				g.externNames[ev.Name] = ev.Name
 				g.externRetTypes[ev.Name] = ev.Type
+				g.markExternResultCoerce(ev.Name, ev.Type)
 				if ret := finalReturnASTType(ev.Type); ret != nil {
 					g.scanUsedTypes(ret)
 				}
@@ -982,6 +998,9 @@ func (g *Generator) collectGoImport(spec ast.ImportSpec) {
 				pkg:        pkgName,
 			}
 			g.externRetTypes[ev.Name] = ev.Type
+			if !spec.Raw {
+				g.markExternResultCoerce(ev.Name, ev.Type)
+			}
 			continue
 		}
 		if ev.Kind == ast.ExternField {
@@ -1003,6 +1022,9 @@ func (g *Generator) collectGoImport(spec ast.ImportSpec) {
 		}
 		g.externNames[ev.Name] = qualified
 		g.externRetTypes[ev.Name] = ev.Type
+		if !spec.Raw {
+			g.markExternResultCoerce(ev.Name, ev.Type)
+		}
 		if ret := finalReturnASTType(ev.Type); ret != nil {
 			g.scanUsedTypes(ret)
 		}
@@ -1010,6 +1032,43 @@ func (g *Generator) collectGoImport(spec ast.ImportSpec) {
 	for _, et := range spec.Types {
 		g.goTypeQual[et.Name] = packageNameFromPath2(spec.Path) + "." + et.Name
 	}
+}
+
+// markExternResultCoerce records that calls to name should wrap a Go (T, error)
+// return into a Goop result value (H6).
+func (g *Generator) markExternResultCoerce(name string, typ ast.Type) {
+	if tup := tupleErrorReturn(typ); tup != nil {
+		g.externResultCoerce[name] = true
+		g.registerResultFromTupleError(tup)
+	}
+}
+
+func isASTErrorType(t ast.Type) bool {
+	id, ok := t.(*ast.TIdent)
+	return ok && id.Name == "error"
+}
+
+// tupleErrorReturn returns the (T, error) final return of typ, or nil.
+func tupleErrorReturn(typ ast.Type) *ast.TTuple {
+	ret := finalReturnASTType(typ)
+	tup, ok := ret.(*ast.TTuple)
+	if !ok || len(tup.Elems) != 2 || !isASTErrorType(tup.Elems[1]) {
+		return nil
+	}
+	return tup
+}
+
+func (g *Generator) registerResultFromTupleError(tup *ast.TTuple) {
+	okType := g.typeToGo(tup.Elems[0])
+	errType := g.typeToGo(tup.Elems[1])
+	tupleGo, _ := g.tupleGoName(tup)
+	resType := "Result" + exported(tupleGo)
+	g.usedResult[resType] = []string{okType, errType}
+}
+
+func (g *Generator) resultGoTypeForTupleError(tup *ast.TTuple) string {
+	tupleGo, _ := g.tupleGoName(tup)
+	return "Result" + exported(tupleGo)
 }
 
 func goopTypeName(t ast.Type) string {
@@ -1180,12 +1239,28 @@ func (g *Generator) externReturnTuple(funcName string) *ast.TTuple {
 	if !ok {
 		return nil
 	}
+	// H6: (T, error) is wrapped as result, not as a product tuple.
+	if g.externResultCoerce[funcName] {
+		return nil
+	}
 	ret := finalReturnASTType(t)
 	tup, ok := ret.(*ast.TTuple)
 	if !ok || len(tup.Elems) < 2 {
 		return nil
 	}
 	return tup
+}
+
+// externReturnErrorTuple returns the (T, error) declaration when H6 coercion applies.
+func (g *Generator) externReturnErrorTuple(funcName string) *ast.TTuple {
+	if !g.externResultCoerce[funcName] {
+		return nil
+	}
+	t, ok := g.externRetTypes[funcName]
+	if !ok {
+		return nil
+	}
+	return tupleErrorReturn(t)
 }
 
 func (g *Generator) collectOpenExports(mod *ast.Module) {
@@ -2199,7 +2274,10 @@ func (g *Generator) emitExpr(e ast.Expr, isStmt bool) {
 	case *ast.RegionExpr:
 		g.emitRegion(e)
 	default:
-		g.buf.WriteString("/* TODO: " + fmt.Sprintf("%T", e) + " */")
+		// Hard error, not a silent `/* TODO */` in the generated Go:
+		// an unhandled expression must fail at Goop compile time with
+		// a source position, not at Go compile time without one.
+		g.errorfAt(ast.ExprLoc(e), "codegen: unhandled expression type %T", e)
 	}
 }
 
@@ -2281,6 +2359,14 @@ func (g *Generator) emitConstructor(e *ast.ConstructorExpr) {
 	}
 	// Check for extern-qualified names first
 	if _, ok := g.externNames[e.Name]; ok {
+		if tup := g.externReturnErrorTuple(e.Name); tup != nil && e.Arg != nil {
+			if lit, ok := e.Arg.(*ast.LitExpr); ok && lit.Kind == token.UNIT {
+				g.emitExternResultCall(&ast.IdentExpr{Name: e.Name}, nil, tup, false)
+				return
+			}
+			g.emitExternResultCall(&ast.IdentExpr{Name: e.Name}, []ast.Expr{e.Arg}, tup, false)
+			return
+		}
 		if tup := g.externReturnTuple(e.Name); tup != nil && e.Arg != nil {
 			if lit, ok := e.Arg.(*ast.LitExpr); ok && lit.Kind == token.UNIT {
 				g.emitExternTupleCall(&ast.IdentExpr{Name: e.Name}, nil, tup, false)
@@ -2913,6 +2999,10 @@ func (g *Generator) emitApp(e *ast.AppExpr, isStmt bool) {
 				receiver = args[0]
 				args = args[1:]
 			}
+			if tup := g.externReturnErrorTuple(field.Field); tup != nil {
+				g.emitExternMethodResultCall(receiver, method.methodName, args, tup, isStmt)
+				return
+			}
 			g.emitExpr(receiver, false)
 			g.buf.WriteString(".")
 			g.buf.WriteString(method.methodName)
@@ -2937,6 +3027,14 @@ func (g *Generator) emitApp(e *ast.AppExpr, isStmt bool) {
 		// Qualified free extern: time.Now (), fmt.Sprintf, etc.
 		if _, isExtern := g.externNames[field.Field]; isExtern {
 			args := g.collectArgs(e)[1:]
+			if tup := g.externReturnErrorTuple(field.Field); tup != nil {
+				g.emitExternResultCall(&ast.IdentExpr{Name: field.Field}, args, tup, isStmt)
+				return
+			}
+			if tup := g.externReturnTuple(field.Field); tup != nil {
+				g.emitExternTupleCall(&ast.IdentExpr{Name: field.Field}, args, tup, isStmt)
+				return
+			}
 			if q, ok := g.externNames[field.Field]; ok {
 				g.buf.WriteString(q)
 			} else {
@@ -2992,7 +3090,7 @@ func (g *Generator) emitApp(e *ast.AppExpr, isStmt bool) {
 				args = append([]ast.Expr{cons.Arg}, args...)
 			}
 			if len(args) == 0 {
-				g.buf.WriteString("/* missing Go method receiver */")
+				g.errorfAt(e.Loc, "codegen: missing receiver in call to Go method %s.%s", method.recvGoType, method.methodName)
 				return
 			}
 			g.emitExpr(args[0], false)
@@ -3111,7 +3209,7 @@ func (g *Generator) emitApp(e *ast.AppExpr, isStmt bool) {
 						}
 					}
 					if !found {
-						g.buf.WriteString("/* missing: " + rf + " */")
+						g.errorfAt(ast.ExprLoc(arg), "codegen: record literal is missing field %q required by row parameter of %s", rf, funcName)
 					}
 				}
 			} else {
@@ -3128,6 +3226,14 @@ func (g *Generator) emitApp(e *ast.AppExpr, isStmt bool) {
 			g.buf.WriteString("\n")
 		}
 		return
+	}
+
+	// Extern call returning (T, error) → result wrapper (H6).
+	if funcName != "" {
+		if tup := g.externReturnErrorTuple(funcName); tup != nil {
+			g.emitExternResultCall(funcExpr, args, tup, isStmt)
+			return
+		}
 	}
 
 	// Extern call returning a 2+ tuple → multi-value Go assignment wrapped in struct.
@@ -3246,6 +3352,82 @@ func (g *Generator) emitExternTupleCall(funcExpr ast.Expr, args []ast.Expr, tup 
 	}
 	g.buf.WriteString(")\n")
 	g.emitf("return __t\n")
+	g.indent--
+	g.buf.WriteString("}()")
+	if isStmt {
+		g.buf.WriteString("\n")
+	}
+}
+
+// emitExternResultCall wraps a Go (T, error) call as a Goop result value (H6).
+func (g *Generator) emitExternResultCall(funcExpr ast.Expr, args []ast.Expr, tup *ast.TTuple, isStmt bool) {
+	g.registerResultFromTupleError(tup)
+	resType := g.resultGoTypeForTupleError(tup)
+	okGo := g.typeToGo(tup.Elems[0])
+	g.buf.WriteString("func() " + resType + " {\n")
+	g.indent++
+	g.emitf("var __v %s\n", okGo)
+	g.emitf("var __e error\n")
+	g.buf.WriteString("__v, __e = ")
+	g.emitExpr(funcExpr, false)
+	g.buf.WriteString("(")
+	first := true
+	for _, arg := range args {
+		if lit, ok := arg.(*ast.LitExpr); ok && lit.Kind == token.UNIT {
+			continue
+		}
+		if !first {
+			g.buf.WriteString(", ")
+		}
+		first = false
+		g.emitExpr(arg, false)
+	}
+	g.buf.WriteString(")\n")
+	g.emitf("if __e != nil {\n")
+	g.indent++
+	g.emitf("return New%sErr(__e)\n", resType)
+	g.indent--
+	g.emitf("}\n")
+	g.emitf("return New%sOk(__v)\n", resType)
+	g.indent--
+	g.buf.WriteString("}()")
+	if isStmt {
+		g.buf.WriteString("\n")
+	}
+}
+
+// emitExternMethodResultCall wraps recv.Method(args) (T, error) as a result (H6).
+func (g *Generator) emitExternMethodResultCall(receiver ast.Expr, method string, args []ast.Expr, tup *ast.TTuple, isStmt bool) {
+	g.registerResultFromTupleError(tup)
+	resType := g.resultGoTypeForTupleError(tup)
+	okGo := g.typeToGo(tup.Elems[0])
+	g.buf.WriteString("func() " + resType + " {\n")
+	g.indent++
+	g.emitf("var __v %s\n", okGo)
+	g.emitf("var __e error\n")
+	g.buf.WriteString("__v, __e = ")
+	g.emitExpr(receiver, false)
+	g.buf.WriteString(".")
+	g.buf.WriteString(method)
+	g.buf.WriteString("(")
+	first := true
+	for _, arg := range args {
+		if lit, ok := arg.(*ast.LitExpr); ok && lit.Kind == token.UNIT {
+			continue
+		}
+		if !first {
+			g.buf.WriteString(", ")
+		}
+		first = false
+		g.emitExpr(arg, false)
+	}
+	g.buf.WriteString(")\n")
+	g.emitf("if __e != nil {\n")
+	g.indent++
+	g.emitf("return New%sErr(__e)\n", resType)
+	g.indent--
+	g.emitf("}\n")
+	g.emitf("return New%sOk(__v)\n", resType)
 	g.indent--
 	g.buf.WriteString("}()")
 	if isStmt {
@@ -4755,17 +4937,24 @@ func (g *Generator) emitBinary(e *ast.BinaryExpr) {
 		g.buf.WriteString(" + ")
 		g.emitExpr(e.Right, false)
 		return
-	case token.EQUALS:
-		// = (equality) → ==
+	case token.EQUALS, token.EQEQ:
+		// = / == (equality) → ==
 		g.emitExpr(e.Left, false)
 		g.buf.WriteString(" == ")
 		g.emitExpr(e.Right, false)
 		return
-	case token.DIAMOND:
-		// <> → !=
+	case token.DIAMOND, token.NEQ:
+		// <> / != → !=
 		g.emitExpr(e.Left, false)
 		g.buf.WriteString(" != ")
 		g.emitExpr(e.Right, false)
+		return
+	case token.PIPEOP:
+		// x |> f → f(x)  (parser emits BinaryExpr for |>)
+		g.emitExpr(e.Right, false)
+		g.buf.WriteString("(")
+		g.emitExpr(e.Left, false)
+		g.buf.WriteString(")")
 		return
 	case token.MOD, token.PERCENT:
 		g.emitExpr(e.Left, false)

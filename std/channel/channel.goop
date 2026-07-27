@@ -1,0 +1,20 @@
+module channel
+
+(* Thin re-exports of prelude Chan.* / OwnedChan.* — implementation stays in the compiler prelude.
+   Physical package is std/channel (Go keyword "chan" cannot be a package name); import as std.chan. *)
+
+let make () : 'a chan = Chan.make ()
+
+let send (ch: 'a chan) (x: 'a) : unit = Chan.send ch x
+
+let recv (ch: 'a chan) : 'a = Chan.recv ch
+
+let close (ch: 'a chan) : unit = Chan.close ch
+
+let make_owned () : 'a owned_chan = OwnedChan.make ()
+
+let send_owned (ch: 'a owned_chan) (x: 'a) : unit = OwnedChan.send ch x
+
+let recv_owned (ch: 'a owned_chan) : 'a = OwnedChan.recv ch
+
+let close_owned (ch: 'a owned_chan) : unit = OwnedChan.close ch

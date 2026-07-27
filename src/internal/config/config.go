@@ -69,11 +69,15 @@ func DefaultConfig() *Config {
 		},
 		Dependencies: make(map[string]string),
 		Mappings: map[string]string{
-			"std.io":     "github.com/Macho0x/Goop/std/io",
-			"std.list":   "github.com/Macho0x/Goop/std/list",
-			"std.array":  "github.com/Macho0x/Goop/std/array",
-			"std.option": "github.com/Macho0x/Goop/std/option",
-			"std.result": "github.com/Macho0x/Goop/std/result",
+			"std.io":      "github.com/Macho0x/Goop/std/io",
+			"std.list":    "github.com/Macho0x/Goop/std/list",
+			"std.array":   "github.com/Macho0x/Goop/std/array",
+			"std.option":  "github.com/Macho0x/Goop/std/option",
+			"std.result":  "github.com/Macho0x/Goop/std/result",
+			"std.decimal": "github.com/Macho0x/Goop/std/decimal",
+			"std.string":  "github.com/Macho0x/Goop/std/string",
+			"std.chan":    "github.com/Macho0x/Goop/std/channel",
+			"std.ref":     "github.com/Macho0x/Goop/std/ref",
 		},
 	}
 }
@@ -111,6 +115,14 @@ func (c *Config) ResolveImport(c0ModuleName string) (goImportPath, goPackageName
 		return "github.com/Macho0x/Goop/std/option", "option"
 	case "std.result", "Std.Result":
 		return "github.com/Macho0x/Goop/std/result", "result"
+	case "std.decimal", "Std.Decimal":
+		return "github.com/Macho0x/Goop/std/decimal", "decimal"
+	case "std.string", "Std.String":
+		return "github.com/Macho0x/Goop/std/string", "string"
+	case "std.chan", "Std.Chan":
+		return "github.com/Macho0x/Goop/std/channel", "channel"
+	case "std.ref", "Std.Ref":
+		return "github.com/Macho0x/Goop/std/ref", "ref"
 	}
 
 	// 3. Project module: combine ModuleRoot with lowercased path segments

@@ -1,0 +1,6 @@
+module Ref
+
+(* Thin re-export of prelude ref — ! and := remain language syntax.
+   Module name is PascalCase because "ref" is a language keyword. *)
+
+let make (x: 'a) : 'a ref = ref x

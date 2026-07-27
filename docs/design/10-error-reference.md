@@ -39,6 +39,9 @@ Error messages fall into three severity levels:
 | REFINE | Refinement solver errors/warnings | `internal/refine` |
 | CLI | CLI/file/system errors | `cmd/goop`, `internal/config` |
 
+Corpus size (~106 unique codes) and `goop lint` are summarized in
+[22-diagnostics.md](22-diagnostics.md).
+
 ---
 
 ## LEX — Lexer Errors
@@ -614,32 +617,31 @@ cannot be resolved. All type errors stop compilation.
   extern "go" "fmt" { val Println : string -> unit }
   ```
 
-### TYPE003: Type inference not implemented for expression type
+### TYPE003: Unhandled expression in type inference
 
 - **Error code**: `TYPE003`
 - **Severity**: Error
-- **Message**: `type inference not implemented for %T`
-- **Example**: `test.goop:5:10: type inference not implemented for *ast.SomeExpr`
+- **Message**: `internal error: unhandled expression %T in type inference (compiler bug — please report); rewrite using a supported form or add an explicit type annotation on the enclosing binding`
+- **Example**: `test.goop:5:10: internal error: unhandled expression *ast.SomeExpr in type inference …`
 - **Trigger**: An AST expression node of a type that the typechecker does
-  not know how to infer. This usually indicates a bug or an incomplete
-  implementation.
-- **Fix**: This is an internal compiler limitation. As a workaround, try
-  restructuring the expression. Report the issue if it occurs with valid
-  Goop code.
+  not know how to infer. With a complete 1.0 AST surface this indicates a
+  compiler bug (a new node without an infer case).
+- **Fix**: Rewrite using supported forms, or annotate the enclosing binding.
+  Report the issue if it occurs with valid Goop code. See
+  [21-inference-holes.md](21-inference-holes.md).
 
-### TYPE004: Type inference not implemented for binary operator
+### TYPE004: Unsupported binary operator
 
 - **Error code**: `TYPE004`
 - **Severity**: Error
-- **Message**: `type inference not implemented for binary operator %s`
-- **Example**: `test.goop:5:12: type inference not implemented for binary operator MOD`
-- **Trigger**: A binary operator is used that the typechecker does not
-  support. Currently supported: `+`, `-`, `*`, `/`, `*.`, `+.`, `-.`,
-  `/.`, `=`, `==`, `!=`, `<>`, `<`, `>`, `<=`, `>=`, `^`, `&&`, `||`,
-  `::`.
+- **Message**: `unsupported binary operator %s; Goop 1.0 supports + - * / mod land lor lxor +. -. *. /. = == != <> < > <= >= ^ && || :: |>; rewrite using those operators, or annotate the enclosing binding with an explicit type and use a library function`
+- **Example**: `test.goop:5:12: unsupported binary operator @; Goop 1.0 supports …`
+- **Trigger**: A binary operator token appears in a `BinaryExpr` that is not
+  one of the supported operators above (normally unreachable from the
+  parser).
 - **Fix**: Use a supported operator or restructure the code.
-- **Bad**: `let x = a % b`
-- **Good**: `let x = a - (a / b) * b` (integer modulo workaround)
+- **Bad**: hand-built AST with an unsupported op
+- **Good**: `let x = a mod b` (integer remainder)
 
 ### TYPE005: Undefined constructor pattern
 

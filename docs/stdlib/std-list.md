@@ -30,3 +30,4 @@ let doubleAll (xs: int list) : int list =
 ```
 
 List construction (`[]`, `::`) is builtin — this module only adds `Map`.
+That small surface is intentional under the [`std.*` doctrine](README.md#doctrine): prefer writing `match` over growing a Go-stdlib-sized list package.

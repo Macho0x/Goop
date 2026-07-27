@@ -4,7 +4,7 @@ A step-by-step introduction to Goop. Each chapter links to runnable examples che
 
 | Chapter | Topic | Example |
 |---|---|---|
-| [1. Getting started](01-getting-started.md) | Build, check, first program | [`hello.goop`](../examples/hello.goop) |
+| [1. Getting started](01-getting-started.md) | Build, check, first program, REPL | [`hello.goop`](../examples/hello.goop) |
 | [2. Types and patterns](02-types-and-patterns.md) | ADTs, `match`, branded IDs | [`shapes.goop`](../examples/shapes.goop) |
 | [3. Errors and effects](03-errors-and-effects.md) | `result`, `failwith`, effect handlers | [`result.goop`](../examples/result.goop), [`effects.goop`](../examples/effects.goop), [`exceptions.goop`](../examples/exceptions.goop) |
 | [4. Go / C interop](04-go-interop.md) | `import go`, `@[go]`, `@[c]` | [`extern_demo.goop`](../examples/extern_demo.goop), [`cgo_demo.goop`](../examples/cgo_demo.goop) |
@@ -30,5 +30,6 @@ cd src && go build -o ../goop ./cmd/goop
 - [Style guide (1.0)](../design/STYLE.md)
 - [Syntax reference](../design/03-syntax.md)
 - [Type system](../design/02-type-system.md)
+- [Packages and registry (1.0)](../design/11-package-manager.md) — Go modules + `goop get`; no separate registry
 - [Standard library reference](../stdlib/README.md)
 - [All examples](../examples/)

@@ -193,7 +193,7 @@ func TestBuildCacheNoTreePollution(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(dir, "go.mod")); !os.IsNotExist(err) {
 		t.Fatal("expected no go.mod leak in source dir")
 	}
-	if _, err := os.Stat(filepath.Join(work, "goop-out")); err != nil {
+	if _, err := os.Stat(goopOutBinary(work)); err != nil {
 		t.Fatalf("expected goop-out in cwd: %v\n%s", err, out)
 	}
 }
@@ -214,7 +214,7 @@ func TestBuildMainProducesBinary(t *testing.T) {
 			t.Fatal(err)
 		}
 	})
-	cmd := exec.Command(filepath.Join(work, "goop-out"))
+	cmd := exec.Command(goopOutBinary(work))
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		t.Fatalf("run: %v\n%s", err, out)
@@ -291,7 +291,7 @@ let main () =
 	if _, err := os.Stat(filepath.Join(root, "main.go")); !os.IsNotExist(err) {
 		t.Fatal("expected no in-tree pollution")
 	}
-	bin := filepath.Join(work, "goop-out")
+	bin := goopOutBinary(work)
 	if _, err := os.Stat(bin); err != nil {
 		t.Fatalf("binary missing: %v\n%s", err, out)
 	}
@@ -327,7 +327,7 @@ let double (x: int) : int = x + x
 			t.Fatal(err)
 		}
 	})
-	if _, err := os.Stat(filepath.Join(work, "goop-out")); !os.IsNotExist(err) {
+	if _, err := os.Stat(goopOutBinary(work)); !os.IsNotExist(err) {
 		t.Fatal("library build should not produce goop-out")
 	}
 	if _, err := os.Stat(filepath.Join(dir, "utils.go")); !os.IsNotExist(err) {

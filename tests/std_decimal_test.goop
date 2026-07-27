@@ -1,0 +1,20 @@
+module main
+
+import goop . "std.decimal"
+
+let main () =
+  let a = OfString "2.5" in
+  let b = OfInt 2 in
+  let sum = a.Add b in
+  let prod = a.Mul b in
+  let diff = sum.Sub (OfString "0.5") in
+  let quot = prod.Div b in
+  begin
+    assert (ToString sum = "4.5");
+    assert (ToString prod = "5");
+    assert (ToString diff = "4");
+    assert (ToString quot = "2.5");
+    assert (Cmp a b > 0);
+    assert (Equal a (OfString "2.50"));
+    print_line "std.decimal OK"
+  end

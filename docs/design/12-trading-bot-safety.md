@@ -26,10 +26,12 @@ Goop targets compile-time prevention of common trading-bot failure modes.
 ## Recommended patterns
 
 1. Model venue messages as ADTs; handle with exhaustive `match`.
-2. Brand IDs: `type order_id = Order_id of string` (no `newtype` keyword).
+2. Brand IDs: `type order_id = Order_id of string` (no `newtype` keyword; see [21-branded-ids.md](21-branded-ids.md)).
 3. Pass position state through `owned_chan` or single-owner linear types.
 4. Prefer `result` + `match` for venue errors; `failwith` for bugs.
 5. Initialize feeds with `let ch = Chan.make ()` before any send/recv.
 6. Transfer shared `ref` into goroutines with `go (move r)` when the parent is done.
 
 See [STYLE.md](STYLE.md), `docs/examples/trading_*.goop`, and `orderbook.goop` for worked examples.
+
+**Money / prices:** use fixed-point `std.decimal` (`Decimal`), not `float64`. See [25-decimal.md](25-decimal.md).

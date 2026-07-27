@@ -133,7 +133,9 @@ Documentation must match the compiler, not aspirational design:
 ```
 src/cmd/goop/          CLI entry (check, build, lsp, test, …)
 src/internal/          Compiler implementation
-std/                   std.io, std.list, std.array, std.option, std.result
+std/                   std.io, std.list, std.array, std.option, std.result,
+                       std.string, std.chan (→ std/channel), std.ref
+                       (+ std.decimal when present)
 tests/                 End-to-end .goop tests
 docs/examples/         Runnable examples (CI-checked)
 docs/tutorial/         Step-by-step tutorial

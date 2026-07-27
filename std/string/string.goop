@@ -1,0 +1,13 @@
+module string
+
+(* Thin re-exports of prelude string helpers — implementation stays in the compiler prelude. *)
+
+let length (s: string) : int = String.length s
+
+let sub (s: string) (i: int) (n: int) : string = String.sub s i n
+
+let concat (a: string) (b: string) : string = string_concat a b
+
+let of_int (n: int) : string = int_to_string n
+
+let of_float (f: float) : string = float_to_string f

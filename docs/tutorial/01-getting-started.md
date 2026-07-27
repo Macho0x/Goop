@@ -50,6 +50,31 @@ cache, then runs `go build` there. For `module main`, the binary is written to
 | `goop compile` | `$GOOP_HOME/build/compile-*/` | Emit Go only; no `go build` |
 | `goop build` | `$GOOP_HOME/build/build-*/` + `./goop-out` for main | Full Goop build |
 | `goop test` | `$GOOP_HOME/build/test-*/` (ephemeral) | Runs `*_test.goop` |
+| `goop repl` | stdin session; temp `$GOOP_HOME/build/repl-*/` | Compile-to-Go REPL |
+
+## REPL
+
+```bash
+./goop repl
+```
+
+```
+goop> 1 + 1
+2
+goop> let double (x: int) : int = x + x
+ok
+goop> double 21
+42
+goop> :type double 21
+- : int
+goop> :quit
+```
+
+The REPL has no interpreter — each input is type-checked, compiled to a small Go
+program, and run with `go run`. Declarations accumulate in the session.
+Printable expression types today: `int`, `float`, `string`, `bool`, `unit`.
+Commands: `:help`, `:quit` / `:q`, `:type <expr>`, `:reset`. End a line with `\`
+to continue on the next line.
 
 Flags:
 

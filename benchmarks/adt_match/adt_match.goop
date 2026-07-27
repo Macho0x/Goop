@@ -1,0 +1,14 @@
+module Bench.AdtMatch
+
+(* Microbenchmark: ADT match (interface + type switch in generated Go). *)
+
+type shape =
+  | Circle of { radius: float }
+  | Rect of { width: float; height: float }
+  | Point
+
+let area (s: shape) : float =
+  match s with
+  | Circle { radius } -> 3.141592653589793 *. radius *. radius
+  | Rect { width; height } -> width *. height
+  | Point -> 0.0

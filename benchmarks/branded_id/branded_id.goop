@@ -1,0 +1,14 @@
+module Bench.BrandedId
+
+(* Microbenchmark: single-ctor branded ID wrap/unwrap.
+   Today this lowers to interface + struct (not yet zero-cost; see design/21). *)
+
+type order_id = | Order_id of string
+
+let wrap (s: string) : order_id = Order_id s
+
+let unwrap (id: order_id) : string =
+  match id with
+  | Order_id s -> s
+
+let roundtrip (s: string) : string = unwrap (wrap s)

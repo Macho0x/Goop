@@ -24,6 +24,7 @@ The prelude is injected by the type checker before user declarations. Bindings a
 
 In practice, use the `^` operator for string concatenation. `String.length` /
 `String.sub` follow Go byte indexing, not Unicode grapheme clusters.
+Optional import-style access: [`std.string`](std-string.md).
 
 ## Lists
 
@@ -53,6 +54,7 @@ Index read `arr.(i)` and write `arr.(i) <- v` are language syntax — see [std.a
 | `assert_equal` | `'a -> 'a -> unit` | equality panic |
 
 `!r` and `r := e` are language syntax. There is no `panic_message` — use `failwith`.
+Optional import-style constructor: [`std.ref`](std-ref.md) (`make`).
 
 ## Channels (`chan`)
 
@@ -64,6 +66,7 @@ Index read `arr.(i)` and write `arr.(i) <- v` are language syntax — see [std.a
 | `Chan.close` | `'a chan -> unit` |
 
 `Chan.close` is runtime-safe (closed-flag wrapper). Nil-channel use before init is caught by **NIL001**.
+Optional import-style access: [`std.chan`](std-chan.md).
 
 ## Linear channels (`owned_chan`)
 
@@ -75,6 +78,16 @@ Index read `arr.(i)` and write `arr.(i) <- v` are language syntax — see [std.a
 | `OwnedChan.close` | `'a owned_chan -> unit` |
 
 Linear discharge checking ensures channels are closed exactly once. See [`owned_chan.goop`](../examples/owned_chan.goop).
+Also available via [`std.chan`](std-chan.md) as `make_owned` / `send_owned` / `recv_owned` / `close_owned`.
+
+## Lazy
+
+| Name | Type | Go lowering |
+|---|---|---|
+| `Lazy.force` | `'a lazy -> 'a` | custom |
+| `Lazy.from_val` | `'a -> 'a lazy` | custom |
+
+`lazy e` is language syntax. There is no `std.lazy` module yet — use prelude `Lazy.*` directly (see [stdlib roadmap](README.md#roadmap-what-still-belongs)).
 
 ## HTTP / JSON helpers
 

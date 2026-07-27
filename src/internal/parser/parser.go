@@ -938,6 +938,12 @@ func (p *Parser) parseImportSpec() ast.ImportSpec {
 	case token.GO:
 		spec.Kind = ast.ImportGo
 		p.advance()
+		// Optional raw opt-out: import go raw "path" { … }
+		// Keeps (T, error) as a Goop tuple instead of coercing to result (H6).
+		if p.cur().Type == token.IDENT && p.cur().Lexeme == "raw" {
+			spec.Raw = true
+			p.advance()
+		}
 	case token.GOOP:
 		spec.Kind = ast.ImportGoop
 		p.advance()

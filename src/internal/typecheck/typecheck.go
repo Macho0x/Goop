@@ -141,6 +141,10 @@ func pkgFromPath(path string) string {
 }
 
 func (c *Checker) bindExternVals(importPath string, vals []ast.ExternVal) {
+	c.bindExternValsOpts(importPath, vals, false)
+}
+
+func (c *Checker) bindExternValsOpts(importPath string, vals []ast.ExternVal, raw bool) {
 	pkgName := pkgFromPath(importPath)
 	for _, ev := range vals {
 		t := c.convertASTType(ev.Type)
@@ -160,6 +164,10 @@ func (c *Checker) bindExternVals(importPath string, vals []ast.ExternVal) {
 					c.goFields[typeName][ev.Name] = c.convertASTType(ev.Type)
 				}
 			}
+		}
+		// H6: (T, error) → ('ok, 'err) result unless import go raw.
+		if !raw && ev.Kind != ast.ExternField {
+			t = coerceTupleErrorToResult(t)
 		}
 		scheme := types.Mono(t)
 		if c.env.Lookup(ev.Name) != nil {
@@ -868,8 +876,10 @@ func (c *Checker) checkLetDecl(d *ast.LetDecl) {
 		return
 	}
 	for _, b := range d.Bindings {
-		t := c.checkBinding(b)
-		// Generalize and bind
+		t := types.Apply(c.sub, c.checkBinding(b))
+		// Generalize and bind (Apply first so multi-value extern results,
+		// which infer as a fresh TVar unified to a tuple, are not frozen
+		// as polymorphic type variables).
 		inScope := c.env.InScope()
 		scheme := types.Generalize(t, inScope)
 		c.env.Bind(b.Name, scheme)
@@ -1024,7 +1034,7 @@ func (c *Checker) infer(e ast.Expr) types.Type {
 	case *ast.PipeExpr:
 		t = c.inferPipe(e)
 	case *ast.QuestionExpr:
-		c.errorfAt(e.Loc, "'?' operator was removed; use Result.bind / match instead")
+		c.errorfAt(e.Loc, "'?' error propagation is not supported in Goop 1.0; use `match` on `('ok, 'err) result` (or `Result.bind`) and annotate the result type if needed")
 		t = c.fresh("removed")
 	case *ast.RecordExpr:
 		t = c.inferRecord(e)
@@ -1085,6 +1095,7 @@ func (c *Checker) infer(e ast.Expr) types.Type {
 	case *ast.DiscontinueExpr:
 		t = c.inferDiscontinue(e)
 	case *ast.ModuleAppExpr:
+		c.errorfAt(e.Loc, "functor application `%s(%s)` is not supported as an expression in Goop 1.0; use a concrete nested `module` binding, or annotate module interfaces with `sig`/`struct`", e.Func, e.Arg)
 		t = types.Unit
 	case *ast.PackModuleExpr:
 		t = c.inferPackModule(e)
@@ -1093,13 +1104,14 @@ func (c *Checker) infer(e ast.Expr) types.Type {
 	case *ast.LabelledArgExpr:
 		t = c.inferLabelledArg(e)
 	case *ast.GuardExpr:
-		c.errorfAt(e.Loc, "'guard' was removed; use match instead")
+		c.errorfAt(e.Loc, "'guard' is not supported in Goop 1.0; use `match` with a `when` guard, and annotate the scrutinee if its type is ambiguous")
 		t = c.fresh("removed")
 	case *ast.IsExpr:
-		c.errorfAt(e.Loc, "'is' was removed; use match instead")
+		c.errorfAt(e.Loc, "'is' pattern tests are not supported in Goop 1.0; use `match` instead, and annotate the scrutinee if its type is ambiguous")
 		t = types.Bool
 	case *ast.AsMatchExpr:
-		t = c.inferAsMatch(e)
+		c.errorfAt(e.Loc, "expression `as` / `else` macros are not supported in Goop 1.0; use `match` instead, and annotate the scrutinee if its type is ambiguous")
+		t = c.fresh("removed")
 	case *ast.GoExpr:
 		t = c.inferGo(e)
 	case *ast.SelectExpr:
@@ -1107,12 +1119,15 @@ func (c *Checker) infer(e ast.Expr) types.Type {
 	case *ast.UsingExpr:
 		t = c.inferUsing(e)
 	case *ast.RegionExpr:
-		t = c.inferRegion(e)
+		c.errorfAt(e.Loc, "`region { … }` is not supported in Goop 1.0; use `try`/`finally` or explicit cleanup, and annotate resource types if inference is ambiguous")
+		t = c.fresh("removed")
 	case *ast.CompExpr:
-		c.errorfAt(e.Loc, "computation expressions were removed")
+		c.errorfAt(e.Loc, "computation expressions (`%s { … }`) are not supported in Goop 1.0; rewrite with `match` on `result`, or `try`/`finally` for cleanup", e.Builder)
 		t = c.fresh("removed")
 	default:
-		c.errorfAt(locOf(e), "type inference not implemented for %T", e)
+		// Defensive: every known ast.Expr variant has a case above. Hitting
+		// this means a new AST node was added without an infer path.
+		c.errorfAt(locOf(e), "internal error: unhandled expression %T in type inference (compiler bug — please report); rewrite using a supported form or add an explicit type annotation on the enclosing binding", e)
 		t = types.Unit
 	}
 
@@ -1330,7 +1345,7 @@ func (c *Checker) inferLetIn(e *ast.LetInExpr) types.Type {
 	}
 	// Process as non-recursive let: check bindings, add to env, check body
 	for _, b := range e.Bindings {
-		t := c.checkBinding(b)
+		t := types.Apply(c.sub, c.checkBinding(b))
 		inScope := c.env.InScope()
 		scheme := types.Generalize(t, inScope)
 		c.env.Bind(b.Name, scheme)
@@ -1594,7 +1609,7 @@ func (c *Checker) inferBinary(e *ast.BinaryExpr) types.Type {
 		return types.Int
 
 	case token.PERCENT:
-		c.errorfAt(e.Loc, "'%%' was removed; use 'mod' instead")
+		c.errorfAt(e.Loc, "'%%' is not supported in Goop 1.0; use 'mod' for integer remainder (e.g. `a mod b`)")
 		return types.Int
 
 	case token.STARDOT, token.PLUSDOT, token.MINUSDOT, token.SLASHDOT:
@@ -1603,10 +1618,10 @@ func (c *Checker) inferBinary(e *ast.BinaryExpr) types.Type {
 		c.unifyAt(e.Loc, right, types.Float)
 		return types.Float
 
-	case token.EQUALS, token.NEQ, token.DIAMOND:
+	case token.EQUALS, token.EQEQ, token.NEQ, token.DIAMOND:
 		// Comparison: both operands same type, result is bool
+		// (= and == are equality; != and <> are inequality)
 		c.unifyAt(e.Loc, left, right)
-		_ = types.Bool
 		return types.Bool
 
 	case token.LT, token.GT, token.LEQ, token.GEQ:
@@ -1631,8 +1646,14 @@ func (c *Checker) inferBinary(e *ast.BinaryExpr) types.Type {
 		c.unifyAt(e.Loc, right, types.ListType(left))
 		return right
 
+	case token.PIPEOP:
+		// x |> f  ≡  f x  (parser emits BinaryExpr; PipeExpr remains for legacy AST)
+		result := c.fresh("pipe")
+		c.unifyAt(e.Loc, right, &types.TFun{From: left, To: result})
+		return result
+
 	default:
-		c.errorfAt(e.Loc, "type inference not implemented for binary operator %s", e.Op)
+		c.errorfAt(e.Loc, "unsupported binary operator %s; Goop 1.0 supports + - * / mod land lor lxor +. -. *. /. = == != <> < > <= >= ^ && || :: |>; rewrite using those operators, or annotate the enclosing binding with an explicit type and use a library function", e.Op)
 		return types.Unit
 	}
 }
@@ -2155,6 +2176,47 @@ func (c *Checker) unifyAt(loc token.SourceLoc, t1, t2 types.Type) {
 // Extern type refinement via go/types (optional gosig fallback)
 // ---------------------------------------------------------------------------
 
+// coerceTupleErrorToResult rewrites a final return of (T, error) into
+// result<T, error>. Curried arrows are preserved. This is the H6 default for
+// import go bindings; import go raw skips it.
+func coerceTupleErrorToResult(t types.Type) types.Type {
+	switch t := t.(type) {
+	case *types.TFun:
+		return &types.TFun{
+			From:     t.From,
+			To:       coerceTupleErrorToResult(t.To),
+			Effects:  t.Effects,
+			Label:    t.Label,
+			Optional: t.Optional,
+		}
+	case *types.TTuple:
+		if len(t.Elems) == 2 {
+			if _, ok := t.Elems[1].(*types.TError); ok {
+				return types.ResultType(t.Elems[0], t.Elems[1])
+			}
+		}
+		return t
+	default:
+		return t
+	}
+}
+
+// declaredUsesGoSliceParam reports whether a curried extern type mentions a
+// Goop go_slice parameter (including `...T` decls, which convert to go_slice).
+func declaredUsesGoSliceParam(t types.Type) bool {
+	for {
+		fn, ok := t.(*types.TFun)
+		if !ok {
+			_, isSlice := t.(*types.TGoSlice)
+			return isSlice
+		}
+		if _, ok := fn.From.(*types.TGoSlice); ok {
+			return true
+		}
+		t = fn.To
+	}
+}
+
 // refineExternType attempts to look up the real Go function signature for an
 // extern binding and convert it to a more precise Goop type. If the lookup
 // fails or the conversion produces an unsatisfactory type, it returns nil
@@ -2170,6 +2232,13 @@ func (c *Checker) refineExternType(importPath, funcName string, declared types.T
 		return nil
 	}
 
+	// Variadic Goop decls (`...any` → any go_slice) must win over gosig:
+	// go/types exposes fmt.Sprintf's tail as []interface{}, which we map to
+	// list<'a>. Overwriting the declared go_slice breaks spread/go_slice_of_list.
+	if declaredUsesGoSliceParam(declared) {
+		return nil
+	}
+
 	sig, err := gosig.LookupFunc(importPath, funcName)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "goop: gosig fallback for %s.%s: %v\n", importPath, funcName, err)
@@ -2177,8 +2246,8 @@ func (c *Checker) refineExternType(importPath, funcName string, declared types.T
 	}
 
 	// Build a curried Goop function type from the Go parameters and results.
-	// Go result types become the final return type; if there are multiple
-	// results we use unit (tuples not yet supported in externs).
+	// Multi-value Go results become a Goop tuple (F0, F1, …); codegen wraps
+	// the call in a multi-value assignment into that struct.
 	var resultType types.Type
 	switch len(sig.Results) {
 	case 0:
@@ -2191,8 +2260,8 @@ func (c *Checker) refineExternType(importPath, funcName string, declared types.T
 			return nil
 		}
 		resultType = rt
-	case 2:
-		elems := make([]types.Type, 2)
+	default:
+		elems := make([]types.Type, len(sig.Results))
 		for i, r := range sig.Results {
 			rt := goTypeToC0TypeInPkg(r.Type, importPath)
 			if rt == nil {
@@ -2203,10 +2272,6 @@ func (c *Checker) refineExternType(importPath, funcName string, declared types.T
 			elems[i] = rt
 		}
 		resultType = &types.TTuple{Elems: elems}
-	default:
-		fmt.Fprintf(os.Stderr, "goop: gosig fallback for %s.%s: %d result values (not supported)\n",
-			importPath, funcName, len(sig.Results))
-		return nil
 	}
 
 	// Extract the declared return type (the rightmost leaf of the function
@@ -2538,7 +2603,7 @@ func (c *Checker) bindImportSpecs(imports []ast.ImportSpec, deps map[string]*ast
 				c.bindExternTypes(spec.Path, spec.Types)
 			}
 			if len(spec.Vals) > 0 {
-				c.bindExternVals(spec.Path, spec.Vals)
+				c.bindExternValsOpts(spec.Path, spec.Vals, spec.Raw)
 			}
 		case ast.ImportGoop:
 			if resolver == nil {

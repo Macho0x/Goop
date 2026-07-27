@@ -34,6 +34,7 @@ type ImportSpec struct {
 	Kind  ImportKind
 	Path  string // import path string literal (logical or canonical)
 	Alias string
+	Raw   bool         // import go raw "path" — keep (T, error) as a tuple (H6 opt-out)
 	Vals  []ExternVal  // go imports only: optional FFI signatures
 	Types []ExternType // go imports only: opaque Go named types
 }

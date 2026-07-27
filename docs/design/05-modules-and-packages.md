@@ -98,9 +98,15 @@ let main () = helper 1   (* OK in same module *)
 
 `private type` brands ADT constructors at the module boundary (preferred over removed `newtype`).
 
-## Configuration
+## Configuration and packages (1.0)
 
-See [11-package-manager.md](11-package-manager.md) for `goop get`, `goop.lock`, and `[dependencies]`.
+Goop packages are **Go modules**. There is no separate Goop registry in 1.0:
+publish by hosting a Git repo under a normal module path, and install with
+`goop get`. Pins live in `goop.toml` `[dependencies]` and `goop.lock`.
+
+See [11-package-manager.md](11-package-manager.md) for the full story:
+`goop get`, `$GOOP_HOME/pkg/mod`, lockfile format, import resolution, and
+what is deliberately out of scope.
 
 ## Compilation unit
 

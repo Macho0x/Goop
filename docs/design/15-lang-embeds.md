@@ -18,6 +18,10 @@ val name : type   (* zero or more; Goop-visible bindings *)
 
 Unknown langs (`@[rust]`, …) are hard errors. Future langs reuse this grammar.
 
+Multi-value Go returns on `val` bindings are Goop tuples (`(T0, T1, …)`); see
+[04-go-lowering.md § Extern multi-value returns](04-go-lowering.md#extern-multi-value-returns).
+H5 auto-sigs are not required — hand-written `import go` / `@[go]` declarations work.
+
 ## Imports
 
 ```goop

@@ -13,6 +13,7 @@ import (
 	"goop.dev/compiler/internal/desugar"
 	"goop.dev/compiler/internal/parser"
 	"goop.dev/compiler/internal/refine"
+	"goop.dev/compiler/internal/token"
 	"goop.dev/compiler/internal/typecheck"
 )
 
@@ -112,12 +113,54 @@ end
 }
 
 func TestCompileResult(t *testing.T) {
-	t.Skip("result.goop still uses removed result { … } CE; awaiting example migration")
+	mod := mustParse(t, "result.goop")
+	gen := codegen.NewGenerator("result.goop", config.DefaultConfig())
+	goSrc, err := gen.Generate(mod)
+	if err != nil {
+		t.Fatalf("generate: %v", err)
+	}
+	if !strings.Contains(goSrc, "Ok") && !strings.Contains(goSrc, "result") {
+		// Smoke: generated Go should mention result constructors somehow.
+		t.Logf("generated %d bytes for result.goop", len(goSrc))
+	}
+	if strings.Contains(goSrc, "/* TODO:") {
+		t.Errorf("generated Go contains silent-degradation marker")
+	}
 }
 
 func TestExternTupleCallCodegen(t *testing.T) {
+	// Default: (T, error) coerces to result (H6).
 	src := `module main
-import go "strconv" { val Atoi : string -> (int, string) }
+import go "strconv" { val Atoi : string -> (int, error) }
+let main () = let r = Atoi "42" in
+  match r with
+  | Ok n -> n
+  | Error _ -> 0
+`
+	mod, err := parser.Parse("t.goop", []byte(src))
+	if err != nil {
+		t.Fatal(err)
+	}
+	mod = desugar.DesugarModule(mod)
+	gen := codegen.NewGenerator("t.goop", config.DefaultConfig())
+	goSrc, err := gen.Generate(mod)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(goSrc, "__v, __e = strconv.Atoi") {
+		t.Fatalf("expected (T, error)→result wrapper, got:\n%s", goSrc)
+	}
+	if !strings.Contains(goSrc, "NewResult") || !strings.Contains(goSrc, "Ok(") {
+		t.Fatalf("expected New…Ok result constructor, got:\n%s", goSrc)
+	}
+	if !strings.Contains(goSrc, "IsOk()") {
+		t.Fatalf("expected result match lowering, got:\n%s", goSrc)
+	}
+}
+
+func TestExternRawTupleCallCodegen(t *testing.T) {
+	src := `module main
+import go raw "strconv" { val Atoi : string -> (int, error) }
 let main () = let pair = Atoi "42" in pair
 `
 	mod, err := parser.Parse("t.goop", []byte(src))
@@ -131,7 +174,62 @@ let main () = let pair = Atoi "42" in pair
 		t.Fatal(err)
 	}
 	if !strings.Contains(goSrc, "__t.F0, __t.F1 = strconv.Atoi") {
-		t.Fatalf("expected multi-value extern assignment, got:\n%s", goSrc)
+		t.Fatalf("expected multi-value extern assignment under raw, got:\n%s", goSrc)
+	}
+	if !strings.Contains(goSrc, "F1 error") {
+		t.Fatalf("expected error field in tuple struct, got:\n%s", goSrc)
+	}
+}
+
+func TestExternTupleCallCodegenEmbed(t *testing.T) {
+	// Hand-written @[go] multi-value return (explicit declaration; no gosig).
+	src := `module main
+import go "strconv" {}
+@[go] {
+  func atoiPair(s string) (int, string) {
+    n, err := strconv.Atoi(s)
+    if err != nil { return 0, err.Error() }
+    return n, ""
+  }
+}
+val atoiPair : string -> (int, string)
+let main () = let pair = atoiPair "42" in pair
+`
+	mod, err := parser.Parse("embed.goop", []byte(src))
+	if err != nil {
+		t.Fatal(err)
+	}
+	mod = desugar.DesugarModule(mod)
+	gen := codegen.NewGenerator("embed.goop", config.DefaultConfig())
+	goSrc, err := gen.Generate(mod)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(goSrc, "__t.F0, __t.F1 = atoiPair") {
+		t.Fatalf("expected multi-value @[go] assignment, got:\n%s", goSrc)
+	}
+}
+
+func TestExternTripleTupleCallCodegen(t *testing.T) {
+	src := `module main
+@[go] {
+  func triple() (int, int, string) { return 1, 2, "ok" }
+}
+val triple : unit -> (int, int, string)
+let main () = let t = triple () in t
+`
+	mod, err := parser.Parse("triple.goop", []byte(src))
+	if err != nil {
+		t.Fatal(err)
+	}
+	mod = desugar.DesugarModule(mod)
+	gen := codegen.NewGenerator("triple.goop", config.DefaultConfig())
+	goSrc, err := gen.Generate(mod)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(goSrc, "__t.F0, __t.F1, __t.F2 = triple") {
+		t.Fatalf("expected 3-value extern assignment, got:\n%s", goSrc)
 	}
 }
 
@@ -276,11 +374,45 @@ func TestShapesBuild(t *testing.T) {
 }
 
 func TestResultBuild(t *testing.T) {
-	t.Skip("result.goop still uses removed result { … } CE; awaiting example migration")
+	mod := mustParse(t, "result.goop")
+	gen := codegen.NewGenerator("result.goop", config.DefaultConfig())
+	goSrc, err := gen.Generate(mod)
+	if err != nil {
+		t.Fatalf("generate: %v", err)
+	}
+
+	tmpDir := t.TempDir()
+	outPath := filepath.Join(tmpDir, "result.go")
+	os.WriteFile(outPath, []byte(goSrc), 0644)
+	modContent := "module result\n\ngo 1.22\n"
+	os.WriteFile(filepath.Join(tmpDir, "go.mod"), []byte(modContent), 0644)
+
+	cmd := exec.Command("go", "build", outPath)
+	cmd.Dir = tmpDir
+	if out, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("go build: %v\n%s", err, out)
+	}
 }
 
 func TestOrderbookBuild(t *testing.T) {
-	t.Skip("orderbook.goop still uses removed newtype; awaiting example migration")
+	mod := mustParse(t, "orderbook.goop")
+	gen := codegen.NewGenerator("orderbook.goop", config.DefaultConfig())
+	goSrc, err := gen.Generate(mod)
+	if err != nil {
+		t.Fatalf("generate: %v", err)
+	}
+
+	tmpDir := t.TempDir()
+	outPath := filepath.Join(tmpDir, "orderbook.go")
+	os.WriteFile(outPath, []byte(goSrc), 0644)
+	modContent := "module orderbook\n\ngo 1.22\n"
+	os.WriteFile(filepath.Join(tmpDir, "go.mod"), []byte(modContent), 0644)
+
+	cmd := exec.Command("go", "build", outPath)
+	cmd.Dir = tmpDir
+	if out, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("go build: %v\n%s", err, out)
+	}
 }
 
 func TestTypeCheckBeforeCodegen(t *testing.T) {
@@ -715,5 +847,106 @@ let main () =
 	}
 	if !strings.Contains(goSrc, "arr[0] = 7") {
 		t.Fatalf("expected array index assignment:\n%s", goSrc)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// H1: no silent degradation — unhandled expressions are hard errors
+// ---------------------------------------------------------------------------
+
+func TestCodegenUnhandledExprIsHardError(t *testing.T) {
+	// A CompExpr (removed language feature kept for AST compat) must
+	// produce a hard compiler error naming the node type and source
+	// position — never a /* TODO */ comment in the generated Go.
+	mod := &ast.Module{
+		Name: "main",
+		Decls: []ast.TopDecl{
+			&ast.LetDecl{
+				Bindings: []ast.LetBinding{
+					{
+						Name: "x",
+						Body: &ast.CompExpr{
+							Builder: "result",
+							Loc:     token.SourceLoc{File: "bad.goop", Line: 3, Column: 9},
+						},
+					},
+				},
+			},
+		},
+	}
+	gen := codegen.NewGenerator("bad.goop", config.DefaultConfig())
+	out, err := gen.Generate(mod)
+	if err == nil {
+		t.Fatalf("expected hard error for unhandled expression, got nil (output:\n%s)", out)
+	}
+	msg := err.Error()
+	if !strings.Contains(msg, "*ast.CompExpr") {
+		t.Errorf("error should name the unhandled node type, got: %s", msg)
+	}
+	if !strings.Contains(msg, "bad.goop:3:9") {
+		t.Errorf("error should carry the source position, got: %s", msg)
+	}
+	if strings.Contains(out, "/* TODO:") {
+		t.Errorf("generated Go must never contain a /* TODO: */ fallback, got:\n%s", out)
+	}
+}
+
+func TestCodegenUnhandledExprLocFallsBackToSrcFile(t *testing.T) {
+	// When the AST node carries no file, the error position falls back
+	// to the source file passed to NewGenerator.
+	mod := &ast.Module{
+		Name: "main",
+		Decls: []ast.TopDecl{
+			&ast.LetDecl{
+				Bindings: []ast.LetBinding{
+					{
+						Name: "y",
+						Body: &ast.GuardExpr{
+							Loc: token.SourceLoc{Line: 7, Column: 2},
+						},
+					},
+				},
+			},
+		},
+	}
+	gen := codegen.NewGenerator("fallback.goop", config.DefaultConfig())
+	_, err := gen.Generate(mod)
+	if err == nil {
+		t.Fatal("expected hard error for unhandled expression, got nil")
+	}
+	msg := err.Error()
+	if !strings.Contains(msg, "fallback.goop:7:2") {
+		t.Errorf("error should fall back to the generator source file, got: %s", msg)
+	}
+	if !strings.Contains(msg, "*ast.GuardExpr") {
+		t.Errorf("error should name the unhandled node type, got: %s", msg)
+	}
+}
+
+func TestCodegenExamplesHaveNoTODOMarkers(t *testing.T) {
+	// Corpus guard: no successfully generated example may contain the
+	// old silent-degradation marker in its Go output.
+	entries, err := os.ReadDir(examplesDir)
+	if err != nil {
+		t.Fatalf("read examples dir: %v", err)
+	}
+	checked := 0
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".goop") {
+			continue
+		}
+		name := entry.Name()
+		t.Run(name, func(t *testing.T) {
+			mod := mustParse(t, name)
+			gen := codegen.NewGenerator(name, config.DefaultConfig())
+			goSrc, err := gen.Generate(mod)
+			if err != nil {
+				t.Skipf("example does not generate standalone: %v", err)
+			}
+			if strings.Contains(goSrc, "/* TODO:") {
+				t.Errorf("generated Go contains silent-degradation marker")
+			}
+			checked++
+		})
 	}
 }

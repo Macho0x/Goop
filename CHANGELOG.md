@@ -1,5 +1,39 @@
 # Changelog
 
+## 1.9.0
+
+### Interop
+
+- **Curated Go sig generator:** `goop gen-sig` / `goop get-go-sig` emit `.gosig`
+  stubs via `go/types` into `$GOOP_HOME/build/go-sigs/` (`goop-sigs/` overrides).
+- **`(T, error)` → `result`:** `import go` call sites see `result T` by default;
+  opt out with `import go raw "…"`.
+- **Extern multi-value returns:** Go multi-results map to Goop tuples for
+  hand-written and refined externs.
+- Variadic `...any` / `go_slice` declarations are preserved over gosig’s
+  `[]interface{}` → list rewrite.
+
+### Ergonomics
+
+- **Web playground:** `playground/` WASM check/compile UI with embedded examples.
+- **Editors:** Neovim + Helix LSP client packaging (`editors/neovim`, `editors/helix`).
+- **CLI:** `goop version`, `goop lint`, `goop doc`, `goop repl`.
+- **Codegen hard errors:** unhandled AST nodes fail at Goop compile time (no
+  silent `/* TODO */` in generated Go).
+
+### Domain fit / stdlib
+
+- **Branded IDs:** design decision — single-ctor ADT + `private`; zero-cost
+  codegen planned (`docs/design/21-branded-ids.md`).
+- **`std.decimal`:** shopspring/decimal wrapper + money example.
+- **Stdlib doctrine:** Go’s stdlib for coverage; thin `std.string` / `std.chan` /
+  `std.ref` wrappers. String interpolation: **no** for 1.0.
+
+### CI / docs
+
+- Windows CI job; package-registry doctrine (Go modules); FFI boundary,
+  inference-holes, diagnostics corpus, benchmark harness.
+
 ## 1.8.0
 
 ### Tooling

@@ -1,0 +1,18 @@
+# Goop language definition for Helix.
+# Merge into ~/.config/helix/languages.toml (or copy this file there).
+
+[language-server.goop]
+command = "goop"
+args = ["lsp"]
+
+[[language]]
+name = "goop"
+language-id = "goop"
+scope = "source.goop"
+injection-regex = "goop"
+file-types = ["goop"]
+roots = ["goop.toml"]
+comment-tokens = "//"
+block-comment-tokens = { start = "(*", end = "*)" }
+indent = { tab-width = 2, unit = "  " }
+language-servers = ["goop"]

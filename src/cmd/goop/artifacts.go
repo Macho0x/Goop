@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"goop.dev/compiler/internal/ast"
@@ -22,6 +24,16 @@ func goopHome() string {
 	}
 	home, _ := os.UserHomeDir()
 	return filepath.Join(home, ".cache", "goop")
+}
+
+// goopOutBinary is the cwd-relative name of the binary produced by goop build.
+// On Windows, go build appends .exe when -o has no extension; name it explicitly.
+func goopOutBinary(cwd string) string {
+	name := "goop-out"
+	if runtime.GOOS == "windows" {
+		name += ".exe"
+	}
+	return filepath.Join(cwd, name)
 }
 
 // buildCacheRoot returns $GOOP_HOME/build.
@@ -181,6 +193,18 @@ func writeImportDependencies(mod *ast.Module, cfg *config.Config, projectRoot, t
 		goMod += "\n" + strings.Join(replaces, "\n") + "\n"
 	}
 	return goMod, nil
+}
+
+// tidyGoMod runs `go mod tidy` in dir so third-party `import go` packages
+// (e.g. github.com/shopspring/decimal) resolve in the cache sandbox.
+func tidyGoMod(dir string) error {
+	cmd := exec.Command("go", "mod", "tidy")
+	cmd.Dir = dir
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("go mod tidy failed:\n%s", out)
+	}
+	return nil
 }
 
 // hasMainFunc reports whether generated Go source defines func main.
