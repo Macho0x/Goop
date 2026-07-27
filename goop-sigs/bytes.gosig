@@ -1,0 +1,15 @@
+(* Hand-curated bytes stubs. *)
+type Buffer
+
+val Contains : bytes -> bytes -> bool
+val Equal : bytes -> bytes -> bool
+val HasPrefix : bytes -> bytes -> bool
+val HasSuffix : bytes -> bytes -> bool
+val Join : bytes go_slice -> bytes -> bytes
+
+val (b : Buffer ptr).Bytes : unit -> bytes
+val (b : Buffer ptr).Len : unit -> int
+val (b : Buffer ptr).Reset : unit -> unit
+val (b : Buffer ptr).String : unit -> string
+val (b : Buffer ptr).Write : bytes -> int * error
+val (b : Buffer ptr).WriteString : string -> int * error

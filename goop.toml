@@ -15,6 +15,7 @@ smt = false
 [mappings]
 "std.io"      = "github.com/Macho0x/Goop/std/io"
 "std.list"    = "github.com/Macho0x/Goop/std/list"
+"std.map"     = "github.com/Macho0x/Goop/std/map"
 "std.array"   = "github.com/Macho0x/Goop/std/array"
 "std.option"  = "github.com/Macho0x/Goop/std/option"
 "std.result"  = "github.com/Macho0x/Goop/std/result"

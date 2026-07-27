@@ -1,0 +1,10 @@
+(* Hand-curated path/filepath stubs. *)
+val Base : string -> string
+val Clean : string -> string
+val Dir : string -> string
+val Ext : string -> string
+val Join : ...string -> string
+val Rel : string -> string -> string * error
+val Split : string -> string * string
+val ToSlash : string -> string
+val FromSlash : string -> string

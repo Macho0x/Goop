@@ -22,17 +22,20 @@ overrides live in the project tree.
 
 ## Resolution order (compile / typecheck)
 
-When the compiler needs a `.gosig` for import path `P`:
+When the compiler sees a **bare** `import go "P"` (no `{ val … }` block):
 
 1. **Project override** — if `<projectRoot>/goop-sigs/<safe(P)>.gosig`
    exists as a regular file, use it. Always wins over cache.
 2. **Generated cache** — if `$GOOP_HOME/build/go-sigs/<safe(P)>.gosig`
    exists, use it.
-3. **Miss** — no stub yet. Future auto-on-import (below) may generate into
-   the cache; until then, callers use explicit `import go "P" { … }` blocks
-   and/or the runtime `gosig` fallback.
+3. **Miss** — for curated packages, auto-generate into the cache once;
+   otherwise leave unbound (callers can add an explicit `{ val … }` block
+   and/or use the runtime `gosig` fallback for declared names).
 
-API: `gosiggen.ResolveSigPath(projectRoot, goopHome, importPath)`.
+Explicit `import go "P" { … }` blocks are authoritative: stubs are **not**
+merged on top of them (avoids collisions with hand-written FFI).
+
+API: `gosiggen.ResolveSigPath` / `gosiggen.LoadImportBindings`.
 
 ## CLI: `goop get-go-sig`
 
@@ -63,12 +66,12 @@ Exports that cannot be mapped are **skipped**, not silently degraded:
 
 | Go shape | Behavior |
 |----------|----------|
-| `map[K]V` | Skipped — no Goop map FFI yet |
+| `map[K]V` | Emitted as `map[K] V` |
 | Anonymous `struct` / non-empty anonymous `interface` | Skipped |
-| Multi-result other than `(T, error)` | Skipped |
+| Multi-result other than `(T, error)` | Emitted as Goop product tuples when elems map |
 | `complex*`, `unsafe.Pointer` | Skipped |
-| `(T, error)` | Emitted as `T * error` with `TODO(H6)`; H6 will coerce call sites to `result T` |
-| `any` / `interface{}` | Mapped to `obj` |
+| `(T, error)` | Emitted as `T * error` with `TODO(H6)`; typecheck+codegen coerce call sites to `result` |
+| `any` / `interface{}` | Mapped to `obj` (typecheck treats as `any`) |
 
 Skipped exports appear in the generated file comment **and** as
 `goop: warning: unrepresentable …` on stderr from `get-go-sig`.

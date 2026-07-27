@@ -46,6 +46,8 @@ func formatType(t ast.Type) string {
 		return formatType(t.Inner) + " where " + formatExprInline(t.Pred, precLowest)
 	case *ast.TChan:
 		return formatType(t.Elem) + " chan"
+	case *ast.TMap:
+		return "map[" + formatType(t.Key) + "] " + formatType(t.Val)
 	default:
 		return "<type>"
 	}

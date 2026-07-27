@@ -13,7 +13,7 @@ import (
 )
 
 func TestLSPDocumentFormatting(t *testing.T) {
-	bin := filepath.Join(t.TempDir(), "goop-test")
+	bin := filepath.Join(t.TempDir(), exeName("goop-test"))
 	build := exec.Command("go", "build", "-o", bin, ".")
 	build.Dir = "."
 	if out, err := build.CombinedOutput(); err != nil {

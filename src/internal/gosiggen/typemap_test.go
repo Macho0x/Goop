@@ -3,6 +3,7 @@ package gosiggen
 import (
 	"go/token"
 	gotypes "go/types"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -78,15 +79,15 @@ func TestMapPointerSliceChan(t *testing.T) {
 	}
 }
 
-func TestMapSkipsMaps(t *testing.T) {
+func TestMapEmitsMapType(t *testing.T) {
 	pkg := gotypes.NewPackage("example.com/p", "p")
 	tv, err := parseTypeViaScope(pkg, "map[string]int")
 	if err != nil {
 		t.Fatal(err)
 	}
 	got := MapType(tv, pkg.Path())
-	if got.OK || !got.Skipped {
-		t.Errorf("expected skipped map, got %+v", got)
+	if !got.OK || got.Goop != "map[string] int" {
+		t.Errorf("expected map[string] int, got %+v", got)
 	}
 }
 
@@ -165,28 +166,31 @@ func TestMapVariadic(t *testing.T) {
 }
 
 func TestCachePaths(t *testing.T) {
-	cp := CachePath("/tmp/goop-home", "encoding/json")
-	if !strings.HasSuffix(cp, "build/go-sigs/encoding_json.gosig") {
-		t.Errorf("cache path = %q", cp)
+	cp := CachePath(filepath.Join(string(filepath.Separator), "tmp", "goop-home"), "encoding/json")
+	wantSuffix := filepath.Join("build", "go-sigs", "encoding_json.gosig")
+	if !strings.HasSuffix(cp, wantSuffix) {
+		t.Errorf("cache path = %q, want suffix %q", cp, wantSuffix)
 	}
-	ov := OverridePath("/proj", "strings")
-	if ov != "/proj/goop-sigs/strings.gosig" {
-		t.Errorf("override = %q", ov)
+	ov := OverridePath(filepath.Join(string(filepath.Separator), "proj"), "strings")
+	wantOv := filepath.Join(string(filepath.Separator), "proj", "goop-sigs", "strings.gosig")
+	if ov != wantOv {
+		t.Errorf("override = %q, want %q", ov, wantOv)
 	}
 }
 
 func TestResolveOverrideWins(t *testing.T) {
 	dir := t.TempDir()
-	ovDir := dir + "/goop-sigs"
-	if err := WriteSig(ovDir+"/strings.gosig", "type Builder\n"); err != nil {
+	ovDir := filepath.Join(dir, "goop-sigs")
+	if err := WriteSig(filepath.Join(ovDir, "strings.gosig"), "type Builder\n"); err != nil {
 		t.Fatal(err)
 	}
-	path, fromOv, exists := ResolveSigPath(dir, dir+"/cache-home", "strings")
+	path, fromOv, exists := ResolveSigPath(dir, filepath.Join(dir, "cache-home"), "strings")
 	if !exists || !fromOv {
 		t.Fatalf("expected override hit, got path=%s fromOv=%v exists=%v", path, fromOv, exists)
 	}
-	if path != ovDir+"/strings.gosig" {
-		t.Errorf("path = %q", path)
+	want := filepath.Join(ovDir, "strings.gosig")
+	if path != want {
+		t.Errorf("path = %q, want %q", path, want)
 	}
 }
 

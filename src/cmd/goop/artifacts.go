@@ -26,14 +26,19 @@ func goopHome() string {
 	return filepath.Join(home, ".cache", "goop")
 }
 
+// exeName returns base with a .exe suffix on Windows so go build -o and
+// exec.Command agree on the binary path.
+func exeName(base string) string {
+	if runtime.GOOS == "windows" {
+		return base + ".exe"
+	}
+	return base
+}
+
 // goopOutBinary is the cwd-relative name of the binary produced by goop build.
 // On Windows, go build appends .exe when -o has no extension; name it explicitly.
 func goopOutBinary(cwd string) string {
-	name := "goop-out"
-	if runtime.GOOS == "windows" {
-		name += ".exe"
-	}
-	return filepath.Join(cwd, name)
+	return filepath.Join(cwd, exeName("goop-out"))
 }
 
 // buildCacheRoot returns $GOOP_HOME/build.

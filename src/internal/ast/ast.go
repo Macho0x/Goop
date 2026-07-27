@@ -334,6 +334,14 @@ type TChan struct {
 
 func (*TChan) typeNode() {}
 
+// TMap is a map type: `map[K] V`.
+type TMap struct {
+	Key Type
+	Val Type
+}
+
+func (*TMap) typeNode() {}
+
 // RefinementType wraps a type with a where clause.
 // `int where x > 0` → RefinementType{Inner: int, Pred: x > 0}
 type RefinementType struct {
@@ -1226,6 +1234,8 @@ func typeString(t Type) string {
 		return s + " >"
 	case *TChan:
 		return typeString(t.Elem) + " chan"
+	case *TMap:
+		return "map[" + typeString(t.Key) + "] " + typeString(t.Val)
 	case *RefinementType:
 		return typeString(t.Inner) + " where " + ExprString(t.Pred)
 	case *TVar:

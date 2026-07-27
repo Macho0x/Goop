@@ -227,7 +227,7 @@ func formatGosig(res *Result, typeDecls, valDecls []string) string {
 	fmt.Fprintf(&b, " *   - any / interface{} → obj\n")
 	fmt.Fprintf(&b, " *   - []T → T go_slice (best-effort); []byte → bytes\n")
 	fmt.Fprintf(&b, " *   - chan T → T chan\n")
-	fmt.Fprintf(&b, " *   - maps skipped (no Goop map FFI yet)\n")
+	fmt.Fprintf(&b, " *   - map[K]V → map[K] V\n")
 	fmt.Fprintf(&b, " *   - (T, error) emitted as `T * error`; typecheck+codegen\n")
 	fmt.Fprintf(&b, " *     coerce call sites to `('ok, error) result` (H6).\n")
 	fmt.Fprintf(&b, " *     Use `import go raw \"…\"` to keep the raw tuple.\n")

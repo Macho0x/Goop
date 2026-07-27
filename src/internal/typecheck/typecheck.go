@@ -16,6 +16,7 @@ package typecheck
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -25,6 +26,7 @@ import (
 	"goop.dev/compiler/internal/config"
 	"goop.dev/compiler/internal/exhaustive"
 	"goop.dev/compiler/internal/gosig"
+	"goop.dev/compiler/internal/gosiggen"
 	"goop.dev/compiler/internal/modresolve"
 	"goop.dev/compiler/internal/prelude"
 	"goop.dev/compiler/internal/token"
@@ -120,6 +122,8 @@ type Checker struct {
 	goFields        map[string]map[string]types.Type
 	goStructs       map[string]*goStructSchema // Goop type name → struct field schema
 	goImportPaths   map[string]string          // Goop type name → Go import path
+	projectRoot     string                     // for .gosig override resolution
+	goopHome        string                     // $GOOP_HOME for .gosig cache
 }
 
 // goStructSchema holds exported (+ promoted) fields for an imported Go struct.
@@ -170,20 +174,20 @@ func (c *Checker) bindExternValsOpts(importPath string, vals []ast.ExternVal, ra
 			t = coerceTupleErrorToResult(t)
 		}
 		scheme := types.Mono(t)
-		if c.env.Lookup(ev.Name) != nil {
-			// Field/method short names often collide with imported type names
-			// (e.g. type Value vs Attr.Value). Keep Type.Name qualified binds only.
-			if ev.Kind == ast.ExternFunc {
+		if ev.Kind == ast.ExternFunc {
+			if c.env.Lookup(ev.Name) != nil {
 				c.errorf("extern binding %q conflicts with existing name", ev.Name)
+			} else {
+				c.env.Bind(ev.Name, scheme)
+			}
+			if importPath != "" {
+				qualified := pkgName + "." + ev.Name
+				c.env.Bind(qualified, scheme)
 			}
 		} else {
-			c.env.Bind(ev.Name, scheme)
-		}
-		if importPath != "" && ev.Kind == ast.ExternFunc {
-			qualified := pkgName + "." + ev.Name
-			c.env.Bind(qualified, scheme)
-		}
-		if ev.Kind != ast.ExternFunc {
+			// Methods/fields: bind only Type.Name (and never bare short names),
+			// so package-level funcs like os.ReadDir do not collide with
+			// File.ReadDir from the same .gosig.
 			if typeName := goNamedTypeName(c.convertASTType(ev.RecvType)); typeName != "" {
 				c.env.Bind(typeName+"."+ev.Name, scheme)
 			}
@@ -300,6 +304,14 @@ func checkWithDepsAndImports(mod *ast.Module, deps map[string]*ast.Module, resol
 		goFields:        make(map[string]map[string]types.Type),
 		goStructs:       make(map[string]*goStructSchema),
 		goImportPaths:   make(map[string]string),
+		projectRoot:     "",
+		goopHome:        gosiggen.GoopHome(),
+	}
+	if srcFile != "" {
+		c.projectRoot = modresolve.FindProjectRoot(srcFile)
+		if c.projectRoot == "" {
+			c.projectRoot, _ = filepath.Abs(filepath.Dir(srcFile))
+		}
 	}
 	c.initBuiltins()
 	c.importedModule = mod.Name
@@ -384,6 +396,8 @@ func containsTVar(t types.Type) bool {
 		}
 	case *types.TChan:
 		return containsTVar(t.Elem)
+	case *types.TMap:
+		return containsTVar(t.Key) || containsTVar(t.Val)
 	}
 	return false
 }
@@ -727,6 +741,9 @@ func (c *Checker) convertASTType(at ast.Type) types.Type {
 			return &types.TError{}
 		case "any":
 			return &types.Prim{Name: "any"}
+		case "obj":
+			// Generator emits `obj` for interface{}; treat as language `any`.
+			return &types.Prim{Name: "any"}
 		case "owned_chan":
 			return &types.TAdt{Name: "owned_chan", Linear: true}
 		default:
@@ -825,6 +842,8 @@ func (c *Checker) convertASTType(at ast.Type) types.Type {
 		return c.convertASTType(t.Inner)
 	case *ast.TChan:
 		return &types.TChan{Elem: c.convertASTType(t.Elem)}
+	case *ast.TMap:
+		return &types.TMap{Key: c.convertASTType(t.Key), Val: c.convertASTType(t.Val)}
 	case *ast.TVar:
 		// Type variable: 'a → fresh type variable
 		return c.fresh(t.Name)
@@ -2421,6 +2440,37 @@ func goTypeToC0TypeInPkg(goType, importPath string) types.Type {
 		return &types.TChan{Elem: elem}
 	}
 
+	// Map type: map[K]V (Go spelling; Goop surface is "map[K] V")
+	if strings.HasPrefix(goType, "map[") {
+		inner := goType[len("map["):]
+		depth := 1
+		closeIdx := -1
+		for i, r := range inner {
+			switch r {
+			case '[':
+				depth++
+			case ']':
+				depth--
+				if depth == 0 {
+					closeIdx = i
+					break
+				}
+			}
+			if closeIdx >= 0 {
+				break
+			}
+		}
+		if closeIdx >= 0 {
+			keyStr := inner[:closeIdx]
+			valStr := strings.TrimSpace(inner[closeIdx+1:])
+			key := goTypeToC0TypeInPkg(keyStr, importPath)
+			val := goTypeToC0TypeInPkg(valStr, importPath)
+			if key != nil && val != nil {
+				return &types.TMap{Key: key, Val: val}
+			}
+		}
+	}
+
 	// Function type: func(A, B) C  →  A -> B -> C
 	if strings.HasPrefix(goType, "func(") {
 		return parseGoFuncType(goType)
@@ -2599,11 +2649,25 @@ func (c *Checker) bindImportSpecs(imports []ast.ImportSpec, deps map[string]*ast
 
 		switch spec.Kind {
 		case ast.ImportGo:
-			if len(spec.Types) > 0 {
-				c.bindExternTypes(spec.Path, spec.Types)
+			mergedTypes := spec.Types
+			mergedVals := spec.Vals
+			// Auto-load .gosig only for bare `import go "pkg"` (no inline block).
+			// Explicit `{ val …; type … }` blocks stay authoritative.
+			if len(spec.Types) == 0 && len(spec.Vals) == 0 && spec.Path != "" {
+				sigTypes, sigVals, _, loadErr := gosiggen.LoadImportBindings(
+					c.projectRoot, c.goopHome, spec.Path, true,
+				)
+				if loadErr != nil {
+					fmt.Fprintf(os.Stderr, "goop: .gosig load for %q: %v\n", spec.Path, loadErr)
+				}
+				mergedTypes = sigTypes
+				mergedVals = sigVals
 			}
-			if len(spec.Vals) > 0 {
-				c.bindExternValsOpts(spec.Path, spec.Vals, spec.Raw)
+			if len(mergedTypes) > 0 {
+				c.bindExternTypes(spec.Path, mergedTypes)
+			}
+			if len(mergedVals) > 0 {
+				c.bindExternValsOpts(spec.Path, mergedVals, spec.Raw)
 			}
 		case ast.ImportGoop:
 			if resolver == nil {

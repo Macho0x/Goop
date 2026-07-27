@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -16,6 +17,13 @@ import (
 	"goop.dev/compiler/internal/token"
 	"goop.dev/compiler/internal/typecheck"
 )
+
+func exeName(base string) string {
+	if runtime.GOOS == "windows" {
+		return base + ".exe"
+	}
+	return base
+}
 
 func externFinalReturn(t ast.Type) ast.Type {
 	for {
@@ -334,7 +342,7 @@ func TestHelloBuildAndRun(t *testing.T) {
 	os.WriteFile(filepath.Join(tmpDir, "go.mod"), []byte(modContent), 0644)
 
 	// Build
-	binPath := filepath.Join(tmpDir, "hello")
+	binPath := filepath.Join(tmpDir, exeName("hello"))
 	cmd := exec.Command("go", "build", "-o", binPath, outPath)
 	cmd.Dir = tmpDir
 	if out, err := cmd.CombinedOutput(); err != nil {
@@ -699,7 +707,7 @@ let main () =
 	modContent := "module test\n\ngo 1.22\n"
 	os.WriteFile(filepath.Join(tmpDir, "go.mod"), []byte(modContent), 0644)
 
-	binPath := filepath.Join(tmpDir, "testbin")
+	binPath := filepath.Join(tmpDir, exeName("testbin"))
 	cmdb := exec.Command("go", "build", "-o", binPath, outPath)
 	cmdb.Dir = tmpDir
 	if out, err := cmdb.CombinedOutput(); err != nil {

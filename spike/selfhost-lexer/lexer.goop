@@ -1,0 +1,33 @@
+(* Spike: tiny lexer fragment written in Goop to probe self-host readiness.
+   Not a full Stage1 compiler — just enough to exercise maps and brands. *)
+module selfhost_lexer
+
+type token_kind = | Ident | Int | String | Other
+
+type token = Token of string * token_kind
+
+let is_digit (c: string) : bool =
+  c >= "0" && c <= "9"
+
+let classify (s: string) : token_kind =
+  if String.length s = 0 then Other
+  else if is_digit (String.sub s 0 1) then Int
+  else Ident
+
+let make_token (s: string) : token =
+  Token (s, classify s)
+
+let main () =
+  begin
+    let table : map[string] int = Map.make () in
+    let t = make_token "42" in
+    match t with
+    | Token (text, kind) ->
+        begin
+          let _ = Map.add table text 1 in
+          let _ = assert (Map.mem table "42") in
+          match kind with
+          | Int -> assert true
+          | _ -> assert false
+        end
+  end

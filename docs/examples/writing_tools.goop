@@ -1,0 +1,19 @@
+(* Writing tools: maps + Go file IO via import go (no @[go]). *)
+module main
+
+import go "os"
+
+let main () =
+  begin
+    let table : map[string] int = Map.make () in
+    let _ = Map.add table "ok" 0 in
+    match os.ReadFile "go.mod" with
+    | Ok _ ->
+        begin
+          let _ = Map.add table "ok" 1 in
+          let _ = assert (Map.mem table "ok") in
+          print_line "read ok"
+        end
+    | Error _ ->
+        print_line "read failed"
+  end

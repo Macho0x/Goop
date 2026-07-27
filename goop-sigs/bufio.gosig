@@ -1,0 +1,15 @@
+(* Hand-curated bufio stubs. *)
+type Reader
+type Writer
+type Scanner
+
+val NewReader : io.Reader -> Reader ptr
+val NewWriter : io.Writer -> Writer ptr
+val NewScanner : io.Reader -> Scanner ptr
+
+val (r : Reader ptr).ReadString : int -> string * error
+val (w : Writer ptr).WriteString : string -> int * error
+val (w : Writer ptr).Flush : unit -> error
+val (s : Scanner ptr).Scan : unit -> bool
+val (s : Scanner ptr).Text : unit -> string
+val (s : Scanner ptr).Err : unit -> error

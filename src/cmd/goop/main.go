@@ -1321,7 +1321,7 @@ func runTests(dir string) int {
 			continue
 		}
 
-		binPath := filepath.Join(tmpDir, "testbin")
+		binPath := filepath.Join(tmpDir, exeName("testbin"))
 		buildCmd := exec.Command("go", "build", "-o", binPath, outFile)
 		buildCmd.Dir = tmpDir
 		if out, err := buildCmd.CombinedOutput(); err != nil {

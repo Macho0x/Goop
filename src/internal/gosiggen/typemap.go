@@ -9,11 +9,11 @@ import (
 
 // MapResult is the outcome of mapping a Go type to a Goop .gosig type string.
 type MapResult struct {
-	Goop     string // Goop type text when OK
-	OK       bool
-	Reason   string // why mapping failed or a soft warning
-	TODOH6   bool   // true when (T, error) product; typecheck coerces call sites to result
-	Skipped  bool   // true when intentionally omitted (map, etc.)
+	Goop    string // Goop type text when OK
+	OK      bool
+	Reason  string // why mapping failed or a soft warning
+	TODOH6  bool   // true when (T, error) product; typecheck coerces call sites to result
+	Skipped bool   // true when intentionally omitted (map, etc.)
 }
 
 // MapType converts a go/types.Type into a Goop type string suitable for a
@@ -96,10 +96,15 @@ func mapType(t gotypes.Type, pkgPath string, depth int) MapResult {
 		return MapResult{Goop: elem.Goop + " chan", OK: true}
 
 	case *gotypes.Map:
-		return MapResult{
-			Reason:  "Go map types not yet representable in .gosig (defer map design)",
-			Skipped: true,
+		key := mapType(u.Key(), pkgPath, depth+1)
+		if !key.OK {
+			return MapResult{Reason: "map key: " + key.Reason, Skipped: true}
 		}
+		val := mapType(u.Elem(), pkgPath, depth+1)
+		if !val.OK {
+			return MapResult{Reason: "map val: " + val.Reason, Skipped: true}
+		}
+		return MapResult{Goop: "map[" + key.Goop + "] " + val.Goop, OK: true}
 
 	case *gotypes.Signature:
 		return mapSignature(u, pkgPath, depth)
@@ -280,11 +285,19 @@ func mapResults(tup *gotypes.Tuple, pkgPath string, depth int) MapResult {
 		}
 	}
 
-	// Other multi-results (e.g. (int, int), (T, bool)) — skip for MVP.
-	return MapResult{
-		Reason:  fmt.Sprintf("multi-result arity %d not representable (not (T, error))", tup.Len()),
-		Skipped: true,
+	// Other multi-results → Goop tuple product (e.g. int * bool for Cut).
+	parts := make([]string, 0, tup.Len())
+	for i := 0; i < tup.Len(); i++ {
+		mr := mapType(tup.At(i).Type(), pkgPath, depth)
+		if !mr.OK {
+			return MapResult{
+				Reason:  fmt.Sprintf("multi-result elem %d: %s", i, mr.Reason),
+				Skipped: true,
+			}
+		}
+		parts = append(parts, mr.Goop)
 	}
+	return MapResult{Goop: strings.Join(parts, " * "), OK: true}
 }
 
 // ReceiverTypeString maps a method receiver to a Goop type for

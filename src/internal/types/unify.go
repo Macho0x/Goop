@@ -244,6 +244,16 @@ func unify(sub Subst, t1, t2 Type) error {
 		}
 		return unify(sub, l.Elem, r.Elem)
 
+	case *TMap:
+		r, ok := t2.(*TMap)
+		if !ok {
+			return mismatch(t1, t2, "expected a map type")
+		}
+		if err := unify(sub, l.Key, r.Key); err != nil {
+			return err
+		}
+		return unify(sub, l.Val, r.Val)
+
 	case *TError:
 		switch t2.(type) {
 		case *TError:
@@ -354,6 +364,8 @@ func occurs(vid int64, t Type) bool {
 		}
 	case *TChan:
 		return occurs(vid, t.Elem)
+	case *TMap:
+		return occurs(vid, t.Key) || occurs(vid, t.Val)
 	}
 	return false
 }

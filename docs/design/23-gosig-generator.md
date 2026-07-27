@@ -1,6 +1,7 @@
 # 23. Go sig generator (`.gosig`)
 
-**Status:** Foundation (H5 MVP). Not yet wired into `goop check` / `import go` auto-load.
+**Status:** Wired into `goop check` for bare `import go "…"`. Explicit
+`{ val … }` blocks remain authoritative (stubs not merged).
 
 ## Motivation
 

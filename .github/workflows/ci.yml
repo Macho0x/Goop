@@ -30,6 +30,16 @@ jobs:
       - name: Build
         run: go build -o /tmp/goop ./cmd/goop
 
+      - name: Sig corpus smoke
+        run: |
+          export GOOP_HOME="${RUNNER_TEMP}/goop-home"
+          mkdir -p "$GOOP_HOME"
+          /tmp/goop gen-sig --smoke
+          /tmp/goop gen-sig strings os path/filepath
+          # Fixed import corpus must typecheck with auto-loaded stubs
+          /tmp/goop check ../docs/examples/writing_tools.goop
+          /tmp/goop check ../docs/examples/maps.goop
+
       - name: End-to-end tests
         run: |
           /tmp/goop test ../tests/

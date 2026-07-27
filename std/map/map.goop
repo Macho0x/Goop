@@ -1,0 +1,15 @@
+module map
+
+(* Thin re-exports of prelude Map.* — Go maps via language `map[K] V`. *)
+
+let make () = Map.make ()
+
+let get m k = Map.get m k
+
+let add m k v = Map.add m k v
+
+let remove m k = Map.remove m k
+
+let mem m k = Map.mem m k
+
+let size m = Map.size m

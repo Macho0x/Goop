@@ -1,0 +1,19 @@
+(* Hand-curated strings stubs. *)
+type Builder
+
+val Contains : string -> string -> bool
+val HasPrefix : string -> string -> bool
+val HasSuffix : string -> string -> bool
+val Join : string go_slice -> string -> string
+val Replace : string -> string -> string -> int -> string
+val Split : string -> string -> string go_slice
+val ToLower : string -> string
+val ToUpper : string -> string
+val TrimSpace : string -> string
+val Cut : string -> string -> string * string * bool
+
+val (b : Builder ptr).Grow : int -> unit
+val (b : Builder ptr).Len : unit -> int
+val (b : Builder ptr).Reset : unit -> unit
+val (b : Builder ptr).String : unit -> string
+val (b : Builder ptr).WriteString : string -> int * error

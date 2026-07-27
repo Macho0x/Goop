@@ -2176,8 +2176,30 @@ func (p *Parser) parsePrimaryType() ast.Type {
 		p.advance()
 		return &ast.TVariadic{Elem: p.parsePrimaryType()}
 	case token.IDENT, token.CONSTRUCTOR:
+		// map[K] V — prefix form (LBRACKET alone is poly-variant).
+		if cur.Lexeme == "map" && p.peek().Type == token.LBRACKET {
+			p.advance() // map
+			p.expect(token.LBRACKET)
+			key := p.parseType()
+			p.expect(token.RBRACKET)
+			val := p.parseAppType()
+			return &ast.TMap{Key: key, Val: val}
+		}
 		tok := p.advance()
-		return &ast.TIdent{Name: tok.Lexeme}
+		name := tok.Lexeme
+		// Qualified Go names: fs.FileMode, io.Reader, time.Time
+		for p.cur().Type == token.DOT {
+			p.advance()
+			next := p.cur()
+			if next.Type == token.IDENT || next.Type == token.CONSTRUCTOR {
+				p.advance()
+				name += "." + next.Lexeme
+			} else {
+				p.errorf("expected type name after '.', got %s", next.Type)
+				break
+			}
+		}
+		return &ast.TIdent{Name: name}
 	case token.TYVAR:
 		tok := p.advance()
 		return &ast.TVar{Name: tok.Lexeme}

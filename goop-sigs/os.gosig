@@ -1,0 +1,21 @@
+(* Hand-curated os stubs for toolchain examples (override wins over cache). *)
+type File
+type FileInfo
+
+val Args : string go_slice
+val Chdir : string -> error
+val Create : string -> File ptr * error
+val Exit : int -> unit
+val Getenv : string -> string
+val Getwd : unit -> string * error
+val MkdirAll : string -> int -> error
+val ReadFile : string -> bytes * error
+val Remove : string -> error
+val Rename : string -> string -> error
+val Stat : string -> FileInfo * error
+val WriteFile : string -> bytes -> int -> error
+
+val (f : File ptr).Close : unit -> error
+val (f : File ptr).Name : unit -> string
+val (f : File ptr).Read : bytes -> int * error
+val (f : File ptr).Write : bytes -> int * error

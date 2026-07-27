@@ -1,0 +1,19 @@
+module main
+
+let main () =
+  begin
+    let m : map[string] int = Map.make () in
+    let _ = Map.add m "a" 1 in
+    let _ = Map.add m "b" 2 in
+    let _ = assert (Map.size m = 2) in
+    let _ = assert (Map.mem m "a") in
+    let _ = assert (not (Map.mem m "z")) in
+    match Map.get m "a" with
+    | Some n -> assert (n = 1)
+    | None -> assert false;
+    let _ = assert (not (Map.mem m "z")) in
+    let _ = Map.remove m "a" in
+    let _ = assert (Map.size m = 1) in
+    let _ = assert (not (Map.mem m "a")) in
+    ()
+  end

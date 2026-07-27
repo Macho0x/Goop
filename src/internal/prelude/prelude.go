@@ -329,6 +329,76 @@ func Default() *Prelude {
 		&asyncEff,
 	)
 
+	// Map.make : unit -> map['a] 'b
+	p.addWithEffects("Map.make",
+		&types.Scheme{
+			Vars: []*types.TVar{a, b},
+			Type: &types.TFun{From: types.Unit, To: &types.TMap{Key: a, Val: b}},
+		},
+		Lowering{Custom: "map_make"},
+		&pureEff,
+	)
+	// Map.get : map['a] 'b -> 'a -> 'b option
+	p.addWithEffects("Map.get",
+		&types.Scheme{
+			Vars: []*types.TVar{a, b},
+			Type: &types.TFun{
+				From: &types.TMap{Key: a, Val: b},
+				To:   &types.TFun{From: a, To: types.OptionType(b)},
+			},
+		},
+		Lowering{Custom: "map_get"},
+		&pureEff,
+	)
+	// Map.add : map['a] 'b -> 'a -> 'b -> unit  (mutates)
+	p.addWithEffects("Map.add",
+		&types.Scheme{
+			Vars: []*types.TVar{a, b},
+			Type: &types.TFun{
+				From: &types.TMap{Key: a, Val: b},
+				To: &types.TFun{
+					From: a,
+					To:   &types.TFun{From: b, To: types.Unit},
+				},
+			},
+		},
+		Lowering{Custom: "map_add"},
+		&pureEff,
+	)
+	// Map.remove : map['a] 'b -> 'a -> unit
+	p.addWithEffects("Map.remove",
+		&types.Scheme{
+			Vars: []*types.TVar{a, b},
+			Type: &types.TFun{
+				From: &types.TMap{Key: a, Val: b},
+				To:   &types.TFun{From: a, To: types.Unit},
+			},
+		},
+		Lowering{Custom: "map_remove"},
+		&pureEff,
+	)
+	// Map.mem : map['a] 'b -> 'a -> bool
+	p.addWithEffects("Map.mem",
+		&types.Scheme{
+			Vars: []*types.TVar{a, b},
+			Type: &types.TFun{
+				From: &types.TMap{Key: a, Val: b},
+				To:   &types.TFun{From: a, To: types.Bool},
+			},
+		},
+		Lowering{Custom: "map_mem"},
+		&pureEff,
+	)
+	// Map.size : map['a] 'b -> int
+	p.addWithEffects("Map.size",
+		&types.Scheme{
+			Vars: []*types.TVar{a, b},
+			Type: &types.TFun{From: &types.TMap{Key: a, Val: b}, To: types.Int},
+		},
+		Lowering{Custom: "map_size"},
+		&pureEff,
+	)
+
 	p.addWithEffects("http_get_string",
 		types.Mono(&types.TFun{From: types.String, To: types.String}),
 		Lowering{Custom: "http_get_string"},

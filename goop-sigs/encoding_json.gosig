@@ -1,0 +1,16 @@
+(* Hand-curated encoding/json stubs. *)
+type Decoder
+type Encoder
+type RawMessage
+
+val Marshal : any -> bytes * error
+val MarshalIndent : any -> string -> string -> bytes * error
+val Unmarshal : bytes -> any -> error
+val Compact : bytes -> bytes -> error
+val Indent : bytes -> bytes -> string -> string -> error
+
+val NewDecoder : io.Reader -> Decoder ptr
+val NewEncoder : io.Writer -> Encoder ptr
+
+val (d : Decoder ptr).Decode : any -> error
+val (e : Encoder ptr).Encode : any -> error

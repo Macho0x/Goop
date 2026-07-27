@@ -37,6 +37,7 @@ Reach Go packages with `import go "net/http" { ... }` (and curated `.gosig`s as 
 |---|---|---|---|
 | `std.io` | `import goop "std.io"` | Thin `fmt` wrapper (`PrintLine`) | [std.io](std-io.md) |
 | `std.list` | `import goop "std.list"` | Higher-order list (`Map`) | [std.list](std-list.md) |
+| `std.map` | `import goop "std.map"` | Thin re-export of prelude `Map.*` | — |
 | `std.array` | `import goop "std.array"` | Re-export of prelude `Array.*` | [std.array](std-array.md) |
 | `std.option` | `import goop "std.option"` | Option predicates | [std.option](std-option.md) |
 | `std.result` | `import goop "std.result"` | Result predicates | [std.result](std-result.md) |

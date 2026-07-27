@@ -1,0 +1,10 @@
+(* Symbol-table style map usage without @[go]. *)
+module main
+
+let main () =
+  let table : map[string] int = Map.make () in
+  let _ = Map.add table "foo" 1 in
+  let _ = Map.add table "bar" 2 in
+  match Map.get table "foo" with
+  | Some n -> print_line (int_to_string n)
+  | None -> print_line "missing"

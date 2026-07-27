@@ -333,6 +333,16 @@ func (t *TChan) String() string {
 	return t.Elem.String() + " chan"
 }
 
+// TMap represents a map type: `map[K] V`.
+type TMap struct {
+	Key Type
+	Val Type
+}
+
+func (t *TMap) String() string {
+	return "map[" + t.Key.String() + "] " + t.Val.String()
+}
+
 // ---------------------------------------------------------------------------
 // Type schemes (polytypes)
 // ---------------------------------------------------------------------------
@@ -481,6 +491,8 @@ func Apply(s Subst, t Type) Type {
 		return &TCon{Name: t.Name, Args: args}
 	case *TChan:
 		return &TChan{Elem: Apply(s, t.Elem)}
+	case *TMap:
+		return &TMap{Key: Apply(s, t.Key), Val: Apply(s, t.Val)}
 	default:
 		return t
 	}
@@ -536,6 +548,9 @@ func freeVars(t Type, fv map[int64]bool) {
 		}
 	case *TChan:
 		freeVars(t.Elem, fv)
+	case *TMap:
+		freeVars(t.Key, fv)
+		freeVars(t.Val, fv)
 	}
 }
 
