@@ -26,6 +26,54 @@ Exhaustive ADTs · branded IDs · maps · Go interop · same binaries and stdlib
 
 Editors: [VS Code](editors/vscode/) · [Zed](editors/zed/) · [Neovim](editors/neovim/) · [Helix](editors/helix/)
 
+## Goop in practice
+
+**Sum types you can trust** — every variant must be handled:
+
+```goop
+type OrderAck =
+  | Filled of { order_id: string; qty: int }
+  | Rejected of { reason: string }
+
+let describe (ack: OrderAck) : string =
+  match ack with
+  | Filled { order_id; qty } -> order_id ^ " filled " ^ int_to_string qty
+  | Rejected { reason } -> "rejected: " ^ reason
+```
+
+**Branded IDs** — `order_id` and `symbol` are not interchangeable strings:
+
+```goop
+type order_id = | Order_id of string
+type symbol = | Symbol of string
+
+let place (sym: symbol) (oid: order_id) : string =
+  "placed"
+
+let main () =
+  print_line (place (Symbol "ETH-USD") (Order_id "ord-1"))
+```
+
+**Maps + option** — lookups are `Some` / `None`, not “did I check `ok`?”:
+
+```goop
+let main () =
+  let prices : map[string] int = Map.make () in
+  let _ = Map.add prices "ETH" 3200 in
+  match Map.get prices "ETH" with
+  | Some px -> print_line (int_to_string px)
+  | None -> print_line "missing"
+```
+
+**Go when you need it** — same runtime, no FFI ceremony for curated packages:
+
+```goop
+import go "strings"
+
+let main () =
+  print_line (strings.ToUpper "goop")
+```
+
 ## Safe
 
 Go lets these slip through. Goop stops them at compile time.
@@ -80,23 +128,7 @@ cd src && go build -o ../goop ./cmd/goop
 ```
 
 Generated Go stays under `$GOOP_HOME/build` by default.
-[Tutorial](docs/tutorial/README.md) · [CLI artifacts](docs/design/20-cli-artifacts.md)
-
-## Go interop
-
-Use Go’s ecosystem without leaving Goop:
-
-```goop
-module main
-
-import go "strings"
-
-let main () =
-  print_line (strings.ToUpper "goop")
-```
-
-Hand-written `{ val … }` blocks still work; bare imports load curated `.gosig` stubs.
-More: [`writing_tools.goop`](docs/examples/writing_tools.goop) · [`extern_demo.goop`](docs/examples/extern_demo.goop)
+[Tutorial](docs/tutorial/README.md) · [CLI artifacts](docs/design/20-cli-artifacts.md) · [`maps.goop`](docs/examples/maps.goop) · [`branded_ids.goop`](docs/examples/branded_ids.goop)
 
 ## How Goop compares
 
