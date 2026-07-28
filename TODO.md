@@ -67,7 +67,7 @@ This file tracks the remaining work to make Goop a usable language. It is kept i
 - [x] Narrow static deadlock lint (DEADLOCK001)
 - [x] Test runner
 - [x] Cache-only `goop compile` / `goop build` (1.8.0; `$GOOP_HOME/build`; see `docs/design/20-cli-artifacts.md`)
-- [ ] Documentation generator (`goop doc` — not started)
+- [x] Documentation generator (`goop doc` on modules; expand coverage as needed)
 
 ## Documentation
 

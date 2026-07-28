@@ -5,10 +5,11 @@ Thank you for contributing. This guide covers build/test workflow, documentation
 ## Before you start
 
 - [Design overview](docs/design/01-overview.md), [STYLE.md](docs/design/STYLE.md), and [roadmap](docs/design/07-roadmap.md)
+- **[Language-update checklist](docs/design/31-language-update-checklist.md)** — required sweep after language / diagnostics / CLI changes
 - [Language tutorial](docs/tutorial/README.md) — how the language fits together
 - [Standard library reference](docs/stdlib/README.md) — prelude, builtins, `std.*`
 - [TODO.md](TODO.md) — open work
-- Error codes: [10-error-reference.md](docs/design/10-error-reference.md), [12-trading-bot-safety.md](docs/design/12-trading-bot-safety.md)
+- Error codes: [10-error-reference.md](docs/design/10-error-reference.md), [26-diagnostics.md](docs/design/26-diagnostics.md)
 
 ## OCaml-aligned style
 
@@ -126,12 +127,14 @@ Until Linguist merges Goop, [`.gitattributes`](.gitattributes) maps `*.goop` to 
 
 ## Documentation accuracy
 
-Documentation must match the compiler, not aspirational design:
+Documentation must match the compiler, not aspirational design. For language
+changes, work through
+[31-language-update-checklist.md](docs/design/31-language-update-checklist.md).
 
 1. **Verify** — run `goop check` on any example you add or change.
 2. **Trace to source** — prelude from `prelude.go`, `std.*` from `std/*/*.goop`, syntax from `docs/design/03-syntax.md` and `src/internal/parser/`.
 3. **Update together** — compiler change + e2e test + relevant doc page (tutorial, stdlib, or design doc). Prefer OCaml forms from [STYLE.md](docs/design/STYLE.md).
-4. **Error codes** — new diagnostics need entries in `docs/design/10-error-reference.md` (migration errors: PARSE-MIG010–018).
+4. **Error codes** — new diagnostics need on-the-wire prefixes, `help:` tips, and entries in `docs/design/10-error-reference.md` (+ recount in `26-diagnostics.md`).
 
 ## Pull requests
 
@@ -160,7 +163,7 @@ editors/zed/           Zed extension
 
 ## Not yet available
 
-- `goop doc` — automated documentation generator ([TODO.md](TODO.md))
+- Automated API docs beyond `goop doc` on modules — expand coverage as needed ([TODO.md](TODO.md))
 
 ## License
 

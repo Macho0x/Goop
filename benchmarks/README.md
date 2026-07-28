@@ -50,7 +50,7 @@ benchmarks/
 ## Indicative numbers (2026-07-28)
 
 Machine: Linux amd64, 11th Gen Intel i7-1165G7 @ 2.80GHz.  
-Compiler: Goop 1.11.0 (built from `src/`). One `./benchmarks/run.sh` pass.
+Compiler: Goop 1.12.0 (built from `src/`). One `./benchmarks/run.sh` pass.
 
 | Bench | Hand ns/op | Generated ns/op | Notes |
 |-------|------------|-----------------|-------|

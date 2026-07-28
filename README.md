@@ -24,6 +24,11 @@
 
 Exhaustive ADTs · branded IDs · maps · Go interop · same binaries and stdlib
 
+<p align="center">
+  <strong><a href="https://macho0x.github.io/Goop/">Try Goop in the browser →</a></strong><br>
+  <sub>Playground: check &amp; compile online — no install</sub>
+</p>
+
 Editors: [VS Code](editors/vscode/) · [Zed](editors/zed/) · [Neovim](editors/neovim/) · [Helix](editors/helix/)
 
 ## Goop in practice
@@ -135,7 +140,11 @@ let greet (name: string option) : string =
 
 ## Getting started
 
-**Try in the browser:** [Playground](https://macho0x.github.io/Goop/) (GitHub Pages).
+### Playground (fastest)
+
+**[Open the playground](https://macho0x.github.io/Goop/)** — type Goop, run check/compile in the browser. No install, no local toolchain.
+
+### Install locally
 
 ```bash
 # One-line install (latest release binary)
@@ -176,9 +185,9 @@ Compile-time checks Go leaves to tests or panics — without giving up Go’s ru
 
 ## Status
 
-**[v1.11.0](https://github.com/Macho0x/Goop/releases/tag/v1.11.0)** — playground, one-line install, `goop new`, RESULT001, VSIX on releases.
+**[v1.12.0](https://github.com/Macho0x/Goop/releases/tag/v1.12.0)** — stable diagnostic codes on the wire, UNUSED/OPTION/VIS002 warn lints, honest error catalog. **[Playground](https://macho0x.github.io/Goop/)** is the fastest way to try Goop.
 
-[CHANGELOG](CHANGELOG.md) · [RELEASE_NOTES](RELEASE_NOTES.md) · [Benchmarks](benchmarks/README.md) · [Playground](https://macho0x.github.io/Goop/)
+[CHANGELOG](CHANGELOG.md) · [RELEASE_NOTES](RELEASE_NOTES.md) · [Benchmarks](benchmarks/README.md) · [Language-update checklist](docs/design/31-language-update-checklist.md)
 
 ## FAQ
 
@@ -190,11 +199,12 @@ Compile-time checks Go leaves to tests or panics — without giving up Go’s ru
 
 | | |
 |---|---|
+| [**Playground**](https://macho0x.github.io/Goop/) | Try Goop in the browser (no install) |
 | [Tutorial](docs/tutorial/README.md) | Getting started through [maps](docs/tutorial/08-maps.md) |
-| [Playground](https://macho0x.github.io/Goop/) | Try Goop in the browser |
 | [Stdlib](docs/stdlib/README.md) | Prelude and `std.*` |
 | [Examples](docs/examples/) | Checked in CI |
 | [Writing tools](docs/guides/writing-tools.md) | Files + maps via `import go` |
+| [Language-update checklist](docs/design/31-language-update-checklist.md) | Required sweep after language changes |
 | [Contributing](CONTRIBUTING.md) | Build and test |
 
 ## License

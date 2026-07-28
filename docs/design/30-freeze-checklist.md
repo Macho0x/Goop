@@ -2,6 +2,9 @@
 
 Use before declaring the surface frozen enough to start L6 (self-host port).
 
+For **every** language / diagnostics / CLI change (not only freezes), use
+[31-language-update-checklist.md](31-language-update-checklist.md).
+
 ## CI gate (hard)
 
 - [x] Ubuntu `Test` job green (`go test ./...`, `goop test`, example check, build smoke, sig corpus)
