@@ -40,7 +40,7 @@ Regenerate: `goop gen-sig <pkg>` for each entry in `CuratedPackages`
 |---------|--------:|-------|
 | strings | 0 | |
 | fmt | 0 | |
-| errors | 1* | `AsType` — **TODO(generics)** (*Go 1.26+ only; 0 skips on Go 1.25 CI) |
+| errors | 1 | `AsType` — **TODO(generics)** (Go 1.26+) |
 | strconv | 2 | complex numbers (not generics) |
 | bytes | 0 | |
 | io | 0 | |

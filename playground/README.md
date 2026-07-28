@@ -23,7 +23,7 @@ The WASM entry lives under the compiler module (`src/`) so it can import
 
 ## Prerequisites
 
-- Go 1.25+ (same as the compiler)
+- Go 1.26+ (same as the compiler)
 - A local static file server (Python, `npx serve`, etc.)
 
 ## Build WASM
@@ -46,7 +46,7 @@ GOOS=js GOARCH=wasm go build -o ../playground/goop.wasm ./cmd/playground-wasm
 The Go WASM runtime glue must match your Go toolchain. Copy it from GOROOT:
 
 ```bash
-# Go 1.24+
+# Go 1.26+
 cp "$(go env GOROOT)/lib/wasm/wasm_exec.js" playground/
 
 # Older Go toolchains used:

@@ -1,6 +1,6 @@
 # Goop Lowering to Go
 
-This document describes how Goop constructs are translated into Go. The target is Go 1.22 or later.
+This document describes how Goop constructs are translated into Go. The target is Go 1.26 or later.
 
 Pure / non-effectful code aims for idiomatic Go. Effect-handler code may emit CPS / free-monad helpers (documented exception).
 
