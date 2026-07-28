@@ -70,7 +70,10 @@ type order_id = Order_id of string
 type symbol = Symbol of string
 ```
 
-See [`branded_ids.goop`](../examples/branded_ids.goop) (ADT branding) and [STYLE.md](../design/STYLE.md).
+Single-constructor ADTs over primitive or `string` payloads lower to **zero-cost**
+Go defined types (no interface boxing). The surface stays the ADT form — you still
+construct with `Order_id "…"`. See [`branded_ids.goop`](../examples/branded_ids.goop),
+[STYLE.md](../design/STYLE.md), and [21-branded-ids.md](../design/21-branded-ids.md).
 
 ## Active patterns
 

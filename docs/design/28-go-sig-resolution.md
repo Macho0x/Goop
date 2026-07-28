@@ -83,11 +83,11 @@ Skipped exports appear in the generated file comment **and** as
 - **M7 arbitrary paths**: same generator API (`gosiggen.Generate` /
   `GenerateAndWrite`); no curated gate. Quality warnings are louder.
 
-## Planned: generate on first `import go`
+## Generate on first bare `import go` — shipped
 
-When a Goop module uses `import go "P"` with no override and no cache hit,
-the compiler may call the same generator, write the cache entry, emit the
-same unrepresentable-type warnings, and continue. Explicit
+When a Goop module uses bare `import go "P"` with no override and no cache hit,
+the compiler calls the same generator for curated packages, writes the cache
+entry, emits unrepresentable-type warnings, and continues. Explicit
 `goop get-go-sig P` remains the offline / CI prefetch path.
 
 ## Override workflow

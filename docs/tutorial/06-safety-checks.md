@@ -24,7 +24,10 @@ let oid = Order_id "ord-1"
 let sym = Symbol "ETH-USD"
 ```
 
-Raw strings cannot be assigned to `order_id` without the constructor. See [`branded_ids.goop`](../examples/branded_ids.goop).
+Raw strings cannot be assigned to `order_id` without the constructor. Single-ctor
+brands over primitives/`string` are zero-cost at the Go level (defined types, not
+boxed interfaces) — see [21-branded-ids.md](../design/21-branded-ids.md) and
+[`branded_ids.goop`](../examples/branded_ids.goop).
 
 ## Nil channel detection (NIL001)
 

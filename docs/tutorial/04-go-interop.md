@@ -15,8 +15,19 @@ import (
 )
 ```
 
-- **Signature block** — declare types for functions you call from Goop.
-- **Import-only** — `go "fmt"` with no block; pair with `@[go]` or generated bindings.
+- **Signature block** — declare types for functions you call from Goop. Explicit
+  `{ val … }` / `{ type … }` blocks are **authoritative**: stubs are not merged
+  on top of them.
+- **Bare import** — `go "fmt"` with no block loads `.gosig` stubs automatically:
+  1. project `goop-sigs/` override (wins),
+  2. `$GOOP_HOME/build/go-sigs/` cache,
+  3. curated generate-on-miss for known packages.
+
+Generate or refresh stubs with `goop gen-sig` / `goop get-go-sig`. For a walkthrough
+(files + maps without hand-writing every `val`), see
+[Writing tools](../guides/writing-tools.md) and
+[`writing_tools.goop`](../examples/writing_tools.goop). Resolution details:
+[28-go-sig-resolution.md](../design/28-go-sig-resolution.md).
 
 ## Call Go methods and read Go fields
 

@@ -11,6 +11,7 @@ A step-by-step introduction to Goop. Each chapter links to runnable examples che
 | [5. Concurrency](05-concurrency.md) | `go`, `chan`, `ref`, race checks | [`concurrency.goop`](../examples/concurrency.goop), [`race_detection.goop`](../examples/race_detection.goop) |
 | [6. Safety checks](06-safety-checks.md) | Exhaustiveness, branding, refinements | [`branded_ids.goop`](../examples/branded_ids.goop), [`trading_order.goop`](../examples/trading_order.goop) |
 | [7. Arrays and loops](07-arrays-and-loops.md) | `Array.make`, `for`/`while`, `begin`/`end` | [`arrays.goop`](../examples/arrays.goop), [`trading_decision_lut.goop`](../examples/trading_decision_lut.goop) |
+| [8. Maps](08-maps.md) | `map[K] V`, `Map.*` | [`maps.goop`](../examples/maps.goop) |
 
 ## Prerequisites
 
@@ -30,6 +31,9 @@ cd src && go build -o ../goop ./cmd/goop
 - [Style guide (1.0)](../design/STYLE.md)
 - [Syntax reference](../design/03-syntax.md)
 - [Type system](../design/02-type-system.md)
+- [Maps (`map[K] V`)](../design/29-maps.md)
+- [CLI artifacts](../design/20-cli-artifacts.md) — `goop doc`, cache layout
+- [Writing tools](../guides/writing-tools.md) — files + maps via `import go`
 - [Packages and registry (1.0)](../design/11-package-manager.md) — Go modules + `goop get`; no separate registry
 - [Standard library reference](../stdlib/README.md)
 - [All examples](../examples/)

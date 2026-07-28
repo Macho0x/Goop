@@ -124,18 +124,17 @@ Smoke subset for CI-ish checks: `strings`, `fmt`, `errors`, `strconv`.
 
 ## What is intentionally unfinished
 
-1. **Compile-time auto-load** — `import go "strings"` does not yet read cache
-   or `goop-sigs/`; users still declare vals inline.
-2. **H6 `(T, error)` → `result`** — product form in `.gosig`; coercion lives in
-   typecheck + codegen (`import go raw` opt-out).
-3. **Maps / complex interfaces / unsafe** — skipped with reasons.
-4. **Full curated polish** — many packages emit useful stubs but skip
+1. **Full curated polish** — many packages emit useful stubs but skip
    unrepresentable exports; quality varies (`net/http`, `database/sql`).
-5. **`obj` language binding** — emit now; wire when typecheck learns `obj`
-   or when auto-load rewrites to `any`.
-6. **Cross-package named types** — e.g. `io.Writer`, `iter.Seq`,
+2. **Cross-package named types** — e.g. `io.Writer`, `iter.Seq`,
    `unicode.SpecialCase` appear as qualified names without local `type`
    decls; full curated polish should either emit opaque deps or skip.
+3. **Complex / anonymous interfaces / unsafe** — still skipped with reasons
+   when not representable.
+
+**Shipped (1.10):** compile-time auto-load of `.gosig` for bare `import go`;
+Go `map[K]V` → `map[K] V` in gosiggen; `obj` ≡ `any`; H6 `(T, error)` →
+`result` coercion (`import go raw` opt-out).
 
 ## Tests
 

@@ -1,17 +1,16 @@
-# Goop 1.10.0
+# Goop 1.10.1
 
-Goop 1.10.0 closes the self-host readiness gaps after 1.9: first-class maps,
-zero-cost branded IDs, bare-import `.gosig` autoload, and a green Windows CI
-matrix.
+Docs patch on top of 1.10.0: teaching materials and design status catch up to
+the shipped maps / zero-cost brands / bare-import `.gosig` surface. No language
+or compiler changes.
 
 ## Highlights
 
-- **Maps:** `map[K] V` + prelude `Map.*` (and thin `std.map`).
-- **Zero-cost brands (H4c):** single-ctor primitive/string ADTs lower to Go
-  defined types (no interface boxing).
-- **Interop:** bare `import go "…"` loads `goop-sigs/` / cache stubs; `obj`≡`any`;
-  multi-results as tuples; curated toolchain stubs.
-- **CI:** Windows exe-path fixes; sig-corpus smoke on Ubuntu.
+- **Tutorial:** new [maps chapter](docs/tutorial/08-maps.md); `goop doc`, bare
+  `import go` stub resolution, and zero-cost brands covered in earlier chapters.
+- **References:** syntax, STYLE, type system, prelude, and stdlib docs include
+  `map[K] V` / `Map.*`.
+- **Design status:** H4c / H5 / `goop doc` / freeze checklist aligned with 1.10.
 
 ## Workflow
 
@@ -19,8 +18,6 @@ matrix.
 cd src && go build -o ../goop ./cmd/goop
 ../goop version
 ../goop check docs/examples/maps.goop
-../goop check docs/examples/writing_tools.goop
-./scripts/selfhost-spike.sh   # optional
 ```
 
-See `CHANGELOG.md` and `docs/design/30-freeze-checklist.md`.
+See `CHANGELOG.md` and `docs/tutorial/README.md`.

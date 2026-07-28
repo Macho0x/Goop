@@ -25,11 +25,11 @@ Reach Go packages with `import go "net/http" { ... }` (and curated `.gosig`s as 
 
 ## Prelude
 
-[Prelude reference](prelude.md) — `print_line`, `ref`, `failwith`, `Chan.*`, `OwnedChan.*`, `Lazy.*`, string helpers, assertions.
+[Prelude reference](prelude.md) — `print_line`, `ref`, `failwith`, `Map.*`, `Chan.*`, `OwnedChan.*`, `Lazy.*`, string helpers, assertions.
 
 ## Builtins
 
-[Language builtins](builtins.md) — primitive types, `list`, `array`, `ref`, `option`, `result`, `lazy`, channels.
+[Language builtins](builtins.md) — primitive types, `list`, `array`, `map[K] V`, `ref`, `option`, `result`, `lazy`, channels.
 
 ## std.* modules
 
@@ -37,7 +37,7 @@ Reach Go packages with `import go "net/http" { ... }` (and curated `.gosig`s as 
 |---|---|---|---|
 | `std.io` | `import goop "std.io"` | Thin `fmt` wrapper (`PrintLine`) | [std.io](std-io.md) |
 | `std.list` | `import goop "std.list"` | Higher-order list (`Map`) | [std.list](std-list.md) |
-| `std.map` | `import goop "std.map"` | Thin re-export of prelude `Map.*` | — |
+| `std.map` | `import goop "std.map"` | Thin re-export of prelude `Map.*` | [prelude Maps](prelude.md#maps) · [tutorial](../tutorial/08-maps.md) · [`maps.goop`](../examples/maps.goop) |
 | `std.array` | `import goop "std.array"` | Re-export of prelude `Array.*` | [std.array](std-array.md) |
 | `std.option` | `import goop "std.option"` | Option predicates | [std.option](std-option.md) |
 | `std.result` | `import goop "std.result"` | Result predicates | [std.result](std-result.md) |
@@ -80,4 +80,4 @@ Keyword module names (`chan`, `ref`, `lazy`) cannot appear as `module …` heade
 
 This reference is hand-written from compiler sources (`prelude.go`, `std/*/*.goop`). When adding prelude bindings or `std.*` exports, update the matching page here and `[mappings]` in `goop.toml` / `src/internal/config/config.go`.
 
-Automated `goop doc` generation is not implemented yet ([TODO](../../TODO.md)).
+`goop doc` emits Markdown API docs for `.goop` modules (and `.gosig` stubs) to stdout — see [20-cli-artifacts.md](../design/20-cli-artifacts.md).

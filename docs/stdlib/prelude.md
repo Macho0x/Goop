@@ -44,6 +44,21 @@ List syntax (`[]`, `::`, `[a; b]`) is built into the language — see [builtins]
 
 Index read `arr.(i)` and write `arr.(i) <- v` are language syntax — see [std.array](std-array.md).
 
+## Maps
+
+| Name | Type | Notes |
+|---|---|---|
+| `Map.make` | `unit -> map['k] 'v` | Empty map |
+| `Map.get` | `map['k] 'v -> 'k -> 'v option` | Missing → `None` |
+| `Map.add` | `map['k] 'v -> 'k -> 'v -> unit` | Mutates in place |
+| `Map.remove` | `map['k] 'v -> 'k -> unit` | Mutates in place |
+| `Map.mem` | `map['k] 'v -> 'k -> bool` | Membership |
+| `Map.size` | `map['k] 'v -> int` | Entry count |
+
+`map[K] V` is a language type (lowers to Go `map[K]V`). Optional re-export:
+[`std.map`](../stdlib/README.md) (`import goop "std.map"`). Design notes:
+[29-maps.md](../design/29-maps.md).
+
 ## Refs and abort
 
 | Name | Type | Go lowering |

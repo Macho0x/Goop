@@ -198,6 +198,24 @@ begin
 end
 ```
 
+## Maps
+
+```goop
+let m : map[string] int = Map.make () in
+let _ = Map.add m "x" 1 in
+match Map.get m "x" with
+| Some n -> print_line (int_to_string n)
+| None -> ()
+```
+
+- Spelling: `map[K] V`. Arrows bind outside (`map[string] int -> unit`).
+- Function-valued maps need parentheses: `map[string] (int -> int)`.
+- Prelude: `Map.make` / `get` / `add` / `remove` / `mem` / `size` (see [29-maps.md](29-maps.md)).
+
+Bare `import go "pkg"` (no `{ val … }` block) loads `.gosig` stubs from
+`goop-sigs/` → `$GOOP_HOME` cache → curated generate-on-miss; explicit blocks
+stay authoritative ([28-go-sig-resolution.md](28-go-sig-resolution.md)).
+
 ## Modules / OOP / effects (brief)
 
 Minimal OCaml forms: nested `struct`/`sig`/functors, `class`/`object`/`new`, `effect`/`perform`/handlers. Prefer [STYLE.md](STYLE.md) for everyday code; see [14-ocaml-parity.md](14-ocaml-parity.md) for the parity matrix.

@@ -42,6 +42,16 @@ Prelude: `list_length`, `list_append`. Higher-order: `std.list.Map`.
 
 Optional import-style access: [`std.array`](std-array.md).
 
+## Maps
+
+| Syntax | Meaning |
+|---|---|
+| `map[K] V` | First-class map (lowers to Go `map[K]V`) |
+| `Map.make ()` | Empty map (prelude) |
+| `Map.get` / `add` / `remove` / `mem` / `size` | Prelude ops |
+
+See [prelude](prelude.md) and [29-maps.md](../design/29-maps.md). Optional re-export: `std.map`.
+
 ## Option
 
 | Constructor | Type |

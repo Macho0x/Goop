@@ -31,11 +31,12 @@ See also: [14-ocaml-parity.md](14-ocaml-parity.md), [03-syntax.md](03-syntax.md)
 | Construct | Preferred form | Avoid |
 |-----------|----------------|-------|
 | File header | `module PascalCase` | Wrong package casing |
-| Imports (Go) | `import go "path"` | — |
+| Imports (Go) | `import go "path"` (bare loads `.gosig`; `{ val… }` authoritative) | — |
 | Imports (Goop) | `import goop "path"` | Dot-import except std helpers |
 | Local binding | `let x = e in body` | — |
 | Imperative sequence | `begin s1; s2; result end` | Nested `let () =` |
 | Array | `Array.make`, `arr.(i)`, `arr.(i) <-` | `arr[i]` |
+| Map | `map[K] V`, `Map.make` / `get` / `add` / `remove` / `mem` / `size` | Hand-rolled Go maps in `@[go]` for ordinary tables |
 | Loop | `for i = 0 to n - 1 do … done` | C-style `for` |
 | While | `while e do … done` | — |
 | Mutation | `let r = ref 0 in r := !r + 1` | `let mutable` |
@@ -57,4 +58,4 @@ See also: [14-ocaml-parity.md](14-ocaml-parity.md), [03-syntax.md](03-syntax.md)
 
 ## LUT decision logic
 
-Prefer `match` + `when` with a small `situation` / `market_state` ADT. Keep mutable array population (`Array.make` + nested `for` + `arr.(i) <-`) for performance.
+Prefer `match` + `when` with a small `situation` / `market_state` ADT. Keep mutable array population (`Array.make` + nested `for` + `arr.(i) <-`) for performance. Prefer first-class `map[K] V` + `Map.*` over embedding Go maps in `@[go]` when the table is ordinary Goop data.

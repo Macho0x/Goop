@@ -50,6 +50,7 @@ cache, then runs `go build` there. For `module main`, the binary is written to
 | `goop compile` | `$GOOP_HOME/build/compile-*/` | Emit Go only; no `go build` |
 | `goop build` | `$GOOP_HOME/build/build-*/` + `./goop-out` for main | Full Goop build |
 | `goop test` | `$GOOP_HOME/build/test-*/` (ephemeral) | Runs `*_test.goop` |
+| `goop doc` | Markdown on stdout | API docs for modules / stubs |
 | `goop repl` | stdin session; temp `$GOOP_HOME/build/repl-*/` | Compile-to-Go REPL |
 
 ## REPL
@@ -82,7 +83,15 @@ Flags:
 - `--emit-map` — write `.map.json` next to the generated `.go`
 - `--no-source-map` — accepted alias; maps are off by default
 
-See also [20-cli-artifacts.md](../design/20-cli-artifacts.md).
+### Document modules
+
+```bash
+./goop doc docs/examples/hello.goop
+```
+
+`goop doc` extracts module-level docs from `.goop` sources. See
+[20-cli-artifacts.md](../design/20-cli-artifacts.md) for cache layout and all
+artifact commands.
 
 ## Project layout
 

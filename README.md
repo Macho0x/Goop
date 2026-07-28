@@ -144,7 +144,7 @@ cd src && go build -o ../goop ./cmd/goop
 ```
 
 Generated Go stays under `$GOOP_HOME/build` by default.
-[Tutorial](docs/tutorial/README.md) · [CLI artifacts](docs/design/20-cli-artifacts.md) · [`maps.goop`](docs/examples/maps.goop) · [`branded_ids.goop`](docs/examples/branded_ids.goop)
+[Tutorial](docs/tutorial/README.md) ([maps](docs/tutorial/08-maps.md)) · [CLI artifacts](docs/design/20-cli-artifacts.md) · [`maps.goop`](docs/examples/maps.goop) · [`branded_ids.goop`](docs/examples/branded_ids.goop)
 
 ## How Goop compares
 
@@ -170,7 +170,7 @@ Compile-time checks Go leaves to tests or panics — without giving up Go’s ru
 
 ## Status
 
-**[v1.10.0](https://github.com/Macho0x/Goop/releases/tag/v1.10.0)** — maps, zero-cost brands, bare-import Go stubs, green Ubuntu + Windows CI.
+**[v1.10.1](https://github.com/Macho0x/Goop/releases/tag/v1.10.1)** — tutorial maps + teaching sync on top of 1.10.0 (maps, zero-cost brands, bare-import stubs).
 
 [CHANGELOG](CHANGELOG.md) · [RELEASE_NOTES](RELEASE_NOTES.md)
 
@@ -184,7 +184,7 @@ Compile-time checks Go leaves to tests or panics — without giving up Go’s ru
 
 | | |
 |---|---|
-| [Tutorial](docs/tutorial/README.md) | Getting started |
+| [Tutorial](docs/tutorial/README.md) | Getting started through [maps](docs/tutorial/08-maps.md) |
 | [Stdlib](docs/stdlib/README.md) | Prelude and `std.*` |
 | [Examples](docs/examples/) | Checked in CI |
 | [Writing tools](docs/guides/writing-tools.md) | Files + maps via `import go` |

@@ -70,7 +70,7 @@ This file presents the same task list as `TODO.md`, organized by development pha
 - [x] IDE support (LSP) - full implementation with diagnostics, hover, definition, completion
 - [x] Formatter (`goop fmt` command)
 - [ ] Comprehensive standard library.
-- [ ] Documentation generator (`goop doc` — not started).
+- [x] Documentation generator (`goop doc` — see [20-cli-artifacts.md](20-cli-artifacts.md)).
 - [ ] Stable 1.0 release.
 
 ## Documentation

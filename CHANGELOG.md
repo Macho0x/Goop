@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.10.1
+
+### Docs
+
+- Tutorial chapter 8 (maps); expanded getting-started (`goop doc`), interop
+  (bare `.gosig` auto-load), and branding (zero-cost note).
+- Syntax / STYLE / type-system / prelude / stdlib references cover `map[K] V`
+  and `Map.*`; stdlib README reflects shipped `goop doc`.
+- Design status sync: branded IDs H4c, gosig auto-load, FFI boundary, roadmap
+  `goop doc`, freeze checklist.
+
 ## 1.10.0
 
 ### Language

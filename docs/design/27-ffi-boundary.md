@@ -2,8 +2,8 @@
 
 **Audience:** Goop users who call Go (and C via cgo) from Goop.  
 **Status:** Living document. Reflects the shipped 1.x surface, including H6
-`(T, error)` → `result` coercion. H5 auto-load of `.gosig` into `import go`
-is still pending.
+`(T, error)` → `result` coercion and H5 auto-load of `.gosig` for bare
+`import go` (explicit `{ val … }` blocks remain authoritative).
 
 Goop compiles to Go and treats Go's stdlib as its library surface. The
 boundary is where Goop's static checks stop applying to foreign bodies, and

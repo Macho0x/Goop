@@ -63,6 +63,15 @@ type symbol = Symbol of string
 let oid = Order_id "ord-1"
 ```
 
+Single-constructor ADTs over primitive or `string` payloads lower to zero-cost
+Go defined types where safe ([21-branded-ids.md](21-branded-ids.md)).
+
+### Maps
+
+`map[K] V` is a first-class type that lowers to Go `map[K]V`. Keys and values
+are ordinary Goop types; prelude `Map.*` covers make/get/add/remove/mem/size.
+See [29-maps.md](29-maps.md).
+
 ### Record types
 
 ```goop

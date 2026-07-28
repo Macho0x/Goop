@@ -89,6 +89,7 @@ Full catalog: [error reference](../design/10-error-reference.md).
 
 ## Next steps
 
+- [Maps →](08-maps.md)
 - [Safety checks](06-safety-checks.md)
 - [OCaml surface syntax](../design/13-ocaml-surface-syntax.md)
 - [Go lowering](../design/04-go-lowering.md)

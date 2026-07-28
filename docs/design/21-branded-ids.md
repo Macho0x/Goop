@@ -1,6 +1,6 @@
 # 21. Branded IDs (H4)
 
-**Status:** Decided for the 1.0 freeze. Surface shipped; zero-cost codegen planned.
+**Status:** Surface shipped; zero-cost single-ctor codegen shipped (H4c).
 
 ## Decision
 
@@ -100,9 +100,9 @@ hot-path ID plumbing that is a real (if small) tax relative to a bare
 emit a Go defined type (`type OrderId string`) — zero-cost at the Go level —
 but that path is unreachable from the parser (PARSE-MIG015).
 
-## Planned zero-cost lowering (c)
+## Zero-cost lowering (c) — shipped
 
-When **all** of the following hold, codegen may use a transparent Go defined
+When **all** of the following hold, codegen uses a transparent Go defined
 type instead of the interface + variant struct:
 
 1. The ADT has exactly one constructor (not a GADT, not extensible).
@@ -150,27 +150,24 @@ nested ADT payloads keep the existing interface lowering.
 - Do not silently change Go FFI shapes that already depend on the interface
   form for a given brand (document escape hatches if needed later).
 
-## Implementation notes / TODO
+## Implementation notes
 
-**TODO (codegen):** implement the single-ctor primitive/string fast path in
-`emitADTTypes`, constructor emission, and match lowering. Gate on a helper
-such as `isZeroCostBrand(td)` so multi-ctor paths stay untouched.
+**Shipped (codegen):** single-ctor primitive/string fast path via
+`isZeroCostBrand` / `emitZeroCostBrand` — constructor emission and match
+lowering use Go defined types (no interface boxing) when the brand qualifies.
 
-Risk: match, constructor, and `typeToGo` / `TAdt` lowering all assume the
-interface + `findVariantStruct` model. A partial patch that only changes type
-emission without match/constructor updates will miscompile. Prefer one
-focused PR with golden tests for:
+Golden coverage includes:
 
 - `type order_id = Order_id of string` → `type order_id string`
 - construct + match round-trip
 - two brands wrapping the same rep do not share a Go type name collision
 - a two-ctor ADT still emits interface + structs (regression guard)
 
-Until that lands, branded IDs are **correct and recommended**; they are not
-yet zero-cost. The surface decision does not depend on the optimizer.
+Branded IDs are **correct, recommended, and zero-cost** for qualifying
+single-ctor primitive/string payloads. Multi-constructor ADTs and richer
+payloads keep the interface lowering.
 
-After the fast path ships, remove or quarantine dead `NewtypeTypeKind`
-handling as ordinary cleanup (not a language change).
+Dead `NewtypeTypeKind` handling remains cleanup-only (not a language change).
 
 ## Rejected alternative (a)
 
