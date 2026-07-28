@@ -2,7 +2,20 @@
 
 Syntax highlighting, LSP diagnostics, and optional `.goop` file icons.
 
-## Quick install (recommended)
+## From a GitHub Release (recommended)
+
+Each `v*` release attaches `goop-X.Y.Z.vsix`. Download it from
+[Releases](https://github.com/Macho0x/Goop/releases), then:
+
+```bash
+code --install-extension goop-X.Y.Z.vsix
+# or: cursor --install-extension goop-X.Y.Z.vsix
+```
+
+If repository secrets `VSCE_PAT` / `OVSX_TOKEN` are configured, the release
+workflow also publishes to the VS Marketplace / Open VSX.
+
+## Quick install from source
 
 From the repo root:
 
@@ -17,10 +30,11 @@ Then **reload the window**: `Ctrl+Shift+P` → **Developer: Reload Window**
 
 ## Prerequisites
 
-Build the compiler (LSP needs it):
+Install the compiler (LSP needs `goop` on `PATH` or `goop.path` setting):
 
 ```bash
-cd src && go build -o ../goop ./cmd/goop
+curl -fsSL https://raw.githubusercontent.com/Macho0x/Goop/main/scripts/install.sh | bash
+# or: cd src && go build -o ../goop ./cmd/goop
 ```
 
 ## Manual install

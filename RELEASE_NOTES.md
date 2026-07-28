@@ -1,23 +1,25 @@
-# Goop 1.10.1
+# Goop 1.11.0
 
-Docs patch on top of 1.10.0: teaching materials and design status catch up to
-the shipped maps / zero-cost brands / bare-import `.gosig` surface. No language
-or compiler changes.
+UX train for Lisette-parity tryability: hosted playground, one-line install,
+`goop new`, clearer diagnostics, quieter channel stubs, and VS Code VSIX on
+releases.
 
 ## Highlights
 
-- **Tutorial:** new [maps chapter](docs/tutorial/08-maps.md); `goop doc`, bare
-  `import go` stub resolution, and zero-cost brands covered in earlier chapters.
-- **References:** syntax, STYLE, type system, prelude, and stdlib docs include
-  `map[K] V` / `Map.*`.
-- **Design status:** H4c / H5 / `goop doc` / freeze checklist aligned with 1.10.
+- **Playground:** GitHub Pages deploy (`https://macho0x.github.io/Goop/`) — enable
+  Pages → GitHub Actions once in repo settings.
+- **Install:** `curl …/scripts/install.sh | bash`
+- **`goop new`:** scaffold a project in seconds
+- **RESULT001** + `help:` tips on common diagnostics
+- **Directional chans** map cleanly (`time.After`-style stubs)
+- **VSIX** attached to GitHub Releases
 
 ## Workflow
 
 ```bash
-cd src && go build -o ../goop ./cmd/goop
-../goop version
-../goop check docs/examples/maps.goop
+curl -fsSL https://raw.githubusercontent.com/Macho0x/Goop/main/scripts/install.sh | bash
+goop new hello && cd hello
+goop check main.goop && goop build main.goop
 ```
 
-See `CHANGELOG.md` and `docs/tutorial/README.md`.
+See `CHANGELOG.md`, `docs/tutorial/README.md`, and the [playground](https://macho0x.github.io/Goop/).

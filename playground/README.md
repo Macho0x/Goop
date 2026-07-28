@@ -55,6 +55,12 @@ cp "$(go env GOROOT)/lib/wasm/wasm_exec.js" playground/
 
 `build.sh` does this for you.
 
+## Hosted playground
+
+After GitHub Pages is enabled (Settings → Pages → Source: **GitHub Actions**),
+the playground is at <https://macho0x.github.io/Goop/>. Workflow:
+[`.github/workflows/pages.yml`](../.github/workflows/pages.yml).
+
 ## Serve locally
 
 WASM fetch requires HTTP (not `file://`):

@@ -20,6 +20,10 @@ jobs:
           go-version-file: src/go.mod
           cache-dependency-path: src/go.sum
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Get version from tag
         id: version
         run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
@@ -44,6 +48,12 @@ jobs:
           cd src
           GOOS=windows GOARCH=amd64 go build -o goop-windows-amd64.exe -ldflags="-s -w" ./cmd/goop
 
+      - name: Package VS Code extension
+        run: |
+          cd editors/vscode
+          npm install --omit=dev
+          npx --yes @vscode/vsce package --out "../../goop-${{ steps.version.outputs.version }}.vsix"
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
@@ -54,3 +64,19 @@ jobs:
             src/goop-darwin-amd64
             src/goop-darwin-arm64
             src/goop-windows-amd64.exe
+            goop-${{ steps.version.outputs.version }}.vsix
+
+      - name: Publish to VS Marketplace (optional)
+        if: ${{ secrets.VSCE_PAT != '' }}
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          cd editors/vscode
+          npx --yes @vscode/vsce publish --packagePath "../../goop-${{ steps.version.outputs.version }}.vsix"
+
+      - name: Publish to Open VSX (optional)
+        if: ${{ secrets.OVSX_TOKEN != '' }}
+        env:
+          OVSX_TOKEN: ${{ secrets.OVSX_TOKEN }}
+        run: |
+          npx --yes ovsx publish "goop-${{ steps.version.outputs.version }}.vsix" -p "$OVSX_TOKEN"

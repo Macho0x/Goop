@@ -1,0 +1,22 @@
+(* CLI-style file tool: maps + os + path/filepath via bare import go. *)
+module main
+
+import go "os"
+import go "path/filepath"
+
+let main () =
+  begin
+    let table : map[string] string = Map.make () in
+    let cwd = filepath.Base "." in
+    let _ = Map.add table "cwd" cwd in
+    match os.ReadFile "go.mod" with
+    | Ok _ ->
+        begin
+          let _ = Map.add table "gomod" "ok" in
+          let _ = assert (Map.mem table "gomod") in
+          let _ = assert (Map.size table = 2) in
+          print_line "read ok"
+        end
+    | Error _ ->
+        print_line "read failed"
+  end

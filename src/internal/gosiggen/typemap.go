@@ -24,8 +24,8 @@ type MapResult struct {
 //   - any / interface{} → obj
 //   - *T → T ptr
 //   - []T → T go_slice (best-effort; []byte → bytes)
-//   - chan T → T chan
-//   - maps → skipped (not yet representable)
+//   - chan T / <-chan T / chan<- T → T chan (directional chans share Goop surface)
+//   - map[K]V → map[K] V
 //   - (T, error) → "T * error" with TODOH6=true (typecheck/codegen coerce to result)
 //   - other multi-results → skipped
 //   - named types in pkgPath → short name; others → pkg.Name

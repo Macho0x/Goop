@@ -15,15 +15,24 @@ A step-by-step introduction to Goop. Each chapter links to runnable examples che
 
 ## Prerequisites
 
+**Try online:** [Playground](https://macho0x.github.io/Goop/)
+
 ```bash
+# Install release binary, or build from source:
+curl -fsSL https://raw.githubusercontent.com/Macho0x/Goop/main/scripts/install.sh | bash
+# — or —
 cd src && go build -o ../goop ./cmd/goop
-../goop check ../docs/examples/hello.goop
+
+goop new hello && cd hello
+goop check main.goop
 ```
 
 ## Editor setup
 
-- **VS Code**: install [`editors/vscode`](../../editors/vscode) — syntax highlighting, `.goop` file icon, LSP
+- **VS Code**: install from a [GitHub Release `.vsix`](https://github.com/Macho0x/Goop/releases) or [`editors/vscode`](../../editors/vscode) — syntax highlighting, `.goop` file icon, LSP
 - **Zed**: `cd editors/zed && make install`
+- **Neovim**: see [`editors/neovim`](../../editors/neovim)
+- **Helix**: see [`editors/helix`](../../editors/helix)
 - **GitHub**: interim F# highlighting via [`.gitattributes`](../../.gitattributes); full Goop highlighting after [Linguist submission](github-linguist/README.md)
 
 ## Further reading
@@ -34,6 +43,9 @@ cd src && go build -o ../goop ./cmd/goop
 - [Maps (`map[K] V`)](../design/29-maps.md)
 - [CLI artifacts](../design/20-cli-artifacts.md) — `goop doc`, cache layout
 - [Writing tools](../guides/writing-tools.md) — files + maps via `import go`
+- Sample apps: [`http_hello.goop`](../examples/http_hello.goop), [`cli_files.goop`](../examples/cli_files.goop)
 - [Packages and registry (1.0)](../design/11-package-manager.md) — Go modules + `goop get`; no separate registry
+- [Benchmarks](../../benchmarks/README.md) — generated vs hand Go (indicative)
 - [Standard library reference](../stdlib/README.md)
 - [All examples](../examples/)
+- [Playground](https://macho0x.github.io/Goop/)

@@ -135,12 +135,18 @@ let greet (name: string option) : string =
 
 ## Getting started
 
+**Try in the browser:** [Playground](https://macho0x.github.io/Goop/) (GitHub Pages).
+
 ```bash
+# One-line install (latest release binary)
+curl -fsSL https://raw.githubusercontent.com/Macho0x/Goop/main/scripts/install.sh | bash
+
+# Or build from source
 cd src && go build -o ../goop ./cmd/goop
-../goop check docs/examples/hello.goop
-../goop build docs/examples/hello.goop   # → ./goop-out
+../goop new hello && cd hello
+../goop check main.goop
+../goop build main.goop   # → ./goop-out
 ./goop-out
-../goop test tests/
 ```
 
 Generated Go stays under `$GOOP_HOME/build` by default.
@@ -170,9 +176,9 @@ Compile-time checks Go leaves to tests or panics — without giving up Go’s ru
 
 ## Status
 
-**[v1.10.1](https://github.com/Macho0x/Goop/releases/tag/v1.10.1)** — tutorial maps + teaching sync on top of 1.10.0 (maps, zero-cost brands, bare-import stubs).
+**[v1.11.0](https://github.com/Macho0x/Goop/releases/tag/v1.11.0)** — playground, one-line install, `goop new`, RESULT001, VSIX on releases.
 
-[CHANGELOG](CHANGELOG.md) · [RELEASE_NOTES](RELEASE_NOTES.md)
+[CHANGELOG](CHANGELOG.md) · [RELEASE_NOTES](RELEASE_NOTES.md) · [Benchmarks](benchmarks/README.md) · [Playground](https://macho0x.github.io/Goop/)
 
 ## FAQ
 
@@ -185,6 +191,7 @@ Compile-time checks Go leaves to tests or panics — without giving up Go’s ru
 | | |
 |---|---|
 | [Tutorial](docs/tutorial/README.md) | Getting started through [maps](docs/tutorial/08-maps.md) |
+| [Playground](https://macho0x.github.io/Goop/) | Try Goop in the browser |
 | [Stdlib](docs/stdlib/README.md) | Prelude and `std.*` |
 | [Examples](docs/examples/) | Checked in CI |
 | [Writing tools](docs/guides/writing-tools.md) | Files + maps via `import go` |

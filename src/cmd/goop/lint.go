@@ -131,6 +131,8 @@ func lintFile(file string) (nErr, nWarn int) {
 	emitWarns(r.ChannelRaceWarns)
 	emitErrs(r.DeadlockErrors)
 	emitWarns(r.DeadlockWarns)
+	emitErrs(r.ResultErrors)
+	emitWarns(r.ResultWarns)
 	emitErrs(r.NilchanErrors)
 	emitErrs(r.RefineErrors)
 	emitWarns(r.RefineWarnings)

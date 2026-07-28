@@ -7,6 +7,7 @@
 //	goop check <file.goop>    parse and report success/failure
 //	goop lint  <file-or-dir>  diagnostics with summary (exits non-zero on errors)
 //	goop doc   <file-or-dir>  emit Markdown docs for modules / .gosig
+//	goop new [dir]           scaffold goop.toml + main.goop
 //	goop gen-sig <pkg>        generate .gosig stubs for a Go package
 //	goop repl                 interactive read-eval-print loop
 //	goop version              print compiler version
@@ -141,9 +142,9 @@ func main() {
 		}
 	}
 
-	if len(filtered) == 0 || (len(filtered) < 2 && filtered[0] != "test" && filtered[0] != "lsp" && filtered[0] != "fmt" && filtered[0] != "version" && filtered[0] != "lint" && filtered[0] != "doc" && filtered[0] != "gen-sig" && filtered[0] != "get-go-sig" && filtered[0] != "repl") {
+	if len(filtered) == 0 || (len(filtered) < 2 && filtered[0] != "test" && filtered[0] != "lsp" && filtered[0] != "fmt" && filtered[0] != "version" && filtered[0] != "lint" && filtered[0] != "doc" && filtered[0] != "gen-sig" && filtered[0] != "get-go-sig" && filtered[0] != "repl" && filtered[0] != "new") {
 		fmt.Fprintf(os.Stderr, "Usage: goop [--in-tree] [--emit-map] [--no-source-map] [--color] [-i] <command> <file.goop>\n")
-		fmt.Fprintf(os.Stderr, "Commands: lex, parse, check, lint, compile, build, test, get, get-go-sig, gen-sig, resolve, lsp, fmt (format), doc, repl, version\n")
+		fmt.Fprintf(os.Stderr, "Commands: lex, parse, check, lint, compile, build, test, new, get, get-go-sig, gen-sig, resolve, lsp, fmt (format), doc, repl, version\n")
 		fmt.Fprintf(os.Stderr, "  compile/build write to $GOOP_HOME/build by default; --in-tree writes beside source\n")
 		fmt.Fprintf(os.Stderr, "  gen-sig / get-go-sig write .gosig stubs under $GOOP_HOME/build/go-sigs\n")
 		os.Exit(1)
@@ -158,6 +159,9 @@ func main() {
 			dir = filtered[1]
 		}
 		os.Exit(runTests(dir))
+	}
+	if cmd == "new" {
+		os.Exit(runNew(filtered[1:]))
 	}
 	if cmd == "get" {
 		os.Exit(runGet(filtered[1:]))
@@ -188,7 +192,7 @@ func main() {
 		file = filtered[1]
 	} else if cmd != "lint" {
 		fmt.Fprintf(os.Stderr, "Usage: goop [--in-tree] [--emit-map] [--no-source-map] [--color] [-i] <command> <file.goop>\n")
-		fmt.Fprintf(os.Stderr, "Commands: lex, parse, check, lint, compile, build, test, get, get-go-sig, gen-sig, resolve, lsp, fmt (format), doc, repl, version\n")
+		fmt.Fprintf(os.Stderr, "Commands: lex, parse, check, lint, compile, build, test, new, get, get-go-sig, gen-sig, resolve, lsp, fmt (format), doc, repl, version\n")
 		os.Exit(1)
 	}
 
@@ -1441,6 +1445,14 @@ func runSafetyChecks(mod *ast.Module, tm typeinfo.TypeMap, src []byte, cfg *conf
 		fatal = true
 	}
 	warnings = append(warnings, r.DeadlockWarns...)
+	if len(r.ResultErrors) > 0 {
+		fmt.Println("FAIL: discarded result errors:")
+		for _, e := range r.ResultErrors {
+			fmt.Print(report.Render(e, src))
+		}
+		fatal = true
+	}
+	warnings = append(warnings, r.ResultWarns...)
 	if len(r.NilchanErrors) > 0 {
 		fmt.Println("FAIL: nil-channel errors:")
 		for _, e := range r.NilchanErrors {
@@ -1479,6 +1491,7 @@ func lspSafetyDiagnostics(mod *ast.Module, tm typeinfo.TypeMap, cfg *config.Conf
 	out = append(out, r.LinearErrors...)
 	out = append(out, r.ChannelRaceErrors...)
 	out = append(out, r.DeadlockErrors...)
+	out = append(out, r.ResultErrors...)
 	out = append(out, r.NilchanErrors...)
 	out = append(out, r.RefineErrors...)
 	out = append(out, r.ExhaustErrors...)
@@ -1494,6 +1507,11 @@ func lspSafetyDiagnostics(mod *ast.Module, tm typeinfo.TypeMap, cfg *config.Conf
 	}
 	for _, w := range r.DeadlockWarns {
 		if cfg.Check.Deadlock == config.SeverityError {
+			out = append(out, w)
+		}
+	}
+	for _, w := range r.ResultWarns {
+		if cfg.Check.DiscardedResult == config.SeverityError {
 			out = append(out, w)
 		}
 	}

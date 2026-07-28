@@ -20,11 +20,17 @@ Goop 1.0 uses OCaml spelling for everyday constructs (`ref`/`!`/`:=`, `match`, `
 cd src
 go build -o ../goop ./cmd/goop
 
+# Or install a release binary:
+# curl -fsSL https://raw.githubusercontent.com/Macho0x/Goop/main/scripts/install.sh | bash
+
 # Go compiler unit tests
 go test ./...
 
 # Goop end-to-end tests
 ../goop test ../tests/
+
+# Scaffold smoke
+../goop new /tmp/goop-new-smoke --force && ../goop check /tmp/goop-new-smoke/main.goop
 
 # All examples (CI does this)
 for f in ../docs/examples/*.goop; do ../goop check "$f"; done
@@ -34,6 +40,12 @@ for f in ../docs/examples/*.goop; do ../goop check "$f"; done
 ```
 
 Generated Go lives under `$GOOP_HOME/build` by default. See [20-cli-artifacts.md](docs/design/20-cli-artifacts.md).
+
+### GitHub Pages (playground)
+
+The playground deploys via [`.github/workflows/pages.yml`](.github/workflows/pages.yml).
+**One-time:** repo Settings → Pages → Source → **GitHub Actions**. Until that is
+set, the workflow may succeed while <https://macho0x.github.io/Goop/> still 404s.
 
 ### Where tests and examples live
 

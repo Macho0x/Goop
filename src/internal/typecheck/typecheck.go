@@ -2431,8 +2431,21 @@ func goTypeToC0TypeInPkg(goType, importPath string) types.Type {
 		return types.ListType(elem)
 	}
 
-	// Channel type: chan T
-	if strings.HasPrefix(goType, "chan ") {
+	// Channel type: chan T, <-chan T, chan<- T → T chan (Goop has one chan surface)
+	switch {
+	case strings.HasPrefix(goType, "<-chan "):
+		elem := goTypeToC0TypeInPkg(strings.TrimPrefix(goType, "<-chan "), importPath)
+		if elem == nil {
+			return nil
+		}
+		return &types.TChan{Elem: elem}
+	case strings.HasPrefix(goType, "chan<- "):
+		elem := goTypeToC0TypeInPkg(strings.TrimPrefix(goType, "chan<- "), importPath)
+		if elem == nil {
+			return nil
+		}
+		return &types.TChan{Elem: elem}
+	case strings.HasPrefix(goType, "chan "):
 		elem := goTypeToC0TypeInPkg(strings.TrimPrefix(goType, "chan "), importPath)
 		if elem == nil {
 			return nil

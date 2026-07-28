@@ -17,10 +17,31 @@ let main () =
 
 ## Build the compiler
 
+**Install (release binary):**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Macho0x/Goop/main/scripts/install.sh | bash
+goop version
+```
+
+**Or build from source:**
+
 ```bash
 cd src
 go build -o ../goop ./cmd/goop
 ```
+
+## Scaffold a project
+
+```bash
+goop new hello
+cd hello
+goop check main.goop
+goop build main.goop
+./goop-out
+```
+
+`goop new` writes `goop.toml` and `main.goop`. Use `--force` to overwrite in a non-empty directory.
 
 ## Check a file
 

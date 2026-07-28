@@ -65,6 +65,8 @@ func TestMapPointerSliceChan(t *testing.T) {
 		{"[]string", "string go_slice"},
 		{"[]byte", "bytes"},
 		{"chan int", "int chan"},
+		{"<-chan int", "int chan"},
+		{"chan<- string", "string chan"},
 		{"error", "error"},
 	}
 	for _, tc := range cases {
@@ -237,6 +239,10 @@ func parseTypeViaScope(pkg *gotypes.Package, src string) (gotypes.Type, error) {
 		return gotypes.NewSlice(gotypes.Typ[gotypes.Byte]), nil
 	case "chan int":
 		return gotypes.NewChan(gotypes.SendRecv, gotypes.Typ[gotypes.Int]), nil
+	case "<-chan int":
+		return gotypes.NewChan(gotypes.RecvOnly, gotypes.Typ[gotypes.Int]), nil
+	case "chan<- string":
+		return gotypes.NewChan(gotypes.SendOnly, gotypes.Typ[gotypes.String]), nil
 	case "map[string]int":
 		return gotypes.NewMap(gotypes.Typ[gotypes.String], gotypes.Typ[gotypes.Int]), nil
 	case "*Buffer":

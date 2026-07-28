@@ -15,6 +15,16 @@ and optional source maps live under `$GOOP_HOME` (default `~/.cache/goop`).
 
 ## Commands
 
+### `goop new [dir]`
+
+Scaffold a project directory (default `.`) with `goop.toml` and `main.goop`.
+Refuses non-empty directories unless `--force` (overwrites scaffold files).
+
+```bash
+goop new hello
+cd hello && goop check main.goop && goop build main.goop
+```
+
 ### `goop check <file.goop>`
 
 Type-check and safety only. Writes nothing. Single file only.

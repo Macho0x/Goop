@@ -147,18 +147,21 @@ func safetyDiagnostics(r checkpipeline.Result) ([]diagnostic, bool) {
 	add(r.LinearErrors, "error")
 	add(r.ChannelRaceErrors, "error")
 	add(r.DeadlockErrors, "error")
+	add(r.ResultErrors, "error")
 	add(r.NilchanErrors, "error")
 	add(r.RefineErrors, "error")
 	add(r.ExhaustErrors, "error")
 	add(r.LinearWarnings, "warning")
 	add(r.ChannelRaceWarns, "warning")
 	add(r.DeadlockWarns, "warning")
+	add(r.ResultWarns, "warning")
 	add(r.RefineWarnings, "warning")
 	add(r.ExhaustWarns, "warning")
 
 	fatal := len(r.LinearErrors) > 0 ||
 		len(r.ChannelRaceErrors) > 0 ||
 		len(r.DeadlockErrors) > 0 ||
+		len(r.ResultErrors) > 0 ||
 		len(r.NilchanErrors) > 0 ||
 		len(r.RefineErrors) > 0 ||
 		len(r.ExhaustErrors) > 0

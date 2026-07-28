@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.11.0
+
+### Tooling / UX
+
+- **GitHub Pages playground** workflow (`pages.yml`); base-path-safe assets;
+  transparent-Go and maps examples.
+- **One-line install:** `scripts/install.sh` downloads the latest release binary.
+- **`goop new [dir]`** scaffolds `goop.toml` + `main.goop` (`--force` to overwrite).
+- **Diagnostic `help:` tips** for common codes in `report.Render`.
+- **RESULT001:** warn on discarded `result` values in `begin` sequences
+  (`[check] discarded_result`).
+- Release attaches **VS Code `.vsix`**; optional Marketplace / Open VSX publish
+  when secrets are set.
+
+### Interop
+
+- Directional Go channels (`<-chan` / `chan<-`) map to Goop `T chan` in
+  typecheck gosig fallback and gosiggen.
+
+### Docs / examples
+
+- Sample apps: `http_hello.goop`, `cli_files.goop`; benchmark README refresh
+  (zero-cost brands ≈ hand Go).
+
 ## 1.10.1
 
 ### Docs

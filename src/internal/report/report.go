@@ -8,9 +8,40 @@ import (
 	"strings"
 )
 
+// helpTips maps diagnostic code prefixes to short actionable help lines.
+var helpTips = map[string]string{
+	"EXHAUST003":  "Handle every constructor, or add a wildcard `| _ -> …` arm.",
+	"EXHAUST001":  "Remove the unreachable pattern or reorder arms.",
+	"EXHAUST002":  "Remove the unreachable pattern or reorder arms.",
+	"NIL001":      "Initialize with Chan.make () (or OwnedChan.make ()) before send/recv/close.",
+	"RESULT001":   "Handle the result with match, or discard explicitly: let _ = …",
+	"LINEAR006":   "Do not share mutable refs across goroutines; use channels or go (move …).",
+	"LINEAR007":   "Move or synchronize the captured mutable value before spawning.",
+	"LINEAR008":   "Avoid racing channel-mediated mutable state across goroutines.",
+	"DEADLOCK001": "Reorder sends/recvs or buffer the channel to break the cycle.",
+	"PARSE-MIG010": "Use ref / := / ! instead of let mutable.",
+	"PARSE-MIG011": "Use ref / := for rebinding; keep arr.(i) <- for array cells.",
+	"PARSE-MIG015": "Use a single-constructor ADT: type id = Id of string (optionally private).",
+	"PARSE-MIG016": "Drop with { io } on arrows; use effect / perform / handlers.",
+	"PARSE-MIG017": "Use failwith or raise instead of panic.",
+	"REFINE001":   "Strengthen the precondition or fix the call site so the VC holds.",
+	"REFINE002":   "Prove the call site, or accept a runtime guard (severity via goop.toml).",
+	"UNIFY":       "Check annotated types and argument order; see the mismatch details above.",
+	"TYPE":        "Check the expression type against its annotation or expected context.",
+}
+
+func tipForMessage(rest string) string {
+	upper := strings.ToUpper(rest)
+	for code, tip := range helpTips {
+		if strings.Contains(upper, code) {
+			return tip
+		}
+	}
+	return ""
+}
+
 // Render turns a Goop error (already containing "file:line:col: msg") into
 // a Lisette-style diagnostic using the provided source text.
-// Ponytail: single function, no new error types, reuses existing locations.
 func Render(err error, src []byte) string {
 	if err == nil {
 		return ""
@@ -51,6 +82,9 @@ func Render(err error, src []byte) string {
 		}
 	}
 	b.WriteString("╰────\n")
+	if tip := tipForMessage(rest); tip != "" {
+		b.WriteString("help: " + tip + "\n")
+	}
 	return b.String()
 }
 

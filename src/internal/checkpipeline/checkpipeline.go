@@ -6,6 +6,7 @@ import (
 	"goop.dev/compiler/internal/channelrace"
 	"goop.dev/compiler/internal/config"
 	"goop.dev/compiler/internal/deadlock"
+	"goop.dev/compiler/internal/discardedresult"
 	"goop.dev/compiler/internal/exhaustive"
 	"goop.dev/compiler/internal/linear"
 	"goop.dev/compiler/internal/nilchan"
@@ -21,6 +22,8 @@ type Result struct {
 	ChannelRaceWarns  []error
 	DeadlockErrors    []error
 	DeadlockWarns     []error
+	ResultErrors      []error
+	ResultWarns       []error
 	NilchanErrors     []error
 	RefineProven      refine.ProvenSites
 	RefineFuncProven  map[string]bool
@@ -36,6 +39,7 @@ func Run(mod *ast.Module, tm typeinfo.TypeMap, linearTypes map[string]bool, cfg 
 	r.LinearErrors, r.LinearWarnings = linear.CheckWithConfig(mod, linearTypes, cfg)
 	r.ChannelRaceErrors, r.ChannelRaceWarns = channelrace.CheckWithConfig(mod, cfg)
 	r.DeadlockErrors, r.DeadlockWarns = deadlock.CheckWithConfig(mod, cfg)
+	r.ResultErrors, r.ResultWarns = discardedresult.CheckWithConfig(mod, tm, cfg)
 	r.NilchanErrors = nilchan.Check(mod)
 	r.RefineProven, r.RefineFuncProven, r.RefineWarnings, r.RefineErrors = refine.CheckRefinements(mod, tm, cfg)
 	exErrs, exWarns := exhaustive.CheckWithConfig(mod, cfg)

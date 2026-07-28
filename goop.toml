@@ -10,6 +10,7 @@ effect_inference = true
 concurrent = "error"
 refinement_unproven = "warn"
 deadlock = "warn"
+discarded_result = "warn"
 smt = false
 
 [mappings]

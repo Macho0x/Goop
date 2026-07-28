@@ -67,6 +67,7 @@ Exports that cannot be mapped are **skipped**, not silently degraded:
 | Go shape | Behavior |
 |----------|----------|
 | `map[K]V` | Emitted as `map[K] V` |
+| `chan T` / `<-chan T` / `chan<- T` | Emitted as `T chan` |
 | Anonymous `struct` / non-empty anonymous `interface` | Skipped |
 | Multi-result other than `(T, error)` | Emitted as Goop product tuples when elems map |
 | `complex*`, `unsafe.Pointer` | Skipped |

@@ -1383,6 +1383,33 @@ Narrow static analysis for circular channel communication between two goroutines
 
 ---
 
+## RESULT — Discarded result values
+
+### RESULT001: Result value discarded
+
+- **Error code**: `RESULT001`
+- **Severity**: Warning by default; configurable via `goop.toml` `[check] discarded_result` (`warn` | `error` | `off`)
+- **Config key**: `discarded_result`
+- **Message**: `result value is discarded; handle with match or bind with let _ = …`
+- **Trigger**: In a `begin … end` sequence, a non-final expression has type `result` and is not bound or matched.
+- **Fix**: `match` the value, propagate it as the sequence result, or discard explicitly with `let _ = e in …`.
+- **Bad**:
+  ```goop
+  begin
+    parseInt "x";   (* RESULT001 *)
+    ()
+  end
+  ```
+- **Good**:
+  ```goop
+  begin
+    let _ = parseInt "x" in
+    ()
+  end
+  ```
+
+---
+
 ## NIL — Nil Channel Errors
 
 Flow-sensitive analysis for channel initialization before use.

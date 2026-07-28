@@ -4,6 +4,16 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Goop Playground</title>
+  <script>
+    // Project Pages (…/Goop/) and local servers need a correct base for assets.
+    (function () {
+      var path = location.pathname;
+      var basePath = /\/$/.test(path) ? path : path.replace(/\/[^/]*$/, "/");
+      var b = document.createElement("base");
+      b.href = basePath;
+      document.head.insertBefore(b, document.head.firstChild);
+    })();
+  </script>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>

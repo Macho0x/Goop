@@ -15,6 +15,10 @@ let compute (input: string) : (int, string) result =
 
 See [`result.goop`](../examples/result.goop). Prefer `result` for recoverable trading/venue errors.
 
+Discarding a `result` in a `begin` sequence is a **RESULT001** warning by default
+(`[check] discarded_result` in `goop.toml`). Handle it with `match`, or write
+`let _ = e in …` to discard deliberately.
+
 ## Exceptions and `failwith`
 
 ```goop

@@ -1,0 +1,14 @@
+(* Minimal HTTP surface — typed import (no live server). *)
+module main
+
+import go "net/http" {
+  val CanonicalHeaderKey : string -> string
+}
+
+let main () =
+  begin
+    let key = http.CanonicalHeaderKey "content-type" in
+    print_line key;
+    let _ = assert (key = "Content-Type") in
+    ()
+  end

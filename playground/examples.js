@@ -61,6 +61,49 @@ let main () =
 `,
   },
   {
+    id: "transparent_go",
+    title: "Transparent Go (match)",
+    source: `module main
+
+(* Press Compile to see readable Go lowering. *)
+let classify (opt: int option) : string =
+  match opt with
+  | Some x when x > 0 -> "positive"
+  | Some x when x < 0 -> "negative"
+  | Some _ -> "zero"
+  | None -> "none"
+
+let main () =
+  print_line (classify (Some 3))
+`,
+  },
+  {
+    id: "maps",
+    title: "Maps",
+    source: `module main
+
+let main () =
+  let table : map[string] int = Map.make () in
+  let _ = Map.add table "foo" 1 in
+  match Map.get table "foo" with
+  | Some n -> print_line (int_to_string n)
+  | None -> print_line "missing"
+`,
+  },
+  {
+    id: "http_hello",
+    title: "HTTP (typed import)",
+    source: `module main
+
+import go "net/http" {
+  val CanonicalHeaderKey : string -> string
+}
+
+let main () =
+  print_line (http.CanonicalHeaderKey "content-type")
+`,
+  },
+  {
     id: "branded_ids",
     title: "Branded IDs",
     source: `module Trading.BrandedIds
