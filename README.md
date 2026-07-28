@@ -65,13 +65,29 @@ let main () =
   | None -> print_line "missing"
 ```
 
-**Go when you need it** — same runtime, no FFI ceremony for curated packages:
+**Go when you need it** — import packages, or drop in inline Go / C:
 
 ```goop
 import go "strings"
 
+@[go] {
+  func greet(name string) string {
+    return "Hello, " + name + "!"
+  }
+}
+val greet : string -> string
+
+@[c] {
+  int c_add(int a, int b) { return a + b; }
+}
+val c_add : int -> int -> int
+
 let main () =
-  print_line (strings.ToUpper "goop")
+  begin
+    print_line (strings.ToUpper "goop");
+    print_line (greet "world");
+    print_line (int_to_string (c_add 40 2))
+  end
 ```
 
 ## Safe
@@ -132,14 +148,25 @@ Generated Go stays under `$GOOP_HOME/build` by default.
 
 ## How Goop compares
 
+Compile-time checks Go leaves to tests or panics — without giving up Go’s runtime.
+
 | | Go | Rust | OCaml | Goop |
 |---|---|---|---|---|
 | Sum types + exhaustive `match` | ❌ | ✅ | ✅ | ✅ |
 | No null by default (`option`) | ❌ | ✅ | ✅ | ✅ |
-| Branded IDs | ❌ | ✅ | ✅ | ✅ |
+| Recoverable errors as `result` | ❌ (`error`) | ✅ | ✅ | ✅ |
+| Branded / nominal IDs | ❌ | ✅ | ✅ | ✅ |
+| First-class maps | ✅ | ✅ | ✅ | ✅ |
+| Effect handlers (OCaml 5-style) | ❌ | ❌ | ✅ | ✅ |
+| Nil-channel / close safety | ❌ (runtime) | N/A | N/A | ✅ |
+| Data-race awareness | ⚠️ `-race` | ✅ | ❌ | ✅ (conservative) |
+| Refinement contracts | ❌ | ⚠️ | ⚠️ | ✅ (optional Z3) |
+| Inline Go embeds (`@[go]`) | — | ❌ | ❌ | ✅ |
+| Inline C / cgo (`@[c]`) | ✅ | ❌ | ❌ | ✅ |
 | Native Go stdlib + deploy | ✅ | ❌ | ❌ | ✅ |
+| Compiles to ordinary Go binaries | — | ❌ | ❌ | ✅ |
 
-[STYLE.md](docs/design/STYLE.md) for everyday syntax.
+[STYLE.md](docs/design/STYLE.md) · [`extern_demo.goop`](docs/examples/extern_demo.goop) · [`cgo_demo.goop`](docs/examples/cgo_demo.goop)
 
 ## Status
 
