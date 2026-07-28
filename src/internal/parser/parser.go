@@ -378,7 +378,7 @@ func (p *Parser) parseTopDecl() ast.TopDecl {
 	case token.EFFECT:
 		return p.parseEffectDecl()
 	case token.EXTERN:
-		p.errorf("'extern' is removed; use `import go \"path\"` or `import go \"path\" { val ... }`")
+		p.errorf("PARSE-MIG002: 'extern' is removed; use `import go \"path\"` or `import go \"path\" { val ... }`")
 		return p.parseExternDeclSkip()
 	case token.IMPORT:
 		p.errorf("'import' must appear before any declarations")

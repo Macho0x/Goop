@@ -1,4 +1,4 @@
-// Package discardedresult warns when a result value is discarded in a sequence.
+// Package discardedresult warns when result/option values are discarded in sequences.
 package discardedresult
 
 import (
@@ -11,9 +11,12 @@ import (
 	"goop.dev/compiler/internal/types"
 )
 
-const Code = "RESULT001"
+const (
+	CodeResult = "RESULT001"
+	CodeOption = "OPTION001"
+)
 
-// Error is a discarded-result diagnostic.
+// Error is a discarded result/option diagnostic.
 type Error struct {
 	Code string
 	Msg  string
@@ -30,13 +33,10 @@ func (e *Error) Error() string {
 
 func (e *Error) GetLoc() token.SourceLoc { return e.Loc }
 
-// CheckWithConfig finds discarded result values in begin sequences.
+// CheckWithConfig finds discarded result/option values in begin sequences.
 func CheckWithConfig(mod *ast.Module, tm typeinfo.TypeMap, cfg *config.Config) (errors, warnings []error) {
 	if cfg == nil {
 		cfg = config.DefaultConfig()
-	}
-	if cfg.Check.DiscardedResult == config.SeverityOff {
-		return nil, nil
 	}
 	c := &checker{tm: tm, cfg: cfg}
 	for _, d := range mod.Decls {
@@ -56,31 +56,26 @@ type checker struct {
 	warnings []error
 }
 
-func (c *checker) emit(loc token.SourceLoc) {
-	e := &Error{
-		Code: Code,
-		Msg:  "result value is discarded; handle with match or bind with let _ = …",
-		Loc:  loc,
+func (c *checker) emit(code, msg string, loc token.SourceLoc, sev config.Severity) {
+	if sev == config.SeverityOff {
+		return
 	}
-	switch c.cfg.Check.DiscardedResult {
-	case config.SeverityError:
+	e := &Error{Code: code, Msg: msg, Loc: loc}
+	if sev == config.SeverityError {
 		c.errors = append(c.errors, e)
-	default:
+	} else {
 		c.warnings = append(c.warnings, e)
 	}
 }
 
-func isResultType(t types.Type) bool {
-	if t == nil {
-		return false
-	}
+func typeName(t types.Type) string {
 	switch t := t.(type) {
 	case *types.TCon:
-		return t.Name == "result"
+		return t.Name
 	case *types.TAdt:
-		return t.Name == "result"
+		return t.Name
 	default:
-		return false
+		return ""
 	}
 }
 
@@ -89,8 +84,16 @@ func (c *checker) checkDiscarded(e ast.Expr) {
 		return
 	}
 	t, ok := c.tm[e]
-	if ok && isResultType(t) {
-		c.emit(ast.ExprLoc(e))
+	if !ok || t == nil {
+		return
+	}
+	switch typeName(t) {
+	case "result":
+		c.emit(CodeResult, "result value is discarded; handle with match or bind with let _ = …",
+			ast.ExprLoc(e), c.cfg.Check.DiscardedResult)
+	case "option":
+		c.emit(CodeOption, "option value is discarded; handle with match or bind with let _ = …",
+			ast.ExprLoc(e), c.cfg.Check.DiscardedOption)
 	}
 }
 

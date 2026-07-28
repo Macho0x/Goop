@@ -12,6 +12,8 @@ import (
 	"goop.dev/compiler/internal/nilchan"
 	"goop.dev/compiler/internal/refine"
 	"goop.dev/compiler/internal/typeinfo"
+	"goop.dev/compiler/internal/unused"
+	"goop.dev/compiler/internal/visibilitywarns"
 )
 
 // Result holds outcomes from all safety passes.
@@ -24,6 +26,10 @@ type Result struct {
 	DeadlockWarns     []error
 	ResultErrors      []error
 	ResultWarns       []error
+	UnusedErrors      []error
+	UnusedWarns       []error
+	VisErrors         []error
+	VisWarns          []error
 	NilchanErrors     []error
 	RefineProven      refine.ProvenSites
 	RefineFuncProven  map[string]bool
@@ -40,6 +46,8 @@ func Run(mod *ast.Module, tm typeinfo.TypeMap, linearTypes map[string]bool, cfg 
 	r.ChannelRaceErrors, r.ChannelRaceWarns = channelrace.CheckWithConfig(mod, cfg)
 	r.DeadlockErrors, r.DeadlockWarns = deadlock.CheckWithConfig(mod, cfg)
 	r.ResultErrors, r.ResultWarns = discardedresult.CheckWithConfig(mod, tm, cfg)
+	r.UnusedErrors, r.UnusedWarns = unused.CheckWithConfig(mod, tm, cfg)
+	r.VisErrors, r.VisWarns = visibilitywarns.CheckWithConfig(mod, cfg)
 	r.NilchanErrors = nilchan.Check(mod)
 	r.RefineProven, r.RefineFuncProven, r.RefineWarnings, r.RefineErrors = refine.CheckRefinements(mod, tm, cfg)
 	exErrs, exWarns := exhaustive.CheckWithConfig(mod, cfg)

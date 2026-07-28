@@ -220,7 +220,7 @@ mod land lor lxor          (* integer; % removed *)
 | Old | Error | Use instead |
 |-----|-------|-------------|
 | `let mutable` | PARSE-MIG010 | `ref` / `:=` / `!` |
-| `x <- e` (non-array) | PARSE-MIG011 | `x := e` |
+| `x <- e` (non-array) | TYPE011 | `x := e` on refs; keep `arr.(i) <- e` |
 | `e ?` | PARSE-MIG012 | `match` on `result` |
 | `result { }` / `async { }` / `region { }` | PARSE-MIG013 | `match` on `result` / `try`/`finally` |
 | `e is p` / `e as p ->` / `guard` | PARSE-MIG014 | `match` |

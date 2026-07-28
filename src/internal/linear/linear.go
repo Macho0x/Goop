@@ -126,7 +126,7 @@ func mergeInto(dst, src map[string]bool) {
 // checkDischarged checks that all live variables were discharged at exit.
 func (c *checker) checkDischarged(context string) {
 	for name := range c.live {
-		c.errf("linear variable %q not discharged on all paths (%s)", name, context)
+		c.errf("LINEAR001: linear variable %q not discharged on all paths (%s)", name, context)
 	}
 	c.live = make(map[string]bool)
 	c.allLinear = make(map[string]bool)
@@ -198,7 +198,7 @@ func (c *checker) useVar(name string) {
 	}
 	if !c.live[name] {
 		// Already discharged — double-use error
-		c.errf("linear variable %q used after being discharged", name)
+		c.errf("LINEAR002: linear variable %q used after being discharged", name)
 		return
 	}
 	// Borrow: don't discharge — OwnedChan.send/recv borrow the channel
@@ -331,7 +331,7 @@ func (c *checker) checkExpr(e ast.Expr) {
 		// Check: all linear vars live before the branch must be discharged in then-branch
 		for name := range saved {
 			if c.live[name] {
-				c.errf("linear variable %q not discharged in then-branch", name)
+				c.errf("LINEAR003: linear variable %q not discharged in then-branch", name)
 			}
 		}
 
@@ -340,7 +340,7 @@ func (c *checker) checkExpr(e ast.Expr) {
 		// Check: all linear vars live before the branch must be discharged in else-branch
 		for name := range saved {
 			if c.live[name] {
-				c.errf("linear variable %q not discharged in else-branch", name)
+				c.errf("LINEAR004: linear variable %q not discharged in else-branch", name)
 			}
 		}
 
@@ -362,7 +362,7 @@ func (c *checker) checkExpr(e ast.Expr) {
 			// Check that this arm discharged all live linear variables
 			for name := range saved {
 				if c.live[name] {
-					c.errf("linear variable %q not discharged in match arm %d", name, i+1)
+					c.errf("LINEAR005: linear variable %q not discharged in match arm %d", name, i+1)
 				}
 			}
 		}

@@ -24,6 +24,9 @@ effect_inference = true
 concurrent = "error"
 refinement_unproven = "warn"
 discarded_result = "warn"
+discarded_option = "warn"
+unused = "warn"
+private_in_public = "warn"
 deadlock = "warn"
 smt = false
 `

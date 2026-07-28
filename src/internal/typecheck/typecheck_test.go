@@ -952,6 +952,9 @@ let main () =
 	if len(errs) == 0 {
 		t.Fatal("expected type error for assign to immutable")
 	}
+	if !strings.Contains(errs[0].Error(), "TYPE011") {
+		t.Errorf("expected TYPE011 prefix, got: %v", errs[0])
+	}
 	if !strings.Contains(errs[0].Error(), "cannot assign to immutable binding") {
 		t.Errorf("unexpected error: %v", errs[0])
 	}

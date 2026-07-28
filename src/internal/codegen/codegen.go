@@ -2369,7 +2369,7 @@ func (g *Generator) emitExpr(e ast.Expr, isStmt bool) {
 		// Hard error, not a silent `/* TODO */` in the generated Go:
 		// an unhandled expression must fail at Goop compile time with
 		// a source position, not at Go compile time without one.
-		g.errorfAt(ast.ExprLoc(e), "codegen: unhandled expression type %T", e)
+		g.errorfAt(ast.ExprLoc(e), "CODEGEN001: unhandled expression type %T", e)
 	}
 }
 
@@ -3187,7 +3187,7 @@ func (g *Generator) emitApp(e *ast.AppExpr, isStmt bool) {
 				args = append([]ast.Expr{cons.Arg}, args...)
 			}
 			if len(args) == 0 {
-				g.errorfAt(e.Loc, "codegen: missing receiver in call to Go method %s.%s", method.recvGoType, method.methodName)
+				g.errorfAt(e.Loc, "CODEGEN003: missing receiver in call to Go method %s.%s", method.recvGoType, method.methodName)
 				return
 			}
 			g.emitExpr(args[0], false)
@@ -3306,7 +3306,7 @@ func (g *Generator) emitApp(e *ast.AppExpr, isStmt bool) {
 						}
 					}
 					if !found {
-						g.errorfAt(ast.ExprLoc(arg), "codegen: record literal is missing field %q required by row parameter of %s", rf, funcName)
+						g.errorfAt(ast.ExprLoc(arg), "CODEGEN002: record literal is missing field %q required by row parameter of %s", rf, funcName)
 					}
 				}
 			} else {

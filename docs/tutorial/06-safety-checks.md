@@ -2,6 +2,23 @@
 
 Goop runs a unified safety pipeline on every `goop check` / `goop build` / LSP diagnostic.
 
+## Discarded `result` / `option` (RESULT001 / OPTION001)
+
+Discarding a `result` or `option` in a non-final `begin` statement warns by
+default (`[check] discarded_result` / `discarded_option`). Handle with `match`,
+or discard explicitly: `let _ = …`.
+
+## Unused bindings / imports (UNUSED001 / UNUSED002)
+
+Unused locals and Goop imports warn by default (`[check] unused`). Prefer `_`
+or `_name` for intentional discards. Unit-typed sequencing bindings
+(`let u = assert …`) are not reported.
+
+## Private-in-public (VIS002)
+
+Public APIs that mention a same-module `private` type warn
+(`[check] private_in_public`).
+
 ## Exhaustive matching (EXHAUST003)
 
 Non-exhaustive `match` is a **compile error** by default:
@@ -61,6 +78,10 @@ smt = false                    # optional Z3
 | `concurrent` | `error` | LINEAR006/007/008 race warnings |
 | `refinement_unproven` | `warn` | REFINE002 unproven VCs |
 | `deadlock` | `warn` | DEADLOCK001 channel deadlock lint |
+| `discarded_result` | `warn` | RESULT001 |
+| `discarded_option` | `warn` | OPTION001 |
+| `unused` | `warn` | UNUSED001/002 |
+| `private_in_public` | `warn` | VIS002 |
 | `smt` | `false` | Optional Z3 for refinements |
 
 ## Error code reference

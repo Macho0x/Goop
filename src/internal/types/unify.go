@@ -247,7 +247,7 @@ func unify(sub Subst, t1, t2 Type) error {
 	case *TMap:
 		r, ok := t2.(*TMap)
 		if !ok {
-			return mismatch(t1, t2, "expected a map type")
+			return mismatch(t1, t2, "UNIFY020: expected a map type")
 		}
 		if err := unify(sub, l.Key, r.Key); err != nil {
 			return err
@@ -276,15 +276,15 @@ func unify(sub Subst, t1, t2 Type) error {
 			if r.Interface {
 				return nil
 			}
-			return mismatch(t1, t2, "expected a pointer")
+			return mismatch(t1, t2, "UNIFY021: expected a pointer")
 		default:
-			return mismatch(t1, t2, "expected a pointer")
+			return mismatch(t1, t2, "UNIFY021: expected a pointer")
 		}
 
 	case *TGoSlice:
 		r, ok := t2.(*TGoSlice)
 		if !ok {
-			return mismatch(t1, t2, "expected a go_slice")
+			return mismatch(t1, t2, "UNIFY022: expected a go_slice")
 		}
 		return unify(sub, l.Elem, r.Elem)
 

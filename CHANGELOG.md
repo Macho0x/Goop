@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.12.0
+
+### Diagnostics
+
+- Stable **on-the-wire** codes + `help:` tips: TYPE011, VIS001, IMPORT001–003,
+  UNIFY020–022, PARSE-MIG002, CODEGEN001–003, GOSIG001/002, LINEAR001–005.
+- New warn-by-default lints (configurable in `[check]`):
+  - **UNUSED001/002** — unused locals / Goop imports (`unused`)
+  - **OPTION001** — discarded `option` in `begin` (`discarded_option`)
+  - **VIS002** — private type in public API (`private_in_public`)
+- Catalog honesty: `open` remains valid (PARSE-MIG001 retired); PARSE-MIG011
+  removed in favor of TYPE011; CLI011 uses `goop:` not `c0:`.
+
+### Docs
+
+- Refresh `10-error-reference.md`, `26-diagnostics.md`, tutorial safety chapter.
+
 ## 1.11.0
 
 ### Tooling / UX

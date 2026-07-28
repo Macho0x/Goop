@@ -1175,7 +1175,7 @@ func (c *Checker) inferLit(e *ast.LitExpr) types.Type {
 
 func (c *Checker) inferIdent(e *ast.IdentExpr) types.Type {
 	if mod, blocked := c.blockedNames[e.Name]; blocked {
-		c.errorfAt(e.Loc, "cannot access private binding %q from module %s", e.Name, mod)
+		c.errorfAt(e.Loc, "VIS001: cannot access private binding %q from module %s", e.Name, mod)
 		return types.Unit
 	}
 	s := c.env.Lookup(e.Name)
@@ -1402,7 +1402,7 @@ func (c *Checker) inferAssign(e *ast.AssignExpr) types.Type {
 		c.unifyAt(e.Loc, valueType, fieldType)
 	case *ast.IdentExpr:
 		if !c.mutableVars[target.Name] {
-			c.errorfAt(e.Loc, "cannot assign to immutable binding %q; use := for refs or <- for arrays/mutable fields", target.Name)
+			c.errorfAt(e.Loc, "TYPE011: cannot assign to immutable binding %q; use := for refs or <- for arrays/mutable fields", target.Name)
 		}
 		bound := c.inferIdent(target)
 		valueType := c.infer(e.Value)
@@ -2260,7 +2260,7 @@ func (c *Checker) refineExternType(importPath, funcName string, declared types.T
 
 	sig, err := gosig.LookupFunc(importPath, funcName)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "goop: gosig fallback for %s.%s: %v\n", importPath, funcName, err)
+		fmt.Fprintf(os.Stderr, "GOSIG002: gosig fallback for %s.%s: %v\n", importPath, funcName, err)
 		return nil
 	}
 
@@ -2274,7 +2274,7 @@ func (c *Checker) refineExternType(importPath, funcName string, declared types.T
 	case 1:
 		rt := goTypeToC0TypeInPkg(sig.Results[0].Type, importPath)
 		if rt == nil {
-			fmt.Fprintf(os.Stderr, "goop: gosig fallback for %s.%s: cannot map Go result type %q to Goop\n",
+			fmt.Fprintf(os.Stderr, "GOSIG002: gosig fallback for %s.%s: cannot map Go result type %q to Goop\n",
 				importPath, funcName, sig.Results[0].Type)
 			return nil
 		}
@@ -2284,7 +2284,7 @@ func (c *Checker) refineExternType(importPath, funcName string, declared types.T
 		for i, r := range sig.Results {
 			rt := goTypeToC0TypeInPkg(r.Type, importPath)
 			if rt == nil {
-				fmt.Fprintf(os.Stderr, "goop: gosig fallback for %s.%s: cannot map Go result type %q to Goop\n",
+				fmt.Fprintf(os.Stderr, "GOSIG002: gosig fallback for %s.%s: cannot map Go result type %q to Goop\n",
 					importPath, funcName, r.Type)
 				return nil
 			}
@@ -2309,7 +2309,7 @@ func (c *Checker) refineExternType(importPath, funcName string, declared types.T
 	for i := len(sig.Params) - 1; i >= 0; i-- {
 		c0ParamType := goTypeToC0TypeInPkg(sig.Params[i].Type, importPath)
 		if c0ParamType == nil {
-			fmt.Fprintf(os.Stderr, "goop: gosig fallback for %s.%s: cannot map Go type %q to Goop\n",
+			fmt.Fprintf(os.Stderr, "GOSIG002: gosig fallback for %s.%s: cannot map Go type %q to Goop\n",
 				importPath, funcName, sig.Params[i].Type)
 			return nil
 		}
@@ -2629,7 +2629,7 @@ func (c *Checker) checkPrivateName(name string) {
 	}
 	r, _ := utf8.DecodeRuneInString(name)
 	if unicode.IsUpper(r) {
-		c.errorf("private binding %q must use mixedCaps (lower initial)", name)
+		c.errorf("VIS001: private binding %q must use mixedCaps (lower initial)", name)
 	}
 }
 
@@ -2656,7 +2656,7 @@ func (c *Checker) bindImportSpecs(imports []ast.ImportSpec, deps map[string]*ast
 	seenPaths := make(map[string]bool)
 	for _, spec := range imports {
 		if spec.Path != "" && seenPaths[spec.Path] {
-			c.errorf("duplicate import %q", spec.Path)
+			c.errorf("IMPORT002: duplicate import %q", spec.Path)
 		}
 		seenPaths[spec.Path] = true
 
@@ -2671,7 +2671,7 @@ func (c *Checker) bindImportSpecs(imports []ast.ImportSpec, deps map[string]*ast
 					c.projectRoot, c.goopHome, spec.Path, true,
 				)
 				if loadErr != nil {
-					fmt.Fprintf(os.Stderr, "goop: .gosig load for %q: %v\n", spec.Path, loadErr)
+					fmt.Fprintf(os.Stderr, "GOSIG001: .gosig load for %q: %v\n", spec.Path, loadErr)
 				}
 				mergedTypes = sigTypes
 				mergedVals = sigVals
@@ -2684,7 +2684,7 @@ func (c *Checker) bindImportSpecs(imports []ast.ImportSpec, deps map[string]*ast
 			}
 		case ast.ImportGoop:
 			if resolver == nil {
-				c.errorf("cannot resolve c0 import %q without source file context", spec.Path)
+				c.errorf("IMPORT003: cannot resolve goop import %q without source file context", spec.Path)
 				continue
 			}
 			resolved, err := resolver.ResolveGoopPath(spec.Path)
@@ -2694,7 +2694,7 @@ func (c *Checker) bindImportSpecs(imports []ast.ImportSpec, deps map[string]*ast
 			}
 			dep := deps[resolved.GoImportPath]
 			if dep == nil {
-				c.errorf("module %q not found", spec.Path)
+				c.errorf("IMPORT001: module %q not found", spec.Path)
 				continue
 			}
 			alias := modresolve.ImportAlias(spec, resolved)

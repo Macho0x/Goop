@@ -6,7 +6,7 @@ type symbol = | Symbol of string
 let oid = Order_id "ord-42"
 let sym = Symbol "BTC-USD"
 
-let useIds (id: order_id) (s: symbol) : unit =
+let useIds (_id: order_id) (_s: symbol) : unit =
   print_line "branded ids ok"
 
 let main () : unit =

@@ -45,6 +45,9 @@ type CheckConfig struct {
 	RefinementUnproven Severity // REFINE002 (default warn)
 	Deadlock           Severity // DEADLOCK001 (default warn)
 	DiscardedResult    Severity // RESULT001 (default warn)
+	DiscardedOption    Severity // OPTION001 (default warn)
+	Unused             Severity // UNUSED001/002 (default warn)
+	PrivateInPublic    Severity // VIS002 (default warn)
 	SMT                bool     // use Z3 for refinement VCs when available (default false)
 }
 
@@ -68,6 +71,9 @@ func DefaultConfig() *Config {
 			RefinementUnproven: SeverityWarn,
 			Deadlock:           SeverityWarn,
 			DiscardedResult:    SeverityWarn,
+			DiscardedOption:    SeverityWarn,
+			Unused:             SeverityWarn,
+			PrivateInPublic:    SeverityWarn,
 		},
 		Dependencies: make(map[string]string),
 		Mappings: map[string]string{
@@ -197,6 +203,12 @@ func parseConfig(data string) (*Config, error) {
 					c.Check.Deadlock = Severity(val)
 				case "discarded_result":
 					c.Check.DiscardedResult = Severity(val)
+				case "discarded_option":
+					c.Check.DiscardedOption = Severity(val)
+				case "unused":
+					c.Check.Unused = Severity(val)
+				case "private_in_public":
+					c.Check.PrivateInPublic = Severity(val)
 				case "smt":
 					c.Check.SMT = val == "true" || val == "1"
 				}

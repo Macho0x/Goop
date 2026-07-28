@@ -520,6 +520,9 @@ let main () = ()
 	if err == nil {
 		t.Fatal("expected error for extern")
 	}
+	if !strings.Contains(err.Error(), "PARSE-MIG002") {
+		t.Errorf("expected PARSE-MIG002, got: %v", err)
+	}
 	if !strings.Contains(err.Error(), "import go") {
 		t.Errorf("expected migration hint, got: %v", err)
 	}

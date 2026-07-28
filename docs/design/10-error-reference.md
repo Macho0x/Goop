@@ -1,9 +1,19 @@
 # Goop Compile-Time Error Reference
 
-This document catalogs every compile-time error and warning the Goop compiler
+This document catalogs compile-time errors and warnings the Goop compiler
 can produce. It is designed for LLM-assisted debugging: given an error
 message, an LLM can look up the error code, understand the cause, and
 suggest a fix.
+
+## On the wire vs catalog IDs
+
+Many codes are **on the wire**: the compiler prefixes the human message with
+`CODE:` (for example `TYPE011: cannot assign…`, `RESULT001: …`). Those prefixes
+are stable and match `help:` tips from `internal/report`.
+
+Some older catalog entries are **documentation IDs only** (historical PARSE-MIG
+notes, or CLI wrappers). If a code is not emitted by the current compiler, the
+entry says so. Prefer codes you actually see in `goop check` / `goop lint` output.
 
 ---
 
@@ -28,19 +38,25 @@ Error messages fall into three severity levels:
 | Prefix | Category | Source package |
 |---|---|---|
 | LEX | Lexer errors | `internal/lexer` |
-| PARSE | Parser errors | `internal/parser` |
+| PARSE / PARSE-MIG | Parser / removed-syntax | `internal/parser` |
 | TYPE | Type errors | `internal/typecheck` |
+| VIS | Visibility | `internal/typecheck`, `internal/visibilitywarns` |
+| IMPORT | Module imports | `internal/typecheck` |
 | FFI-IMPL | Go interface implementation errors | `internal/typecheck` |
 | UNIFY | Unification errors | `internal/types/unify` |
 | EXHAUST | Exhaustiveness warnings | `internal/exhaustive` |
 | LINEAR | Linear discharge errors | `internal/linear`, `internal/channelrace` |
 | DEADLOCK | Deadlock warnings | `internal/deadlock` |
+| RESULT / OPTION | Discarded result/option | `internal/discardedresult` |
+| UNUSED | Unused locals/imports | `internal/unused` |
+| CODEGEN | Codegen failures | `internal/codegen` |
+| GOSIG | Go signature load/fallback | `internal/gosig`, CLI |
 | NIL | Nil channel errors | `internal/nilchan` |
 | REFINE | Refinement solver errors/warnings | `internal/refine` |
 | CLI | CLI/file/system errors | `cmd/goop`, `internal/config` |
 
-Corpus size (~106 unique codes) and `goop lint` are summarized in
-[22-diagnostics.md](22-diagnostics.md).
+Corpus size and `goop lint` are summarized in
+[26-diagnostics.md](26-diagnostics.md).
 
 ---
 
@@ -216,25 +232,24 @@ the parser cannot proceed.
 Parser errors indicate that the token stream does not conform to Goop's
 grammar. The parser attempts error recovery to report multiple errors.
 
-### PARSE-MIG001: `open` removed (v0.3)
+### PARSE-MIG001: (retired — `open` remains valid)
 
-- **Message**: `'open' is removed; use import goop "path" or import goop . "path"`
-- **Fix**: Replace `open std.io` with `import goop . "std.io"`.
+- **Status**: Not emitted. `open M` is still valid Goop (module opening).
+- **Note**: Older drafts claimed `open` was removed; that was incorrect. Prefer
+  `import goop "…"` for package imports; keep `open` for opening a module
+  binding into the current scope.
 
 ### PARSE-MIG002: `extern "go"` removed (v0.3)
 
-- **Message**: `'extern' is removed; use import go "path" { val ... }`
+- **Error code**: `PARSE-MIG002` (on the wire)
+- **Severity**: Error
+- **Message**: `PARSE-MIG002: 'extern' is removed; use import go "path" { val ... }`
 - **Fix**: Replace `extern "go" "fmt" { val X : … }` with `import go "fmt" { val X : … }`.
 
 ### PARSE-MIG010: `let mutable` removed (1.0)
 
 - **Message**: `'let mutable' is removed; use ref / := / !`
 - **Fix**: `let r = ref 0 in r := !r + 1` instead of `let mutable x = 0` / `x <- …`.
-
-### PARSE-MIG011: Binding `<-` removed (1.0)
-
-- **Message**: Non-array `<-` assignment removed; use `:=` on refs (array `arr.(i) <- v` remains).
-- **Fix**: `r := e` for refs; keep `arr.(i) <- v` for array cells.
 
 ### PARSE-MIG012: `?` error propagation removed (1.0)
 
@@ -761,9 +776,9 @@ cannot be resolved. All type errors stop compilation.
 
 - **Error code**: `TYPE011`
 - **Severity**: Error
-- **Message**: `cannot assign to immutable binding %q`
-- **Example**: `test.goop:4:3: cannot assign to immutable binding "x"`
-- **Trigger**: Binding `<-` on a plain `let` (removed in 1.0 — PARSE-MIG011). Use `ref` cells or array index writes.
+- **Message**: `TYPE011: cannot assign to immutable binding %q; use := for refs or <- for arrays/mutable fields`
+- **Example**: `test.goop:4:3: TYPE011: cannot assign to immutable binding "x"; …`
+- **Trigger**: Assignment targets a plain immutable `let` binding.
 - **Fix**: `let r = ref 0 in r := 1`, or `arr.(i) <- v` for array cells. Mutable record fields use `r.field <- v`.
 - **Bad**:
   ```goop
@@ -1080,6 +1095,73 @@ These are emitted through `TYPE010` (the typechecker wraps them in a
 - **Message**: `type mismatch: got %s, expected %s (effect row missing effect: %s)`
 - **Note (1.0)**: Same as UNIFY018 — surface rows removed; internal tags may still unify.
 
+### UNIFY020: Expected a map type
+
+- **Error code**: `UNIFY020`
+- **Severity**: Error (via TYPE010)
+- **Message**: includes `UNIFY020: expected a map type`
+- **Fix**: Pass a `map[K] V` value, or adjust the annotation.
+
+### UNIFY021: Expected a pointer
+
+- **Error code**: `UNIFY021`
+- **Severity**: Error (via TYPE010)
+- **Message**: includes `UNIFY021: expected a pointer`
+- **Fix**: Use a `T ptr` / FFI pointer value.
+
+### UNIFY022: Expected a go_slice
+
+- **Error code**: `UNIFY022`
+- **Severity**: Error (via TYPE010)
+- **Message**: includes `UNIFY022: expected a go_slice`
+- **Fix**: Convert with `go_slice_of_list` or declare the FFI slice type.
+
+---
+
+## VIS — Visibility
+
+### VIS001: Private binding access / naming
+
+- **Error code**: `VIS001`
+- **Severity**: Error
+- **Message**: `VIS001: cannot access private binding %q from module …` or
+  `VIS001: private binding %q must use mixedCaps (lower initial)`
+- **Fix**: Keep private names module-local; use mixedCaps for private bindings;
+  export (drop `private`) if cross-module access is required.
+
+### VIS002: Private type in public API
+
+- **Error code**: `VIS002`
+- **Severity**: Warning by default; `[check] private_in_public`
+- **Message**: `VIS002: public %q exposes private type %q`
+- **Trigger**: A non-`private` let/type signature mentions a same-module `private` type or constructor.
+- **Fix**: Make the type public, or mark the API `private`.
+
+---
+
+## IMPORT — Module imports
+
+### IMPORT001: Module not found
+
+- **Error code**: `IMPORT001`
+- **Severity**: Error
+- **Message**: `IMPORT001: module %q not found`
+- **Fix**: Fix the import path or add a `[mappings]` entry in `goop.toml`.
+
+### IMPORT002: Duplicate import
+
+- **Error code**: `IMPORT002`
+- **Severity**: Error
+- **Message**: `IMPORT002: duplicate import …`
+- **Fix**: Remove the duplicate.
+
+### IMPORT003: Import resolve / context failure
+
+- **Error code**: `IMPORT003`
+- **Severity**: Error
+- **Message**: `IMPORT003: …`
+- **Fix**: Run check/build with a real source file path so imports can resolve.
+
 ---
 
 ## EXHAUST — Exhaustiveness Warnings
@@ -1383,14 +1465,14 @@ Narrow static analysis for circular channel communication between two goroutines
 
 ---
 
-## RESULT — Discarded result values
+## RESULT / OPTION — Discarded values
 
 ### RESULT001: Result value discarded
 
 - **Error code**: `RESULT001`
 - **Severity**: Warning by default; configurable via `goop.toml` `[check] discarded_result` (`warn` | `error` | `off`)
 - **Config key**: `discarded_result`
-- **Message**: `result value is discarded; handle with match or bind with let _ = …`
+- **Message**: `RESULT001: result value is discarded; handle with match or bind with let _ = …`
 - **Trigger**: In a `begin … end` sequence, a non-final expression has type `result` and is not bound or matched.
 - **Fix**: `match` the value, propagate it as the sequence result, or discard explicitly with `let _ = e in …`.
 - **Bad**:
@@ -1407,6 +1489,78 @@ Narrow static analysis for circular channel communication between two goroutines
     ()
   end
   ```
+
+### OPTION001: Option value discarded
+
+- **Error code**: `OPTION001`
+- **Severity**: Warning by default; `[check] discarded_option`
+- **Message**: `OPTION001: option value is discarded; handle with match or bind with let _ = …`
+- **Trigger**: Same as RESULT001, but the discarded value has type `option`.
+- **Fix**: `match`, or `let _ = …`.
+
+---
+
+## UNUSED — Unused bindings and imports
+
+### UNUSED001: Unused local binding
+
+- **Error code**: `UNUSED001`
+- **Severity**: Warning by default; `[check] unused`
+- **Message**: `UNUSED001: unused binding %q`
+- **Trigger**: A let-in / function parameter is never referenced. Names `_` / `_foo`
+  and unused **unit**-typed value bindings (sequencing) are ignored. Go FFI
+  imports are not reported here.
+- **Fix**: Use the binding, rename to `_`, or remove it.
+
+### UNUSED002: Unused import
+
+- **Error code**: `UNUSED002`
+- **Severity**: Warning by default; `[check] unused`
+- **Message**: `UNUSED002: unused import %q`
+- **Trigger**: A Goop module import qualifier is never referenced (Go `import go`
+  packages are skipped).
+- **Fix**: Remove the import or use a binding from it.
+
+---
+
+## CODEGEN — Code generation
+
+### CODEGEN001: Unhandled expression
+
+- **Error code**: `CODEGEN001`
+- **Severity**: Error
+- **Message**: `CODEGEN001: …`
+- **Fix**: Simplify the construct or report a compiler bug.
+
+### CODEGEN002: Missing record field for row parameter
+
+- **Error code**: `CODEGEN002`
+- **Severity**: Error
+- **Message**: `CODEGEN002: record literal is missing field %q required by row parameter of %s`
+- **Fix**: Supply every field required by the row parameter.
+
+### CODEGEN003: Missing Go method receiver
+
+- **Error code**: `CODEGEN003`
+- **Severity**: Error
+- **Message**: `CODEGEN003: …`
+- **Fix**: Pass the Go method receiver as the first argument.
+
+---
+
+## GOSIG — Go signatures
+
+### GOSIG001: `.gosig` load failure
+
+- **Error code**: `GOSIG001`
+- **Severity**: Warning / diagnostic on load failure
+- **Fix**: Fix goop-sigs override syntax or regenerate with `goop gen-sig`.
+
+### GOSIG002: Signature fallback
+
+- **Error code**: `GOSIG002`
+- **Severity**: Warning (stderr)
+- **Fix**: Add an explicit `{ val … }` block or improve the stub mapping.
 
 ---
 
@@ -1631,10 +1785,10 @@ associated with a specific source location.
 
 ### CLI011: Gosig fallback warning
 
-- **Error code**: `CLI011`
+- **Error code**: `CLI011` (related wire codes: `GOSIG001` / `GOSIG002`)
 - **Severity**: Warning
-- **Message**: `c0: gosig fallback for %s.%s: %v`
-- **Example**: `c0: gosig fallback for fmt.Printf: loading package "fmt": ...`
+- **Message**: `goop: gosig fallback for %s.%s: %v` (or `GOSIG002: …`)
+- **Example**: `goop: gosig fallback for fmt.Printf: loading package "fmt": ...`
 - **Trigger**: The compiler tried to refine the type of an extern binding by
   looking up the real Go function signature, but the lookup failed. The
   declared Goop type is used as a fallback.

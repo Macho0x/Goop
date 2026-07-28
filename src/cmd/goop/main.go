@@ -1446,13 +1446,29 @@ func runSafetyChecks(mod *ast.Module, tm typeinfo.TypeMap, src []byte, cfg *conf
 	}
 	warnings = append(warnings, r.DeadlockWarns...)
 	if len(r.ResultErrors) > 0 {
-		fmt.Println("FAIL: discarded result errors:")
+		fmt.Println("FAIL: discarded result/option errors:")
 		for _, e := range r.ResultErrors {
 			fmt.Print(report.Render(e, src))
 		}
 		fatal = true
 	}
 	warnings = append(warnings, r.ResultWarns...)
+	if len(r.UnusedErrors) > 0 {
+		fmt.Println("FAIL: unused binding/import errors:")
+		for _, e := range r.UnusedErrors {
+			fmt.Print(report.Render(e, src))
+		}
+		fatal = true
+	}
+	warnings = append(warnings, r.UnusedWarns...)
+	if len(r.VisErrors) > 0 {
+		fmt.Println("FAIL: visibility errors:")
+		for _, e := range r.VisErrors {
+			fmt.Print(report.Render(e, src))
+		}
+		fatal = true
+	}
+	warnings = append(warnings, r.VisWarns...)
 	if len(r.NilchanErrors) > 0 {
 		fmt.Println("FAIL: nil-channel errors:")
 		for _, e := range r.NilchanErrors {
@@ -1492,6 +1508,8 @@ func lspSafetyDiagnostics(mod *ast.Module, tm typeinfo.TypeMap, cfg *config.Conf
 	out = append(out, r.ChannelRaceErrors...)
 	out = append(out, r.DeadlockErrors...)
 	out = append(out, r.ResultErrors...)
+	out = append(out, r.UnusedErrors...)
+	out = append(out, r.VisErrors...)
 	out = append(out, r.NilchanErrors...)
 	out = append(out, r.RefineErrors...)
 	out = append(out, r.ExhaustErrors...)
@@ -1511,7 +1529,24 @@ func lspSafetyDiagnostics(mod *ast.Module, tm typeinfo.TypeMap, cfg *config.Conf
 		}
 	}
 	for _, w := range r.ResultWarns {
+		msg := w.Error()
+		if strings.Contains(msg, "OPTION001") {
+			if cfg.Check.DiscardedOption == config.SeverityError {
+				out = append(out, w)
+			}
+			continue
+		}
 		if cfg.Check.DiscardedResult == config.SeverityError {
+			out = append(out, w)
+		}
+	}
+	for _, w := range r.UnusedWarns {
+		if cfg.Check.Unused == config.SeverityError {
+			out = append(out, w)
+		}
+	}
+	for _, w := range r.VisWarns {
+		if cfg.Check.PrivateInPublic == config.SeverityError {
 			out = append(out, w)
 		}
 	}

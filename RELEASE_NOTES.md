@@ -1,25 +1,23 @@
-# Goop 1.11.0
+# Goop 1.12.0
 
-UX train for Lisette-parity tryability: hosted playground, one-line install,
-`goop new`, clearer diagnostics, quieter channel stubs, and VS Code VSIX on
-releases.
+Diagnostics gap closure: stable error codes on the wire, three new warn-by-default
+lints, and an honest error catalog.
 
 ## Highlights
 
-- **Playground:** GitHub Pages deploy (`https://macho0x.github.io/Goop/`) — enable
-  Pages → GitHub Actions once in repo settings.
-- **Install:** `curl …/scripts/install.sh | bash`
-- **`goop new`:** scaffold a project in seconds
-- **RESULT001** + `help:` tips on common diagnostics
-- **Directional chans** map cleanly (`time.After`-style stubs)
-- **VSIX** attached to GitHub Releases
+- **Stable codes + `help:` tips** for TYPE011, VIS001, IMPORT*, UNIFY020–022,
+  PARSE-MIG002, CODEGEN*, GOSIG*, LINEAR001–005
+- **UNUSED001/002**, **OPTION001**, **VIS002** (defaults: warn; knobs in `[check]`)
+- Catalog cleanup: `open` stays valid; MIG011 → TYPE011; CLI011 says `goop:`
 
-## Workflow
+## Config
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/Macho0x/Goop/main/scripts/install.sh | bash
-goop new hello && cd hello
-goop check main.goop && goop build main.goop
+```toml
+[check]
+discarded_result = "warn"
+discarded_option = "warn"
+unused = "warn"
+private_in_public = "warn"
 ```
 
-See `CHANGELOG.md`, `docs/tutorial/README.md`, and the [playground](https://macho0x.github.io/Goop/).
+See `CHANGELOG.md` and `docs/design/10-error-reference.md`.
