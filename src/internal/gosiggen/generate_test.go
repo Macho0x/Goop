@@ -93,13 +93,16 @@ func TestCuratedGenericSkips(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping curated generics catalog in short mode")
 	}
+	// Prefer exports that exist since Go 1.21. errors.AsType is Go 1.26+ only —
+	// assert it when present, skip the subtest on older toolchains (CI go.mod 1.25).
 	cases := []struct {
-		pkg  string
-		name string
+		pkg      string
+		name     string
+		optional bool // true if the symbol may be absent on older Go
 	}{
-		{"errors", "AsType"},
-		{"sync", "OnceValue"},
-		{"sync", "OnceValues"},
+		{"sync", "OnceValue", false},
+		{"sync", "OnceValues", false},
+		{"errors", "AsType", true},
 	}
 	for _, tc := range cases {
 		tc := tc
@@ -119,7 +122,11 @@ func TestCuratedGenericSkips(t *testing.T) {
 				}
 			}
 			if !found {
+				if tc.optional {
+					t.Skipf("%s.%s not in this Go toolchain (e.g. AsType needs Go 1.26+)", tc.pkg, tc.name)
+				}
 				t.Errorf("expected %s.%s among skipped exports", tc.pkg, tc.name)
+				return
 			}
 			if !strings.Contains(res.Content, "TODO(generics)") {
 				t.Errorf("%s footer should mention TODO(generics)", tc.pkg)
