@@ -12,7 +12,7 @@
 - **RESULT001:** warn on discarded `result` values in `begin` sequences
   (`[check] discarded_result`).
 - Release attaches **VS Code `.vsix`**; optional Marketplace / Open VSX publish
-  when secrets are set.
+  when secrets are set (shell-gated; no `secrets` in `if:`).
 
 ### Interop
 
