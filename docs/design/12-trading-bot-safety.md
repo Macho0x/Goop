@@ -34,4 +34,7 @@ Goop targets compile-time prevention of common trading-bot failure modes.
 
 See [STYLE.md](STYLE.md), `docs/examples/trading_*.goop`, and `orderbook.goop` for worked examples.
 
-**Money / prices:** use fixed-point `std.decimal` (`Decimal`), not `float64`. See [25-decimal.md](25-decimal.md).
+**Money / prices:** use fixed-point `std.decimal` (`Decimal`) for money values
+and arithmetic; integer **cents** are fine for order-book ordering and
+`where n > 0` refinements. See [25-decimal.md](25-decimal.md). Do not use
+`float64` for money (DECIMAL001).

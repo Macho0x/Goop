@@ -83,12 +83,14 @@ This file tracks the remaining work to make Goop a usable language. It is kept i
 
 ## Long term
 
-- [ ] Self-hosting compiler
 - [ ] Comprehensive standard library
 - [ ] Stable 1.0 release
 
 ## Deferred or rejected
 
+- **Self-hosting the compiler in Goop — not planned.** The compiler stays Go;
+  `spike/selfhost-lexer/` is historical only. See `docs/design/01-overview.md`
+  (non-goals).
 - Full dependent types (Idris/Agda style) — SMT refinements cover the practical fragment; see `docs/design/08-deferred-features-analysis.md`.
 - Borrow checker with lifetimes (Rust style) — modal linearity for resources is the right level for a GC'd target.
 - QTT 0-quantity erasure — premature without dependent types or proof terms.

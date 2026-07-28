@@ -16,6 +16,7 @@ and the decimal design note).
 
 | Name | Type | Description |
 |---|---|---|
+| `Decimal` | opaque type | Available under `import goop . "std.decimal"` for annotations |
 | `OfString` | `string -> Decimal` | Parse decimal text (`RequireFromString`; panics on bad input) |
 | `OfInt` | `int -> Decimal` | From integer |
 | `Add` / `Sub` / `Mul` / `Div` | `Decimal -> Decimal -> Decimal` | Arithmetic |
@@ -23,15 +24,30 @@ and the decimal design note).
 | `Equal` | `Decimal -> Decimal -> bool` | Exact equality |
 | `ToString` | `Decimal -> string` | Display |
 
-Opaque type `Decimal` comes from the Go import. Method-call sugar works:
+Opaque type `Decimal` is re-exported through `import goop` (typecheck + codegen).
+You can use it in record fields and annotations:
+
+```goop
+import goop . "std.decimal"
+
+type Quote = { price: Decimal; qty: int }
+
+let q = { price = OfString "99.50"; qty = 1 } in
+...
+```
+
+Method-call sugar works:
 
 ```goop
 let total = price.Add fee in
-let ok = total.Equal (OfString "11.50") in
+let ok = total.equal (OfString "11.50") in
 ...
 ```
 
 There is no `+` / `*.` overloading for `Decimal`.
+
+Integer **cents** remain fine when ordering / refinements want `int`
+(see [`orderbook.goop`](../examples/orderbook.goop)).
 
 ## Example
 
@@ -47,12 +63,14 @@ let main () : unit =
   print_line (ToString total)
 ```
 
-Full demo: [`docs/examples/decimal_money.goop`](../examples/decimal_money.goop).
+Full demo (including a `Decimal` record field):
+[`docs/examples/decimal_money.goop`](../examples/decimal_money.goop).
 
 ## Status
 
-Working MVP with hand-written Go sigs. Not yet: H5 auto-sigs, H6
-`(Decimal, error)` → `result` for `OfString`, prelude auto-import, or a
-compiler lint against float money.
+Working: construct, arithmetic, compare, display, and **cross-module**
+`Decimal` annotations via `import goop`. Not yet: H5 auto-sigs for shopspring,
+H6 `(Decimal, error)` → `result` for `OfString`, or prelude auto-import.
 
-Go re-export helper (for mixed Go packages): `std/decimal/api.go`.
+Go helper for mixed Go packages: `std/decimal/api.go` (cache builds also emit a
+`type Decimal = …` alias from the Goop module).

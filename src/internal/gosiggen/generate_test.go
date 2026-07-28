@@ -88,3 +88,42 @@ func TestGenerateSmokePackages(t *testing.T) {
 		})
 	}
 }
+
+func TestCuratedGenericSkips(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping curated generics catalog in short mode")
+	}
+	cases := []struct {
+		pkg  string
+		name string
+	}{
+		{"errors", "AsType"},
+		{"sync", "OnceValue"},
+		{"sync", "OnceValues"},
+	}
+	for _, tc := range cases {
+		tc := tc
+		t.Run(tc.pkg+"."+tc.name, func(t *testing.T) {
+			res, err := Generate(tc.pkg, Options{Timeout: 20 * time.Second})
+			if err != nil {
+				t.Skipf("%s: %v", tc.pkg, err)
+			}
+			found := false
+			for _, s := range res.Skipped {
+				if s.Name == tc.name {
+					found = true
+					if !strings.Contains(s.Reason, "TODO(generics)") && !strings.Contains(s.Reason, "TypeParam") {
+						t.Errorf("%s.%s skip reason %q should mention generics", tc.pkg, tc.name, s.Reason)
+					}
+					break
+				}
+			}
+			if !found {
+				t.Errorf("expected %s.%s among skipped exports", tc.pkg, tc.name)
+			}
+			if !strings.Contains(res.Content, "TODO(generics)") {
+				t.Errorf("%s footer should mention TODO(generics)", tc.pkg)
+			}
+		})
+	}
+}

@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -87,13 +88,14 @@ type Generator struct {
 	externRetTypes     map[string]ast.Type // Goop extern val name → full function type
 	externResultCoerce map[string]bool     // H6: (T, error) → result wrapper at call site
 	goTypeQual         map[string]string   // Goop type name → Go qualified name
+	ffiTypeAliases     map[string]string   // local export: type Name = pkg.Name (import go opaque)
 	externMethods      map[string]externMethod
 	externFields       map[string]map[string]string
 
 	// row-polymorphic function params: funcName → field names
-	rowParams      map[string][]string
-	rowParamName   map[string]string // funcName → row param name
-	rowParamIndex  map[string]int    // funcName → index among emitted (non-unit) params
+	rowParams     map[string][]string
+	rowParamName  map[string]string // funcName → row param name
+	rowParamIndex map[string]int    // funcName → index among emitted (non-unit) params
 
 	currentFunc         string // function being generated (for ? operator)
 	optionCtorHint      string // OptionGoType hint while emitting typed record fields
@@ -143,6 +145,7 @@ func NewGenerator(srcFile string, cfg *config.Config) *Generator {
 		externRetTypes:     make(map[string]ast.Type),
 		externResultCoerce: make(map[string]bool),
 		goTypeQual:         make(map[string]string),
+		ffiTypeAliases:     make(map[string]string),
 		externMethods:      make(map[string]externMethod),
 		externFields:       make(map[string]map[string]string),
 		rowParams:          make(map[string][]string),
@@ -384,6 +387,8 @@ func (g *Generator) Generate(mod *ast.Module) (string, error) {
 	// Option/Result type definitions
 	g.emitOptionTypes()
 	g.emitResultTypes()
+	// Re-export import go { type … } as aliases so importers can write decimal.Decimal
+	g.emitFFITypeAliases()
 	// Record type definitions
 	g.emitRecordTypes()
 	// ADT type definitions
@@ -1106,7 +1111,9 @@ func (g *Generator) collectGoImport(spec ast.ImportSpec) {
 		}
 	}
 	for _, et := range spec.Types {
-		g.goTypeQual[et.Name] = packageNameFromPath2(spec.Path) + "." + et.Name
+		qual := packageNameFromPath2(spec.Path) + "." + et.Name
+		g.goTypeQual[et.Name] = qual
+		g.ffiTypeAliases[et.Name] = qual
 	}
 }
 
@@ -1201,6 +1208,34 @@ func (g *Generator) collectDotExports(dep *ast.Module, goPkg string) {
 				g.registerImportedOptionFields(rk, goPkg)
 			}
 		}
+	}
+	// Re-export FFI opaque types so record fields type as goPkg.Name (e.g. decimal.Decimal).
+	for _, spec := range dep.Imports {
+		if spec.Kind != ast.ImportGo {
+			continue
+		}
+		for _, et := range spec.Types {
+			if g.goTypeQual == nil {
+				g.goTypeQual = make(map[string]string)
+			}
+			g.goTypeQual[et.Name] = goPkg + "." + et.Name
+		}
+	}
+}
+
+// emitFFITypeAliases writes `type Name = pkg.Name` for each import go { type Name }
+// so goop modules that wrap opaque Go types export those names to importers.
+func (g *Generator) emitFFITypeAliases() {
+	if len(g.ffiTypeAliases) == 0 {
+		return
+	}
+	names := make([]string, 0, len(g.ffiTypeAliases))
+	for name := range g.ffiTypeAliases {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	for _, name := range names {
+		g.emitf("type %s = %s\n\n", name, g.ffiTypeAliases[name])
 	}
 }
 

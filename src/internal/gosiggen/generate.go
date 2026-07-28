@@ -254,7 +254,14 @@ func formatGosig(res *Result, typeDecls, valDecls []string) string {
 	if len(res.Skipped) > 0 {
 		b.WriteString("(* Skipped exports:\n")
 		for _, s := range res.Skipped {
-			fmt.Fprintf(&b, " *   [%s] %s — %s\n", s.Kind, s.Name, s.Reason)
+			reason := s.Reason
+			if strings.Contains(reason, "TODO(generics)") {
+				fmt.Fprintf(&b, " *   [%s] %s — %s\n", s.Kind, s.Name, reason)
+			} else if strings.Contains(reason, "TypeParam") || strings.Contains(reason, "type parameter") {
+				fmt.Fprintf(&b, " *   [%s] %s — TODO(generics): %s\n", s.Kind, s.Name, reason)
+			} else {
+				fmt.Fprintf(&b, " *   [%s] %s — %s\n", s.Kind, s.Name, reason)
+			}
 		}
 		b.WriteString(" *)\n")
 	}

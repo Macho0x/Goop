@@ -130,6 +130,12 @@ func mapType(t gotypes.Type, pkgPath string, depth int) MapResult {
 		// Bare tuples only appear as multi-results; handled in mapResults.
 		return MapResult{Reason: "bare tuple not representable", Skipped: true}
 
+	case *gotypes.TypeParam:
+		return MapResult{
+			Reason:  "TODO(generics): generic type parameter",
+			Skipped: true,
+		}
+
 	default:
 		return MapResult{Reason: fmt.Sprintf("unsupported Go type %T", t), Skipped: true}
 	}

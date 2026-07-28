@@ -91,6 +91,10 @@ smt = false                    # optional Z3
 | `verify_ffi` | `false` | GOSIG003 hand-sig arity check |
 | `smt` | `false` | Optional Z3 for refinements |
 
+**Also:** hand `{ val … }` naming a **generic** Go export warns **GOSIG004**
+(always on; not a `[check]` knob). See
+[32-go-generics-sigs.md](../design/32-go-generics-sigs.md).
+
 ## Error code reference
 
 - [Trading bot safety matrix](../design/12-trading-bot-safety.md)

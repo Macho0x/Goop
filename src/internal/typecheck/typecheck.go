@@ -154,6 +154,9 @@ func (c *Checker) bindExternValsOpts(importPath string, vals []ast.ExternVal, ra
 	for _, ev := range vals {
 		t := c.convertASTType(ev.Type)
 		if ev.Kind == ast.ExternFunc {
+			if importPath != "" {
+				c.warnExternGeneric(importPath, ev.Name)
+			}
 			if c.verifyFFI && importPath != "" {
 				c.verifyExternArity(importPath, ev.Name, t)
 			}
@@ -211,6 +214,16 @@ func (c *Checker) verifyExternArity(importPath, funcName string, declared types.
 		fmt.Fprintf(os.Stderr, "GOSIG003: hand signature for %s.%s has %d param(s), Go has %d\n",
 			importPath, funcName, declaredArity, goArity)
 	}
+}
+
+// warnExternGeneric emits GOSIG004 when a hand { val } names a generic Go export.
+func (c *Checker) warnExternGeneric(importPath, funcName string) {
+	ok, err := gosig.FuncHasTypeParams(importPath, funcName)
+	if err != nil || !ok {
+		return
+	}
+	fmt.Fprintf(os.Stderr, "GOSIG004: hand signature for %s.%s references generic Go export; omit it or wrap with @[go] — see docs/design/32-go-generics-sigs.md\n",
+		importPath, funcName)
 }
 
 func countCurriedParams(t types.Type) int {
@@ -2791,8 +2804,23 @@ func (c *Checker) bindModuleExports(dep *ast.Module, prefix string, unqualified 
 		goImportPaths: make(map[string]string),
 	}
 	depChecker.initBuiltins()
-	if len(dep.Imports) > 0 && resolver != nil {
-		depChecker.bindImportSpecs(dep.Imports, deps, resolver)
+	if len(dep.Imports) > 0 {
+		if resolver != nil {
+			depChecker.bindImportSpecs(dep.Imports, deps, resolver)
+		} else {
+			// Still bind ImportGo so FFI opaque types (e.g. Decimal) are available to re-export.
+			for _, spec := range dep.Imports {
+				if spec.Kind != ast.ImportGo {
+					continue
+				}
+				if len(spec.Types) > 0 {
+					depChecker.bindExternTypes(spec.Path, spec.Types)
+				}
+				if len(spec.Vals) > 0 {
+					depChecker.bindExternValsOpts(spec.Path, spec.Vals, spec.Raw)
+				}
+			}
+		}
 	}
 	depChecker.checkModule(dep)
 	for _, d := range dep.Decls {
@@ -2825,6 +2853,43 @@ func (c *Checker) bindModuleExports(dep *ast.Module, prefix string, unqualified 
 					c.env.Bind(prefix+"."+d.Name, s)
 				}
 			}
+		}
+	}
+	// Re-export FFI opaque types from dep's import go { type … } (e.g. Decimal).
+	for name, path := range depChecker.goImportPaths {
+		if strings.HasPrefix(name, "_") {
+			continue
+		}
+		s := depChecker.env.Lookup(name)
+		if s == nil {
+			continue
+		}
+		bindName := name
+		if !unqualified {
+			if prefix == "" {
+				continue
+			}
+			bindName = prefix + "." + name
+		} else if existing := c.env.Lookup(name); existing != nil {
+			// Already bound (Goop type or earlier import) — keep existing.
+			continue
+		}
+		c.env.Bind(bindName, s)
+		if c.goImportPaths == nil {
+			c.goImportPaths = make(map[string]string)
+		}
+		c.goImportPaths[bindName] = path
+		if schema := depChecker.goStructs[name]; schema != nil {
+			if c.goStructs == nil {
+				c.goStructs = make(map[string]*goStructSchema)
+			}
+			c.goStructs[bindName] = schema
+		}
+		if fields := depChecker.goFields[name]; fields != nil {
+			if c.goFields == nil {
+				c.goFields = make(map[string]map[string]types.Type)
+			}
+			c.goFields[bindName] = fields
 		}
 	}
 }

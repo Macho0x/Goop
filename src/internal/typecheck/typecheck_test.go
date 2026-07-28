@@ -1255,3 +1255,37 @@ func TestRemovedConstructRestrictionMessages(t *testing.T) {
 		})
 	}
 }
+
+func TestGOSIG004GenericHandVal(t *testing.T) {
+	src := `module main
+import go "slices" {
+  val Contains : string go_slice -> string -> bool
+}
+let main () = ()
+`
+	mod, err := parser.Parse("gosig004.goop", []byte(src))
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	mod = desugar.DesugarModule(mod)
+
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	old := os.Stderr
+	os.Stderr = w
+	_, _, _ = typecheck.CheckWithTypes(mod)
+	_ = w.Close()
+	os.Stderr = old
+	buf := make([]byte, 4096)
+	n, _ := r.Read(buf)
+	_ = r.Close()
+	out := string(buf[:n])
+	if !strings.Contains(out, "GOSIG004") {
+		t.Fatalf("expected GOSIG004 on stderr, got %q", out)
+	}
+	if !strings.Contains(out, "slices.Contains") && !strings.Contains(out, "slices") {
+		t.Fatalf("expected slices.Contains in GOSIG004 message, got %q", out)
+	}
+}

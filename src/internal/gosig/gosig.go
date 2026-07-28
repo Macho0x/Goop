@@ -180,6 +180,34 @@ func LookupFunc(importPath, funcName string) (*FuncSig, error) {
 	return fsig, nil
 }
 
+// FuncHasTypeParams reports whether the named package-level function is generic
+// (has type parameters on the signature). Used for GOSIG004 honesty warnings.
+func FuncHasTypeParams(importPath, funcName string) (bool, error) {
+	pkg, err := loadPackage(importPath)
+	if err != nil {
+		return false, err
+	}
+	obj := pkg.Types.Scope().Lookup(funcName)
+	if obj == nil {
+		return false, fmt.Errorf("function %q not found in package %q", funcName, importPath)
+	}
+	fn, ok := obj.(*gotypes.Func)
+	if !ok {
+		return false, fmt.Errorf("%q is not a function (got %T)", funcName, obj)
+	}
+	sig, ok := fn.Type().(*gotypes.Signature)
+	if !ok {
+		return false, fmt.Errorf("%q has non-signature type %T", funcName, fn.Type())
+	}
+	if tparams := sig.TypeParams(); tparams != nil && tparams.Len() > 0 {
+		return true, nil
+	}
+	if rtparams := sig.RecvTypeParams(); rtparams != nil && rtparams.Len() > 0 {
+		return true, nil
+	}
+	return false, nil
+}
+
 // LookupType loads a package-level named type and returns its kind and, for
 // structs, exported (+ promoted) fields. Results are cached keyed by
 // "ty:"+importPath+"."+typeName.

@@ -1,0 +1,14 @@
+module main
+
+(* Cross-module FFI opaque type: Decimal via import goop . "std.decimal". *)
+import goop . "std.decimal"
+
+type Order = { price: Decimal; qty: int }
+
+let main () =
+  let o = { price = OfString "1.50"; qty = 2 } in
+  begin
+    assert (ToString o.price = "1.5");
+    assert (o.qty = 2);
+    print_line "decimal reexport record OK"
+  end

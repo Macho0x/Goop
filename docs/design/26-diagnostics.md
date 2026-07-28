@@ -2,7 +2,7 @@
 
 Lisette advertises **250+** diagnostics. Goop’s catalog lives in
 [10-error-reference.md](10-error-reference.md). Counted from `###` headings
-there (2026-07-28, release 1.13):
+there (2026-07-28, release 1.14):
 
 | Prefix | Count | Notes |
 |--------|------:|-------|
@@ -17,7 +17,7 @@ there (2026-07-28, release 1.13):
 | EXHAUST | 3 | |
 | REFINE | 3 | |
 | CODEGEN | 3 | |
-| GOSIG | 3 | GOSIG001–003 (`verify_ffi`) |
+| GOSIG | 4 | GOSIG001–004 (GOSIG003 behind `verify_ffi`; GOSIG004 always) |
 | UNUSED | 2 | |
 | RESULT / OPTION | 2 | |
 | ROW | 1 | ROW001 open-row literal |
@@ -43,7 +43,7 @@ file**. `goop lint <file-or-dir>` packages that pipeline for CI:
 - Prints each diagnostic, then `N error(s), M warning(s)`
 - Exits non-zero on errors; `goop.toml` `[check]` severities elevate warnings
 
-## `[check]` keys (1.13)
+## `[check]` keys (1.14)
 
 | Key | Default | Codes |
 |-----|---------|-------|
@@ -60,3 +60,6 @@ file**. `goop lint <file-or-dir>` packages that pipeline for CI:
 | `verify_ffi` | `false` | GOSIG003 |
 | `smt` | `false` | optional Z3 |
 | `effect_inference` | `true` | effect row inference |
+
+**Also always-on (no knob):** **GOSIG004** when a hand `{ val … }` names a
+generic Go export — see [32-go-generics-sigs.md](32-go-generics-sigs.md).

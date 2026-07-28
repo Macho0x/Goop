@@ -1597,6 +1597,15 @@ Narrow static analysis for circular channel communication between two goroutines
 - **Severity**: Warning (stderr); `[check] verify_ffi` (default off)
 - **Fix**: Align the hand `{ val … }` arity with the Go package, or leave `verify_ffi = false`.
 
+### GOSIG004: Hand signature names generic Go export
+
+- **Error code**: `GOSIG004`
+- **Severity**: Warning (stderr); always on (not gated by `verify_ffi`)
+- **Message**: `GOSIG004: hand signature for %s.%s references generic Go export; omit it or wrap with @[go] — see docs/design/32-go-generics-sigs.md`
+- **Fix**: Omit the unmappable generic from the hand block, use a thin `@[go]`
+  wrapper with a concrete API, or wait for a future monomorphization design.
+  See [32-go-generics-sigs.md](32-go-generics-sigs.md).
+
 ---
 
 ## NIL — Nil Channel Errors

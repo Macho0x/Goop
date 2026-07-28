@@ -52,7 +52,7 @@ Reach Go packages with `import go "net/http" { ... }` (and curated `.gosig`s as 
 |---|---|---|
 | More `std.list` combinators (`Filter`, `Fold`, …) | Optional | Only if used often enough to beat writing `match`; keep thin |
 | `std.lazy` | Deferred | Prelude `Lazy.*` / `lazy e` stay; a thin wrapper does not lower cleanly through polymorphic Goop functions yet |
-| Decimal / money | **MVP landed** | `std.decimal` + [25-decimal.md](../design/25-decimal.md); H5/H6 polish remain |
+| Decimal / money | **Landed** | `std.decimal` + cross-module `Decimal` annotations ([25-decimal.md](../design/25-decimal.md)); H5/H6 polish remain |
 | `std.net` / `std.codec` / … | **Out of scope** | Use `import go` |
 
 ## Import forms

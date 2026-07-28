@@ -1,22 +1,22 @@
-# Goop 1.13.0
+# Goop 1.14.0
 
-Refinement train: more codes on the wire, ROW001, DECIMAL001, FFI honesty,
-LSP warning parity, and a Go-generics-in-sigs policy doc.
+Decimal annotations work across modules; generics-in-sigs honesty (catalog + GOSIG004).
 
 ## Highlights
 
-- **TYPE/PARSE/IMPORT** stable prefixes + `help:` tips
-- **ROW001** + safer row-param codegen; **DECIMAL001** (`money_float`)
-- **GOSIG003** optional hand-sig verify (`verify_ffi`)
-- **LSP** shows safety warnings by default
-- Docs: FFI honesty, prelude FFI helpers, [32-go-generics-sigs.md](docs/design/32-go-generics-sigs.md)
+- **`import goop` re-exports FFI opaque types** — e.g. `price: Decimal` after
+  `import goop . "std.decimal"` (check + build).
+- **GOSIG004** warns when a hand `{ val … }` names a generic Go export.
+- Curated **TODO(generics)** skip catalog in
+  [32-go-generics-sigs.md](docs/design/32-go-generics-sigs.md).
+- Self-hosting remains **not planned**.
 
-## Config
+## Try it
 
-```toml
-[check]
-money_float = "warn"
-verify_ffi = false
+```goop
+import goop . "std.decimal"
+
+type Quote = { price: Decimal; qty: int }
 ```
 
 See `CHANGELOG.md` and the [playground](https://macho0x.github.io/Goop/).

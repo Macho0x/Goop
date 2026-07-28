@@ -237,3 +237,31 @@ func TestAssignableSlogLevelLeveler(t *testing.T) {
 		t.Error("expected slog.Level assignable to slog.Leveler")
 	}
 }
+
+func TestFuncHasTypeParamsSlicesContains(t *testing.T) {
+	done := make(chan struct{})
+	var ok bool
+	var err error
+	go func() {
+		ok, err = FuncHasTypeParams("slices", "Contains")
+		close(done)
+	}()
+	select {
+	case <-done:
+	case <-time.After(10 * time.Second):
+		t.Skip("packages.Load timed out")
+	}
+	if err != nil {
+		t.Skipf("FuncHasTypeParams unavailable: %v", err)
+	}
+	if !ok {
+		t.Error("expected slices.Contains to be generic")
+	}
+	ok2, err2 := FuncHasTypeParams("strings", "HasPrefix")
+	if err2 != nil {
+		t.Skipf("FuncHasTypeParams strings: %v", err2)
+	}
+	if ok2 {
+		t.Error("expected strings.HasPrefix not to be generic")
+	}
+}

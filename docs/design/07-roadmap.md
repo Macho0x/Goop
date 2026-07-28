@@ -66,7 +66,6 @@ This file presents the same task list as `TODO.md`, organized by development pha
 
 ## Phase 4: Maturity
 
-- [ ] Self-hosting compiler in Goop.
 - [x] IDE support (LSP) - full implementation with diagnostics, hover, definition, completion
 - [x] Formatter (`goop fmt` command)
 - [ ] Comprehensive standard library.
@@ -87,6 +86,8 @@ This file presents the same task list as `TODO.md`, organized by development pha
 
 ## Deferred or rejected
 
+- **Self-hosting the compiler in Goop — not planned.** Bootstrap stays Go;
+  early lexer spike under `spike/selfhost-lexer/` is archival only.
 - Full dependent types (Idris/Agda style) — SMT refinements cover the practical fragment; see `docs/design/08-deferred-features-analysis.md`.
 - Borrow checker with lifetimes (Rust style) — modal linearity for resources is the right level for a GC'd target.
 - QTT 0-quantity erasure — premature without dependent types or proof terms.

@@ -131,11 +131,17 @@ Smoke subset for CI-ish checks: `strings`, `fmt`, `errors`, `strconv`.
    decls; full curated polish should either emit opaque deps or skip.
 3. **Complex / anonymous interfaces / unsafe** — still skipped with reasons
    when not representable.
+4. **Go generics** — skipped with `TODO(generics)` in the footer; curated
+   catalog in [32-go-generics-sigs.md](32-go-generics-sigs.md). Hand `{ val }`
+   naming a generic export warns **GOSIG004**.
 
 **Shipped (1.10):** compile-time auto-load of `.gosig` for bare `import go`;
 Go `map[K]V` → `map[K] V` in gosiggen; `obj` ≡ `any`; H6 `(T, error)` →
 `result` coercion is live. Generics policy: [32-go-generics-sigs.md](32-go-generics-sigs.md).
 `result` coercion (`import go raw` opt-out).
+
+When changing the generator or FFI diagnostics, follow
+[31-language-update-checklist.md](31-language-update-checklist.md).
 
 ## Tests
 

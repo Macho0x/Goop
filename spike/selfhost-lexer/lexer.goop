@@ -1,5 +1,5 @@
-(* Spike: tiny lexer fragment written in Goop to probe self-host readiness.
-   Not a full Stage1 compiler — just enough to exercise maps and brands. *)
+(* Archival spike only — self-hosting is not planned (compiler stays Go).
+   Kept as a small map/brand exercise; not a Stage1 compiler fragment. *)
 module selfhost_lexer
 
 type token_kind = | Ident | Int | String | Other

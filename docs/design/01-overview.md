@@ -39,7 +39,8 @@ This means:
 
 ## Non-goals
 
-- Self-hosting (the bootstrap compiler is written in Go).
+- **Self-hosting the compiler in Goop — not planned.** The compiler remains a
+  Go program; there is no L6 / self-host port on the roadmap.
 - A full Rust-style borrow checker with lifetimes (linear `: 1` remains).
 - Direct machine-code output.
 - Replacing Go entirely.

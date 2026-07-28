@@ -958,3 +958,32 @@ func TestCodegenExamplesHaveNoTODOMarkers(t *testing.T) {
 		})
 	}
 }
+
+func TestDecimalReexportRecordCodegen(t *testing.T) {
+	root, err := filepath.Abs("../../..")
+	if err != nil {
+		t.Fatal(err)
+	}
+	srcPath := filepath.Join(root, "tests", "decimal_reexport_record_test.goop")
+	src, err := os.ReadFile(srcPath)
+	if err != nil {
+		t.Fatalf("read: %v", err)
+	}
+	mod, err := parser.Parse(srcPath, src)
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	mod = desugar.DesugarModule(mod)
+	cfg := config.DefaultConfig()
+	gen := codegen.NewGenerator(srcPath, cfg)
+	goSrc, err := gen.Generate(mod)
+	if err != nil {
+		t.Fatalf("generate: %v", err)
+	}
+	if !strings.Contains(goSrc, "Price decimal.Decimal") {
+		t.Fatalf("expected Price decimal.Decimal in generated struct, got:\n%s", goSrc)
+	}
+	if strings.Contains(goSrc, "Price Decimal\n") || strings.Contains(goSrc, "Price Decimal}") {
+		t.Error("must not emit unqualified Price Decimal")
+	}
+}

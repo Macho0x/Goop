@@ -1,7 +1,9 @@
 module Trading.OrderBook
 
-(* Prices as integer cents — avoid float money (DECIMAL001).
- * Prefer std.decimal.Decimal in apps; see docs/design/25-decimal.md. *)
+(* Prices as integer cents — intentional for book ordering and
+ * `where price_cents > 0` refinements. Prefer std.decimal.Decimal for money
+ * values / record fields; see docs/examples/decimal_money.goop and
+ * docs/design/25-decimal.md. DECIMAL001 still warns on float money names. *)
 
 type order_id = | Order_id of string
 type symbol = | Symbol of string

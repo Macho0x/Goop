@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.14.0
+
+### FFI / Decimal
+
+- **Cross-module FFI opaque types:** `import goop` re-exports `import go { type … }`
+  (typecheck + codegen). `std.decimal.Decimal` works in record fields / annotations.
+- Codegen emits `type Decimal = …` aliases for opaque Go types in wrapping modules.
+
+### Generics honesty
+
+- Generator skips use explicit **`TODO(generics)`** for `TypeParam`.
+- Curated skip catalog in [32-go-generics-sigs.md](docs/design/32-go-generics-sigs.md).
+- **GOSIG004** always-on warn when a hand `{ val … }` names a generic Go export.
+
+### Docs / product
+
+- Self-hosting the compiler in Goop is **not planned** (non-goal / deferred).
+- Decimal examples: record-field demo; orderbook/allmids keep intentional cents.
+- Checklist 31 + diagnostics/stdlib/FFI docs synced for GOSIG004 and Decimal re-export.
+
 ## 1.13.0
 
 ### Diagnostics / safety

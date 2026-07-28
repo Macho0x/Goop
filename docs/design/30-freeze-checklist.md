@@ -1,6 +1,8 @@
-# 30 — Freeze checklist (pre–self-host)
+# 30 — Freeze checklist
 
-Use before declaring the surface frozen enough to start L6 (self-host port).
+Use before declaring a language / interop surface freeze (release cut or
+major milestone). Self-hosting is **not planned**; this checklist is not a
+gate for a Goop-written compiler.
 
 For **every** language / diagnostics / CLI change (not only freezes), use
 [31-language-update-checklist.md](31-language-update-checklist.md).
@@ -31,7 +33,6 @@ For **every** language / diagnostics / CLI change (not only freezes), use
 - [x] [docs/stdlib/README.md](../stdlib/README.md) still: no `std.net` / `std.fs` / `std.json`
 - [x] [Writing tools](../guides/writing-tools.md) example checks clean
 
-## Optional before L6
+## Optional polish
 
-- [ ] `spike/selfhost-lexer/` compiles under bootstrap Goop
 - [ ] Benchmarks for branded IDs closer to hand Go

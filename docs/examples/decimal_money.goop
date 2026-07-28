@@ -1,10 +1,13 @@
 module main
 
-(* Money demo: fixed-point Decimal, not float64.
+(* Money demo: fixed-point Decimal (including record fields), not float64.
  * See docs/design/25-decimal.md and docs/design/12-trading-bot-safety.md.
+ * Integer cents remain fine for order-book ordering; use Decimal for money values.
  *)
 
 import goop . "std.decimal"
+
+type Quote = { price: Decimal; qty: int }
 
 let main () : unit =
   let price = OfString "10.00" in
@@ -14,15 +17,19 @@ let main () : unit =
   let total = subtotal.Add fee in
   let change = total.Sub (OfString "20.00") in
   let half = total.Div (OfInt 2) in
+  let q = { price = OfString "99.50"; qty = 1 } in
   begin
     assert (ToString subtotal = "30");
     assert (ToString total = "31.5");
     assert (ToString change = "11.5");
     assert (Cmp total (OfString "31.50") = 0);
     assert (ToString half = "15.75");
-    assert (Equal total (OfString "31.5"));
+    assert (equal total (OfString "31.5"));
+    assert (ToString q.price = "99.5");
+    assert (q.qty = 1);
     print_line ("subtotal=" ^ ToString subtotal);
     print_line ("total=" ^ ToString total);
     print_line ("change=" ^ ToString change);
-    print_line ("half=" ^ ToString half)
+    print_line ("half=" ^ ToString half);
+    print_line ("quote=" ^ ToString q.price)
   end

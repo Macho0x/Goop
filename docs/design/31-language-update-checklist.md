@@ -54,7 +54,9 @@ Docs must match the compiler, not aspirational design. Prefer OCaml forms from
 | [CHANGELOG](../../CHANGELOG.md) / [RELEASE_NOTES](../../RELEASE_NOTES.md) | Every **release** |
 | [07-roadmap.md](07-roadmap.md) / [TODO.md](../../TODO.md) | Milestone or deferred work moves |
 
-Also: `[check] verify_ffi` / GOSIG003 when touching hand `import go { val … }`; `money_float` / DECIMAL001 for trading examples.
+Also: `[check] verify_ffi` / GOSIG003 when touching hand `import go { val … }`;
+**GOSIG004** (always warn) when a hand val names a generic Go export;
+`money_float` / DECIMAL001 for trading examples.
 
 ## 6. Editors & highlighting
 

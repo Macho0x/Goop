@@ -197,9 +197,10 @@ codegen already emits multi-value assignment. Tests:
 
 **Completed:** `src/internal/version` + `goop version`.
 
-### L6 — Self-hosting compiler ⏸️ DEFERRED (post-1.0)
+### L6 — Self-hosting compiler ❌ NOT PLANNED
 
-Not part of this release train.
+Removed from the roadmap. The compiler stays Go; see non-goals in
+`docs/design/01-overview.md`. `spike/selfhost-lexer/` is archival only.
 
 ---
 
@@ -261,7 +262,7 @@ Not part of this release train.
 | L3 | LOW | Registry story documented | ✅ DONE |
 | L4 | LOW | Windows CI | ✅ DONE |
 | L5 | LOW | Version constant | ✅ DONE |
-| L6 | LOW | Self-hosting compiler | ⏸️ DEFERRED |
+| L6 | LOW | Self-hosting compiler | ❌ NOT PLANNED |
 
 ---
 
@@ -287,7 +288,7 @@ Not part of this release train.
 ## 10. Related documents
 
 - `docs/design/STYLE.md` — language surface, including removed features
-- `TODO.md` — remaining work, including self-hosting and stdlib items
+- `TODO.md` — remaining work (stdlib / 1.0; self-host explicitly not planned)
 - `docs/design/07-roadmap.md` — phased plan
 - `docs/design/12-trading-bot-safety.md` — the domain-fit motivation for H4, M1
 - `docs/design/18-go-methods.md` — FFI method/field lowering guarantees

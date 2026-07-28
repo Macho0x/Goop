@@ -239,9 +239,15 @@ curated package set into the build cache (`$GOOP_HOME/build/go-sigs/…`), with
 repo overrides under `goop-sigs/`. Bare `import go "…"` auto-loads (override →
 cache → generate-on-miss for curated paths). Hand `{ val … }` blocks remain
 authoritative and are **not** a full proof against upstream Go — enable
-`[check] verify_ffi = true` for **GOSIG003** arity checks. See
+`[check] verify_ffi = true` for **GOSIG003** arity checks. Hand `{ val … }`
+that names a **generic** Go export always warns **GOSIG004** (not gated by
+`verify_ffi`). FFI opaque types from `import go { type … }` in a Goop module
+are re-exported through `import goop` (e.g. `std.decimal`’s `Decimal`). See
 [28-go-sig-resolution.md](28-go-sig-resolution.md) and
 [32-go-generics-sigs.md](32-go-generics-sigs.md).
+
+When changing this area, follow
+[31-language-update-checklist.md](31-language-update-checklist.md).
 
 
 | Mechanism | Role |
