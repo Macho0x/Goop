@@ -1,5 +1,8 @@
 module Trading.OrderBook
 
+(* Prices as integer cents — avoid float money (DECIMAL001).
+ * Prefer std.decimal.Decimal in apps; see docs/design/25-decimal.md. *)
+
 type order_id = | Order_id of string
 type symbol = | Symbol of string
 
@@ -9,14 +12,14 @@ type Order =
   { id: order_id
   ; symbol: symbol
   ; side: Side
-  ; price: float where price > 0.0
+  ; price_cents: int where price_cents > 0
   ; qty: int where qty > 0
   }
 
 type Fill =
   { buyOrder: order_id
   ; sellOrder: order_id
-  ; price: float
+  ; price_cents: int
   ; qty: int where qty > 0
   }
 
@@ -27,16 +30,16 @@ type Book =
 
 let emptyBook : Book = { bids = []; asks = [] }
 
-let isBetter (side: Side) (a: float) (b: float) : bool =
+let isBetter (side: Side) (a: int) (b: int) : bool =
   match side with
   | Buy -> a > b
   | Sell -> a < b
 
-let rec insertBy (greater: float -> float -> bool) (o: Order) (orders: Order list) : Order list =
+let rec insertBy (greater: int -> int -> bool) (o: Order) (orders: Order list) : Order list =
   match orders with
   | [] -> [o]
   | first :: rest ->
-      if greater o.price first.price then o :: orders
+      if greater o.price_cents first.price_cents then o :: orders
       else first :: insertBy greater o rest
 
 let addOrder (bk: Book) (o: Order) : Book =
@@ -44,7 +47,7 @@ let addOrder (bk: Book) (o: Order) : Book =
   | Buy -> { bids = insertBy (isBetter Buy) o bk.bids; asks = bk.asks }
   | Sell -> { bids = bk.bids; asks = insertBy (isBetter Sell) o bk.asks }
 
-let bestBid (bk: Book) : float option =
+let bestBid (bk: Book) : int option =
   match bk.bids with
   | [] -> None
-  | b :: _ -> Some b.price
+  | b :: _ -> Some b.price_cents

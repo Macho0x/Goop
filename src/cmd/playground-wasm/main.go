@@ -150,6 +150,7 @@ func safetyDiagnostics(r checkpipeline.Result) ([]diagnostic, bool) {
 	add(r.ResultErrors, "error")
 	add(r.UnusedErrors, "error")
 	add(r.VisErrors, "error")
+	add(r.MoneyErrors, "error")
 	add(r.NilchanErrors, "error")
 	add(r.RefineErrors, "error")
 	add(r.ExhaustErrors, "error")
@@ -159,6 +160,7 @@ func safetyDiagnostics(r checkpipeline.Result) ([]diagnostic, bool) {
 	add(r.ResultWarns, "warning")
 	add(r.UnusedWarns, "warning")
 	add(r.VisWarns, "warning")
+	add(r.MoneyWarns, "warning")
 	add(r.RefineWarnings, "warning")
 	add(r.ExhaustWarns, "warning")
 
@@ -168,6 +170,7 @@ func safetyDiagnostics(r checkpipeline.Result) ([]diagnostic, bool) {
 		len(r.ResultErrors) > 0 ||
 		len(r.UnusedErrors) > 0 ||
 		len(r.VisErrors) > 0 ||
+		len(r.MoneyErrors) > 0 ||
 		len(r.NilchanErrors) > 0 ||
 		len(r.RefineErrors) > 0 ||
 		len(r.ExhaustErrors) > 0

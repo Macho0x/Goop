@@ -332,7 +332,7 @@ grammar. The parser attempts error recovery to report multiple errors.
   let x = 1
   ```
 
-### PARSE003: `open` must appear before any declarations
+### PARSE003: `import` must appear before any declarations
 
 - **Error code**: `PARSE003`
 - **Severity**: Error
@@ -599,7 +599,7 @@ grammar. The parser attempts error recovery to report multiple errors.
 Type errors indicate that the program's types do not match or that a name
 cannot be resolved. All type errors stop compilation.
 
-### TYPE001: Unsupported extern language
+### TYPE001: Unsupported extern language (obsolete — PARSE-MIG002)
 
 - **Error code**: `TYPE001`
 - **Severity**: Error
@@ -1155,6 +1155,13 @@ These are emitted through `TYPE010` (the typechecker wraps them in a
 - **Message**: `IMPORT002: duplicate import …`
 - **Fix**: Remove the duplicate.
 
+### IMPORT004: Import binding name conflict
+
+- **Error code**: `IMPORT004`
+- **Severity**: Error
+- **Message**: `IMPORT004: import binds %q which conflicts with existing name`
+- **Fix**: Rename the binding or remove the conflicting declaration.
+
 ### IMPORT003: Import resolve / context failure
 
 - **Error code**: `IMPORT003`
@@ -1523,6 +1530,28 @@ Narrow static analysis for circular channel communication between two goroutines
 
 ---
 
+## ROW — Open row parameters
+
+### ROW001: Missing field in row-parameter record literal
+
+- **Error code**: `ROW001`
+- **Severity**: Error
+- **Message**: `ROW001: record literal is missing field %q required by row parameter of %s`
+- **Fix**: Supply every field required by the open row type. CODEGEN002 remains a codegen fallback.
+
+---
+
+## DECIMAL — Money as float
+
+### DECIMAL001: Float used for money-ish name
+
+- **Error code**: `DECIMAL001`
+- **Severity**: Warning by default; `[check] money_float`
+- **Message**: `DECIMAL001: %q uses float for money; use std.decimal.Decimal instead`
+- **Fix**: Use `std.decimal` or integer cents; rename non-money floats away from money allowlist (`price`, `px`, …).
+
+---
+
 ## CODEGEN — Code generation
 
 ### CODEGEN001: Unhandled expression
@@ -1537,7 +1566,7 @@ Narrow static analysis for circular channel communication between two goroutines
 - **Error code**: `CODEGEN002`
 - **Severity**: Error
 - **Message**: `CODEGEN002: record literal is missing field %q required by row parameter of %s`
-- **Fix**: Supply every field required by the row parameter.
+- **Fix**: Supply every field required by the row parameter. Prefer **ROW001** at typecheck for record literals; CODEGEN002 remains defense-in-depth.
 
 ### CODEGEN003: Missing Go method receiver
 
@@ -1561,6 +1590,12 @@ Narrow static analysis for circular channel communication between two goroutines
 - **Error code**: `GOSIG002`
 - **Severity**: Warning (stderr)
 - **Fix**: Add an explicit `{ val … }` block or improve the stub mapping.
+
+### GOSIG003: Hand signature arity mismatch
+
+- **Error code**: `GOSIG003`
+- **Severity**: Warning (stderr); `[check] verify_ffi` (default off)
+- **Fix**: Align the hand `{ val … }` arity with the Go package, or leave `verify_ffi = false`.
 
 ---
 

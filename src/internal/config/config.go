@@ -48,6 +48,8 @@ type CheckConfig struct {
 	DiscardedOption    Severity // OPTION001 (default warn)
 	Unused             Severity // UNUSED001/002 (default warn)
 	PrivateInPublic    Severity // VIS002 (default warn)
+	MoneyFloat         Severity // DECIMAL001 (default warn)
+	VerifyFFI          bool     // GOSIG003 hand-sig verify (default false)
 	SMT                bool     // use Z3 for refinement VCs when available (default false)
 }
 
@@ -74,6 +76,8 @@ func DefaultConfig() *Config {
 			DiscardedOption:    SeverityWarn,
 			Unused:             SeverityWarn,
 			PrivateInPublic:    SeverityWarn,
+			MoneyFloat:         SeverityWarn,
+			VerifyFFI:          false,
 		},
 		Dependencies: make(map[string]string),
 		Mappings: map[string]string{
@@ -209,6 +213,10 @@ func parseConfig(data string) (*Config, error) {
 					c.Check.Unused = Severity(val)
 				case "private_in_public":
 					c.Check.PrivateInPublic = Severity(val)
+				case "money_float":
+					c.Check.MoneyFloat = Severity(val)
+				case "verify_ffi":
+					c.Check.VerifyFFI = val == "true" || val == "1"
 				case "smt":
 					c.Check.SMT = val == "true" || val == "1"
 				}

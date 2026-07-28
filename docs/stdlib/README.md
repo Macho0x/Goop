@@ -78,6 +78,6 @@ Keyword module names (`chan`, `ref`, `lazy`) cannot appear as `module …` heade
 
 ## Maintenance
 
-This reference is hand-written from compiler sources (`prelude.go`, `std/*/*.goop`). When adding prelude bindings or `std.*` exports, update the matching page here and `[mappings]` in `goop.toml` / `src/internal/config/config.go`.
+This reference is hand-written from compiler sources (`prelude.go`, `std/*/*.goop`). When adding prelude bindings or `std.*` exports, update the matching page here and `[mappings]` in `goop.toml` / `src/internal/config/config.go`. Cross-check binding names against `prelude.go` (see [31-language-update-checklist.md](../design/31-language-update-checklist.md)).
 
-`goop doc` emits Markdown API docs for `.goop` modules (and `.gosig` stubs) to stdout — see [20-cli-artifacts.md](../design/20-cli-artifacts.md).
+`goop doc` emits Markdown API signatures for `.goop` modules (and `.gosig` stubs) to stdout — it complements this hand reference; see [20-cli-artifacts.md](../design/20-cli-artifacts.md).

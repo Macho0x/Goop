@@ -1,23 +1,22 @@
-# Goop 1.12.0
+# Goop 1.13.0
 
-Diagnostics gap closure: stable error codes on the wire, three new warn-by-default
-lints, and an honest error catalog.
+Refinement train: more codes on the wire, ROW001, DECIMAL001, FFI honesty,
+LSP warning parity, and a Go-generics-in-sigs policy doc.
 
 ## Highlights
 
-- **Stable codes + `help:` tips** for TYPE011, VIS001, IMPORT*, UNIFY020–022,
-  PARSE-MIG002, CODEGEN*, GOSIG*, LINEAR001–005
-- **UNUSED001/002**, **OPTION001**, **VIS002** (defaults: warn; knobs in `[check]`)
-- Catalog cleanup: `open` stays valid; MIG011 → TYPE011; CLI011 says `goop:`
+- **TYPE/PARSE/IMPORT** stable prefixes + `help:` tips
+- **ROW001** + safer row-param codegen; **DECIMAL001** (`money_float`)
+- **GOSIG003** optional hand-sig verify (`verify_ffi`)
+- **LSP** shows safety warnings by default
+- Docs: FFI honesty, prelude FFI helpers, [32-go-generics-sigs.md](docs/design/32-go-generics-sigs.md)
 
 ## Config
 
 ```toml
 [check]
-discarded_result = "warn"
-discarded_option = "warn"
-unused = "warn"
-private_in_public = "warn"
+money_float = "warn"
+verify_ffi = false
 ```
 
-See `CHANGELOG.md` and `docs/design/10-error-reference.md`.
+See `CHANGELOG.md` and the [playground](https://macho0x.github.io/Goop/).

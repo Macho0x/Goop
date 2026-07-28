@@ -14,8 +14,10 @@ round-trips and comparisons drift.
 `Decimal`, not `float` / `float64`. Lisette is float64-only for money; this
 is a domain differentiator.
 
-The trading safety matrix does not yet encode a DECIMAL001 lint; until it
-does, this is a documented convention enforced by reviews and examples.
+The trading safety matrix encodes **DECIMAL001** (`[check] money_float`, default
+warn) for float used with money-ish names. Prefer `std.decimal` or integer cents
+in examples ([`decimal_money.goop`](../examples/decimal_money.goop),
+[`orderbook.goop`](../examples/orderbook.goop)).
 
 ## Library choice
 

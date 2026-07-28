@@ -8,6 +8,11 @@ Discarding a `result` or `option` in a non-final `begin` statement warns by
 default (`[check] discarded_result` / `discarded_option`). Handle with `match`,
 or discard explicitly: `let _ = …`.
 
+## Money as float (DECIMAL001)
+
+Float annotations/fields with money-ish names (`price`, `px`, …) warn by default
+(`[check] money_float`). Prefer `std.decimal` or integer cents.
+
 ## Unused bindings / imports (UNUSED001 / UNUSED002)
 
 Unused locals and Goop imports warn by default (`[check] unused`). Prefer `_`
@@ -82,6 +87,8 @@ smt = false                    # optional Z3
 | `discarded_option` | `warn` | OPTION001 |
 | `unused` | `warn` | UNUSED001/002 |
 | `private_in_public` | `warn` | VIS002 |
+| `money_float` | `warn` | DECIMAL001 |
+| `verify_ffi` | `false` | GOSIG003 hand-sig arity check |
 | `smt` | `false` | Optional Z3 for refinements |
 
 ## Error code reference

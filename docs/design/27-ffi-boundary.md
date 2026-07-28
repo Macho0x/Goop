@@ -194,7 +194,7 @@ Goop cannot name precisely.
 | Spelling | Status |
 |----------|--------|
 | `any` + `any_of` | **Shipped** — lowers to `interface{}` |
-| `obj` | **Planned H5 `.gosig` spelling** for the same empty-interface mapping |
+| `obj` | **Shipped** H5 `.gosig` spelling for the same empty-interface mapping (`obj` rewritten to `any` on load) |
 
 **Semantics (both names):**
 
@@ -234,9 +234,15 @@ import go "bytes" {
 }
 ```
 
-**Planned (H5):** a `go/types`-driven generator emits `.gosig` stubs for a
-curated stdlib set into the build cache
-(`$GOOP_HOME/build/go-sigs/…`), not into your repo.
+**Shipped (H5):** a `go/types`-driven generator emits `.gosig` stubs for a
+curated package set into the build cache (`$GOOP_HOME/build/go-sigs/…`), with
+repo overrides under `goop-sigs/`. Bare `import go "…"` auto-loads (override →
+cache → generate-on-miss for curated paths). Hand `{ val … }` blocks remain
+authoritative and are **not** a full proof against upstream Go — enable
+`[check] verify_ffi = true` for **GOSIG003** arity checks. See
+[28-go-sig-resolution.md](28-go-sig-resolution.md) and
+[32-go-generics-sigs.md](32-go-generics-sigs.md).
+
 
 | Mechanism | Role |
 |-----------|------|
@@ -248,8 +254,9 @@ Policy (maintainers): no new Goop syntax for awkward Go idioms — fix the
 sig generator or type bridge. Preserve Go selector spelling. `(T, error)`
 defaults to `result` (H6); use `import go raw` for the tuple.
 
-Until H5 ships end-to-end, treat override paths as **specified intent**;
-inline signature blocks remain the reliable user tool.
+Auto-load is shipped for curated packages; prefer bare `import go` plus
+overrides when stubs are incomplete. Inline `{ val … }` remains the reliable
+escape hatch for third-party packages.
 
 ---
 
@@ -259,7 +266,7 @@ inline signature blocks remain the reliable user tool.
 |----|-------|
 | Declare `T ptr` + `is_null` for nullable Go pointers | Assume Go pointers are non-nil |
 | Keep `@[go]` to crypto, cgo glue, or thin adapters | Put business logic in embeds |
-| Use `result` + `match` after you coerce Go errors | Expect auto `(T, error)` → `result` (H6 pending) |
+| Use `result` + `match` — `(T, error)` coerces to `result` by default (H6) | Assume `import go raw` unless you opted in |
 | Pass branded IDs / ADTs in Goop; unwrap at the edge | Smuggle domain IDs as bare `string` across modules |
 | Discharge linear resources in Goop before calling opaque Go | Pass `owned_chan` into `@[go]` and hope |
 | Prefer generated/override sigs once H5 lands | Hand-copy huge stdlib surfaces forever |

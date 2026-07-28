@@ -1,14 +1,17 @@
 module Trading.AllMidsBot
 
+(* Mid as integer cents — avoid float money (DECIMAL001).
+ * Prefer std.decimal.Decimal in apps; see docs/examples/decimal_money.goop. *)
+
 type symbol = | Symbol of string
 
-let midPrice (sym: symbol) : float =
-  100.0
+let midPriceCents (sym: symbol) : int =
+  10000
 
-let decide (px: float) : string =
-  if px > 100.0 then "sell" else "buy"
+let decide (px_cents: int) : string =
+  if px_cents > 10000 then "sell" else "buy"
 
 let main () : unit =
   let sym = Symbol "BTC-USD" in
-  let px = midPrice sym in
+  let px = midPriceCents sym in
   print_line (decide px)

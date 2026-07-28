@@ -185,7 +185,7 @@ Compile-time checks Go leaves to tests or panics — without giving up Go’s ru
 
 ## Status
 
-**[v1.12.0](https://github.com/Macho0x/Goop/releases/tag/v1.12.0)** — stable diagnostic codes on the wire, UNUSED/OPTION/VIS002 warn lints, honest error catalog. **[Playground](https://macho0x.github.io/Goop/)** is the fastest way to try Goop.
+**[v1.13.0](https://github.com/Macho0x/Goop/releases/tag/v1.13.0)** — TYPE/PARSE wire codes, ROW001, DECIMAL001, LSP warn parity, FFI honesty. **[Playground](https://macho0x.github.io/Goop/)** is the fastest way to try Goop.
 
 [CHANGELOG](CHANGELOG.md) · [RELEASE_NOTES](RELEASE_NOTES.md) · [Benchmarks](benchmarks/README.md) · [Language-update checklist](docs/design/31-language-update-checklist.md)
 

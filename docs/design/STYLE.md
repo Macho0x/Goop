@@ -59,3 +59,12 @@ See also: [14-ocaml-parity.md](14-ocaml-parity.md), [03-syntax.md](03-syntax.md)
 ## LUT decision logic
 
 Prefer `match` + `when` with a small `situation` / `market_state` ADT. Keep mutable array population (`Array.make` + nested `for` + `arr.(i) <-`) for performance. Prefer first-class `map[K] V` + `Map.*` over embedding Go maps in `@[go]` when the table is ordinary Goop data.
+
+## Enforcement
+
+Removed sugar (`let mutable`, `?`, `%`, `newtype`, CEs, Kit macros, …) is rejected
+at **parse time** with **PARSE-MIG*** codes — not by `goop fmt`. The formatter is a
+pretty-printer only (parse → AST → text); it does not typecheck or lint STYLE.
+
+Money/prices should use `std.decimal` (or integer cents); **DECIMAL001** warns on
+float used with money-ish names (`[check] money_float`).

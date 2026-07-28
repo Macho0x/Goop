@@ -31,7 +31,7 @@ goop gen-sig <pkg>
           ▼
  $GOOP_HOME/build/go-sigs/<safe_pkg>.gosig
           │
-          │  resolve (future compile load)
+          │  resolve (compile auto-load)
           ▼
  <project>/goop-sigs/<safe_pkg>.gosig   ← override wins
 ```
@@ -83,7 +83,7 @@ Filename sanitization: `/` and `.` → `_`
 | `*T` | `T ptr` | |
 | `[]T` | `T go_slice` | Best-effort |
 | `chan T` | `T chan` | Best-effort |
-| `map[K]V` | *skipped* | Comment in file; defer map design |
+| `map[K]V` | `map[K] V` | Shipped in gosiggen |
 | `(T, error)` | `T * error` | Product in `.gosig`; typecheck+codegen coerce to `('ok, error) result` (H6). `import go raw` keeps the tuple. |
 | other multi-results | *skipped* | e.g. `(int, bool)` |
 | variadic `...T` | `...obj` / `...T` | |
@@ -134,6 +134,7 @@ Smoke subset for CI-ish checks: `strings`, `fmt`, `errors`, `strconv`.
 
 **Shipped (1.10):** compile-time auto-load of `.gosig` for bare `import go`;
 Go `map[K]V` → `map[K] V` in gosiggen; `obj` ≡ `any`; H6 `(T, error)` →
+`result` coercion is live. Generics policy: [32-go-generics-sigs.md](32-go-generics-sigs.md).
 `result` coercion (`import go raw` opt-out).
 
 ## Tests

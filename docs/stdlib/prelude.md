@@ -115,3 +115,16 @@ Trading-oriented helpers lowering to inline Go:
 | `json_extract_strings` | `string -> int -> string list` |
 
 Used by trading demos that call live or synthetic market data helpers (see [`allmids_bot.goop`](../examples/allmids_bot.goop)).
+
+## FFI helpers (Go interop)
+
+| Name | Type | Role |
+|---|---|---|
+| `any_of` | `'a -> any` | Box a value as Go `interface{}` / `any` |
+| `go_slice_len` | `'a go_slice -> int` | Length of an FFI Go slice |
+| `go_slice_get` | `'a go_slice -> int -> 'a` | Index into an FFI Go slice |
+| `go_slice_append` | `'a go_slice -> 'a -> 'a go_slice` | Append to an FFI Go slice |
+| `go_slice_of_list` | `'a list -> 'a go_slice` | Convert list → Go slice |
+| `list_of_go_slice` | `'a go_slice -> 'a list` | Convert Go slice → list |
+
+`spread` / `xs.(i)` on go_slices are language/FFI syntax — see [27-ffi-boundary.md](../design/27-ffi-boundary.md).

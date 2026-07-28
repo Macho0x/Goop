@@ -79,6 +79,17 @@ Optional predicates: [`std.result`](std-result.md). Propagate with `match` (no `
 
 Optional import-style access: [`std.chan`](std-chan.md).
 
+## FFI types
+
+| Type / syntax | Meaning |
+|---|---|
+| `'a go_slice` | Go slice at the FFI boundary |
+| `error` | Go `error` interface |
+| `any` / `obj` | Empty interface (`obj` is gosig spelling) |
+| `spread` | Expand a go_slice in a variadic Go call |
+
+See [27-ffi-boundary.md](../design/27-ffi-boundary.md) and prelude FFI helpers.
+
 ## Lazy
 
 | Syntax / binding | Meaning |

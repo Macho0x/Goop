@@ -110,7 +110,7 @@ func (p *Parser) expect(t token.TokenType) (token.Token, error) {
 	if p.cur().Type == t {
 		return p.advance(), nil
 	}
-	err := p.errorf("expected %s, got %s", t, p.cur().Type)
+	err := p.errorf("PARSE001: expected %s, got %s", t, p.cur().Type)
 	return p.cur(), err
 }
 
@@ -126,7 +126,7 @@ func (p *Parser) errorf(format string, args ...any) error {
 func (p *Parser) parseIdentName() string {
 	tok := p.cur()
 	if tok.Type != token.IDENT && tok.Type != token.CONSTRUCTOR {
-		p.errorf("expected identifier, got %s", tok.Type)
+		p.errorf("PARSE001: expected identifier, got %s", tok.Type)
 		return "_"
 	}
 	p.advance()
@@ -381,7 +381,7 @@ func (p *Parser) parseTopDecl() ast.TopDecl {
 		p.errorf("PARSE-MIG002: 'extern' is removed; use `import go \"path\"` or `import go \"path\" { val ... }`")
 		return p.parseExternDeclSkip()
 	case token.IMPORT:
-		p.errorf("'import' must appear before any declarations")
+		p.errorf("PARSE003: 'import' must appear before any declarations")
 		p.parseImportDecl()
 		return nil
 	case token.MODULE:
@@ -393,7 +393,7 @@ func (p *Parser) parseTopDecl() ast.TopDecl {
 	case token.CLASS:
 		return p.parseClassDecl()
 	default:
-		p.errorf("unexpected token %s at top level", p.cur().Type)
+		p.errorf("PARSE004: unexpected token %s at top level", p.cur().Type)
 		p.advance()
 		return nil
 	}
@@ -425,7 +425,7 @@ func (p *Parser) parseLetDecl(isPrivate bool) *ast.LetDecl {
 		p.expect(token.PIPE)
 		tok := p.cur()
 		if tok.Type != token.CONSTRUCTOR && tok.Type != token.IDENT {
-			p.errorf("expected active pattern name, got %s", tok.Type)
+			p.errorf("PARSE005: expected active pattern name, got %s", tok.Type)
 		} else {
 			p.advance()
 		}
@@ -468,7 +468,7 @@ func (p *Parser) parseBinding() ast.LetBinding {
 
 	tok := p.cur()
 	if tok.Type != token.IDENT && tok.Type != token.CONSTRUCTOR && tok.Type != token.UNDERSCORE {
-		p.errorf("expected binding name, got %s", tok.Type)
+		p.errorf("PARSE006: expected binding name, got %s", tok.Type)
 		if p.cur().Type != token.EOF {
 			p.advance()
 		}
@@ -1473,7 +1473,7 @@ func (p *Parser) parsePrefix() ast.Expr {
 		}
 	}
 
-	p.errorf("unexpected token %s in expression", cur.Type)
+	p.errorf("PARSE013: unexpected token %s in expression", cur.Type)
 	p.advance()
 	return &ast.LitExpr{Value: nil, Kind: token.UNIT}
 }
@@ -1960,7 +1960,7 @@ func (p *Parser) parseSimplePattern() ast.Pattern {
 		return p.parseListPattern()
 
 	default:
-		p.errorf("unexpected token %s in pattern", cur.Type)
+		p.errorf("PARSE017: unexpected token %s in pattern", cur.Type)
 		p.advance()
 		return &ast.WildcardPattern{}
 	}
@@ -2316,7 +2316,7 @@ func (p *Parser) parsePrimaryType() ast.Type {
 		p.expect(token.RBRACKET)
 		return pt
 	default:
-		p.errorf("unexpected token %s in type", cur.Type)
+		p.errorf("PARSE022: unexpected token %s in type", cur.Type)
 		p.advance()
 		return &ast.TIdent{Name: "<error>"}
 	}

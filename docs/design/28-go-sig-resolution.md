@@ -71,7 +71,7 @@ Exports that cannot be mapped are **skipped**, not silently degraded:
 | Anonymous `struct` / non-empty anonymous `interface` | Skipped |
 | Multi-result other than `(T, error)` | Emitted as Goop product tuples when elems map |
 | `complex*`, `unsafe.Pointer` | Skipped |
-| `(T, error)` | Emitted as `T * error` with `TODO(H6)`; typecheck+codegen coerce call sites to `result` |
+| `(T, error)` | Generator may note `TODO(H6)`; **typecheck+codegen coerce** call sites to `result` unless `import go raw` |
 | `any` / `interface{}` | Mapped to `obj` (typecheck treats as `any`) |
 
 Skipped exports appear in the generated file comment **and** as

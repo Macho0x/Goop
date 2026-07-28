@@ -9,6 +9,7 @@ import (
 	"goop.dev/compiler/internal/discardedresult"
 	"goop.dev/compiler/internal/exhaustive"
 	"goop.dev/compiler/internal/linear"
+	"goop.dev/compiler/internal/moneyfloat"
 	"goop.dev/compiler/internal/nilchan"
 	"goop.dev/compiler/internal/refine"
 	"goop.dev/compiler/internal/typeinfo"
@@ -30,6 +31,8 @@ type Result struct {
 	UnusedWarns       []error
 	VisErrors         []error
 	VisWarns          []error
+	MoneyErrors       []error
+	MoneyWarns        []error
 	NilchanErrors     []error
 	RefineProven      refine.ProvenSites
 	RefineFuncProven  map[string]bool
@@ -48,6 +51,7 @@ func Run(mod *ast.Module, tm typeinfo.TypeMap, linearTypes map[string]bool, cfg 
 	r.ResultErrors, r.ResultWarns = discardedresult.CheckWithConfig(mod, tm, cfg)
 	r.UnusedErrors, r.UnusedWarns = unused.CheckWithConfig(mod, tm, cfg)
 	r.VisErrors, r.VisWarns = visibilitywarns.CheckWithConfig(mod, cfg)
+	r.MoneyErrors, r.MoneyWarns = moneyfloat.CheckWithConfig(mod, cfg)
 	r.NilchanErrors = nilchan.Check(mod)
 	r.RefineProven, r.RefineFuncProven, r.RefineWarnings, r.RefineErrors = refine.CheckRefinements(mod, tm, cfg)
 	exErrs, exWarns := exhaustive.CheckWithConfig(mod, cfg)

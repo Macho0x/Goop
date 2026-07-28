@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.13.0
+
+### Diagnostics / safety
+
+- TYPE002–010/012–013, PARSE001+, IMPORT004 on the wire; TC fallbacks use PARSE-MIG*
+- **ROW001** for open-row record literals; row-param codegen uses correct arg index
+- **DECIMAL001** (`money_float`) warn-by-default for money-ish float names
+- **GOSIG003** + `[check] verify_ffi` (default off) for hand-sig arity checks
+- LSP surfaces default-severity safety warnings (not errors-only)
+- Expanded `help:` tips
+
+### Docs
+
+- FFI/gosig honesty (H5/H6 shipped); prelude FFI helpers; STYLE enforcement note;
+  `32-go-generics-sigs.md` policy; language-update checklist updates
+
 ## 1.12.0
 
 ### Diagnostics

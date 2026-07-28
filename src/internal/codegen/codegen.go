@@ -91,8 +91,9 @@ type Generator struct {
 	externFields       map[string]map[string]string
 
 	// row-polymorphic function params: funcName → field names
-	rowParams    map[string][]string
-	rowParamName map[string]string // funcName → row param name
+	rowParams      map[string][]string
+	rowParamName   map[string]string // funcName → row param name
+	rowParamIndex  map[string]int    // funcName → index among emitted (non-unit) params
 
 	currentFunc         string // function being generated (for ? operator)
 	optionCtorHint      string // OptionGoType hint while emitting typed record fields
@@ -146,6 +147,7 @@ func NewGenerator(srcFile string, cfg *config.Config) *Generator {
 		externFields:       make(map[string]map[string]string),
 		rowParams:          make(map[string][]string),
 		rowParamName:       make(map[string]string),
+		rowParamIndex:      make(map[string]int),
 		resolvedImports:    make(map[string]string),
 		importPkgs:         make(map[string]string),
 		openExports:        make(map[string]string),
@@ -523,8 +525,12 @@ func (g *Generator) prescan(mod *ast.Module) {
 				}
 				g.funcParamCount[b.Name] = realCount
 				g.funcParamCount[emitName] = realCount
-				// Detect row-polymorphic parameters
+				// Detect row-polymorphic parameters (index among emitted params).
+				emitIdx := 0
 				for _, p := range b.Params {
+					if p.Name == "" || isUnitParam(p) {
+						continue
+					}
 					if p.Type != nil {
 						if rt, ok := p.Type.(*ast.TRecord); ok && rt.Open {
 							var fields []string
@@ -533,8 +539,10 @@ func (g *Generator) prescan(mod *ast.Module) {
 							}
 							g.rowParams[b.Name] = fields
 							g.rowParamName[b.Name] = p.Name
+							g.rowParamIndex[b.Name] = emitIdx
 						}
 					}
+					emitIdx++
 				}
 				// Store parameter Go types for partial application
 				paramTypes := make([]string, 0)
@@ -3269,54 +3277,46 @@ func (g *Generator) emitApp(e *ast.AppExpr, isStmt bool) {
 		}
 	}
 
-	// Expand row-polymorphic arguments: for each arg that corresponds to
-	// a row param, extract individual fields from the record literal.
+	// Expand row-polymorphic arguments: the row-param arg (by index) becomes
+	// individual field arguments; other args are emitted as-is.
 	if funcName != "" && len(g.rowParams[funcName]) > 0 {
 		g.emitExpr(funcExpr, false)
 		g.buf.WriteString("(")
 		rowFields := g.rowParams[funcName]
+		rowIdx := g.rowParamIndex[funcName]
 		first := true
 		for i, arg := range args {
-			if i >= len(rowFields) {
-				// Extra args after row param
-				if !first {
-					g.buf.WriteString(", ")
-				}
-				first = false
-				g.emitExpr(arg, false)
-				continue
-			}
-			// Row param arg: extract fields from the record expression
-			if rec, ok := arg.(*ast.RecordExpr); ok {
-				for _, rf := range rowFields {
-					if !first {
-						g.buf.WriteString(", ")
-					}
-					first = false
-					found := false
-					for _, f := range rec.Fields {
-						if f.Name == rf {
-							if f.Value != nil {
-								g.emitExpr(f.Value, false)
-							} else {
-								g.buf.WriteString(f.Name)
+			if i == rowIdx {
+				if rec, ok := arg.(*ast.RecordExpr); ok {
+					for _, rf := range rowFields {
+						if !first {
+							g.buf.WriteString(", ")
+						}
+						first = false
+						found := false
+						for _, f := range rec.Fields {
+							if f.Name == rf {
+								if f.Value != nil {
+									g.emitExpr(f.Value, false)
+								} else {
+									g.buf.WriteString(f.Name)
+								}
+								found = true
+								break
 							}
-							found = true
-							break
+						}
+						if !found {
+							g.errorfAt(ast.ExprLoc(arg), "CODEGEN002: record literal is missing field %q required by row parameter of %s", rf, funcName)
 						}
 					}
-					if !found {
-						g.errorfAt(ast.ExprLoc(arg), "CODEGEN002: record literal is missing field %q required by row parameter of %s", rf, funcName)
-					}
+					continue
 				}
-			} else {
-				// Non-record arg for row param — emit as-is
-				if !first {
-					g.buf.WriteString(", ")
-				}
-				first = false
-				g.emitExpr(arg, false)
 			}
+			if !first {
+				g.buf.WriteString(", ")
+			}
+			first = false
+			g.emitExpr(arg, false)
 		}
 		g.buf.WriteString(")")
 		if isStmt {

@@ -2,35 +2,37 @@
 
 Lisette advertises **250+** diagnostics. Goop’s catalog lives in
 [10-error-reference.md](10-error-reference.md). Counted from `###` headings
-there (2026-07-28, release 1.12):
+there (2026-07-28, release 1.13):
 
 | Prefix | Count | Notes |
 |--------|------:|-------|
-| PARSE / PARSE-MIG | ~22 | MIG001 retired (`open` valid); MIG011 removed (see TYPE011) |
-| UNIFY | 22 | includes UNIFY020–022 (map/pointer/go_slice) |
-| TYPE | 13 | TYPE011 on the wire |
-| CLI | 13 | CLI011 text uses `goop:` (not `c0:`) |
-| LEX | 10 | includes LEX005b |
-| LINEAR | 8 | LINEAR001–008 prefixed on the wire |
-| VIS | 2 | VIS001 error; VIS002 warn (`private_in_public`) |
-| IMPORT | 3 | IMPORT001–003 |
-| EXHAUST | 3 | severity via `goop.toml` `[check]` |
-| REFINE | 3 | REFINE003 is silent when proven |
-| CODEGEN | 3 | CODEGEN001–003 |
-| GOSIG | 2 | GOSIG001/002 |
-| UNUSED | 2 | UNUSED001/002 (`unused`) |
-| RESULT / OPTION | 2 | RESULT001 / OPTION001 |
+| PARSE / PARSE-MIG | ~22 | PARSE001+ and MIG* on the wire; MIG001 retired |
+| UNIFY | 22 | includes UNIFY020–022 |
+| TYPE | 13 | TYPE002–013 on the wire (TYPE001 obsolete) |
+| CLI | 13 | |
+| LEX | 10 | |
+| LINEAR | 8 | |
+| VIS | 2 | |
+| IMPORT | 4 | IMPORT001–004 |
+| EXHAUST | 3 | |
+| REFINE | 3 | |
+| CODEGEN | 3 | |
+| GOSIG | 3 | GOSIG001–003 (`verify_ffi`) |
+| UNUSED | 2 | |
+| RESULT / OPTION | 2 | |
+| ROW | 1 | ROW001 open-row literal |
+| DECIMAL | 1 | DECIMAL001 (`money_float`) |
 | DEADLOCK | 1 | |
 | NIL | 1 | |
 | FFI-IMPL | 1 | |
-| **Total** | **~110+** | unique codes (wire + catalog) |
+| **Total** | **~120+** | unique codes |
 
-Roughly **110+** documented codes — about 40% of Lisette’s advertised count.
-Gaps are mostly finer-grained type/parse variants, not missing safety passes.
+CLI diagnostics also print a short `help:` line via `src/internal/report`.
 
-CLI diagnostics also print a short `help:` line for common codes (EXHAUST003,
-NIL001, RESULT001, OPTION001, UNUSED*, VIS*, IMPORT*, CODEGEN*, PARSE-MIG*, …)
-via `src/internal/report`.
+**LSP:** type/parse errors always; safety **errors** always; safety **warnings**
+(RESULT/OPTION/UNUSED/VIS/DECIMAL/EXHAUST redundant/REFINE/DEADLOCK/…) as
+`Warning` by default, or elevated to `Error` when the matching `[check]` key
+is `"error"`.
 
 ## `goop lint`
 
@@ -39,17 +41,9 @@ file**. `goop lint <file-or-dir>` packages that pipeline for CI:
 
 - Accepts a file or directory (recurses for `*.goop`; `check` does not)
 - Prints each diagnostic, then `N error(s), M warning(s)`
-- Exits non-zero on errors; `goop.toml` `[check]` severities (e.g.
-  `exhaust_redundant = "error"`, `discarded_result = "error"`,
-  `unused = "error"`) elevate warnings to errors
+- Exits non-zero on errors; `goop.toml` `[check]` severities elevate warnings
 
-```bash
-goop lint path/to/file.goop
-goop lint path/to/dir
-goop lint          # defaults to "."
-```
-
-## `[check]` keys (1.12)
+## `[check]` keys (1.13)
 
 | Key | Default | Codes |
 |-----|---------|-------|
@@ -62,5 +56,7 @@ goop lint          # defaults to "."
 | `discarded_option` | `warn` | OPTION001 |
 | `unused` | `warn` | UNUSED001/002 |
 | `private_in_public` | `warn` | VIS002 |
+| `money_float` | `warn` | DECIMAL001 |
+| `verify_ffi` | `false` | GOSIG003 |
 | `smt` | `false` | optional Z3 |
 | `effect_inference` | `true` | effect row inference |

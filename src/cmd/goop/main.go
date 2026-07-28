@@ -523,8 +523,8 @@ func (s *LSPServer) handleDocumentUpdate(params json.RawMessage) {
 			diagnostics = append(diagnostics, diagnosticFromError(terr))
 		}
 
-		for _, terr := range lspSafetyDiagnostics(mod, tm, lspCfg) {
-			diagnostics = append(diagnostics, diagnosticFromError(terr))
+		for _, d := range lspSafetyDiagnostics(mod, tm, lspCfg) {
+			diagnostics = append(diagnostics, d)
 		}
 
 		// Store state for hover/definition
@@ -570,22 +570,22 @@ func documentTextFromParams(params json.RawMessage) (uri, text string, ok bool) 
 
 // diagnosticFromError creates a Diagnostic with proper LSP range from an error.
 func diagnosticFromError(err error) Diagnostic {
-	var diag Diagnostic
-	diag.Severity = SeverityError
+	return diagnosticFromErrorSev(err, SeverityError)
+}
 
-	// Try to extract SourceLoc from known error types
+func diagnosticFromErrorSev(err error, severity int) Diagnostic {
+	var diag Diagnostic
+	diag.Severity = severity
+
 	var loc token.SourceLoc
 
-	// Check for TypeError (has Loc field)
 	if te, ok := err.(*typecheck.TypeError); ok {
 		loc = te.Loc
 		diag.Message = te.Msg
 	} else if msg, ok := err.(interface{ GetLoc() token.SourceLoc }); ok {
-		// For nilchan.Error and similar types that might have GetLoc method
 		loc = msg.GetLoc()
 		diag.Message = err.Error()
 	} else {
-		// Parse location from error message: "file:line:col: msg"
 		emsg := err.Error()
 		parts := strings.SplitN(emsg, ":", 4)
 		if len(parts) >= 4 {
@@ -597,9 +597,64 @@ func diagnosticFromError(err error) Diagnostic {
 		}
 	}
 
-	// Convert to LSP range (0-based line, 0-based character)
 	diag.Range = lspRangeFromLoc(loc)
 	return diag
+}
+
+// lspSafetyDiagnostics returns safety diagnostics for the LSP (errors + default warnings).
+func lspSafetyDiagnostics(mod *ast.Module, tm typeinfo.TypeMap, cfg *config.Config) []Diagnostic {
+	if cfg == nil {
+		cfg = config.DefaultConfig()
+	}
+	checkpipeline.RegisterADTsFromModule(mod)
+	linearTypes := buildLinearTypes(mod)
+	r := checkpipeline.Run(mod, tm, linearTypes, cfg)
+	var out []Diagnostic
+	addErr := func(errs []error) {
+		for _, e := range errs {
+			out = append(out, diagnosticFromErrorSev(e, SeverityError))
+		}
+	}
+	addWarn := func(warns []error, elevate bool) {
+		sev := SeverityWarning
+		if elevate {
+			sev = SeverityError
+		}
+		for _, w := range warns {
+			out = append(out, diagnosticFromErrorSev(w, sev))
+		}
+	}
+	addErr(r.LinearErrors)
+	addErr(r.ChannelRaceErrors)
+	addErr(r.DeadlockErrors)
+	addErr(r.ResultErrors)
+	addErr(r.UnusedErrors)
+	addErr(r.VisErrors)
+	addErr(r.MoneyErrors)
+	addErr(r.NilchanErrors)
+	addErr(r.RefineErrors)
+	addErr(r.ExhaustErrors)
+
+	addWarn(r.LinearWarnings, cfg.Check.Concurrent == config.SeverityError)
+	addWarn(r.ChannelRaceWarns, cfg.Check.Concurrent == config.SeverityError)
+	addWarn(r.DeadlockWarns, cfg.Check.Deadlock == config.SeverityError)
+	for _, w := range r.ResultWarns {
+		elevate := cfg.Check.DiscardedResult == config.SeverityError
+		if strings.Contains(w.Error(), "OPTION001") {
+			elevate = cfg.Check.DiscardedOption == config.SeverityError
+		}
+		sev := SeverityWarning
+		if elevate {
+			sev = SeverityError
+		}
+		out = append(out, diagnosticFromErrorSev(w, sev))
+	}
+	addWarn(r.UnusedWarns, cfg.Check.Unused == config.SeverityError)
+	addWarn(r.VisWarns, cfg.Check.PrivateInPublic == config.SeverityError)
+	addWarn(r.MoneyWarns, cfg.Check.MoneyFloat == config.SeverityError)
+	addWarn(r.RefineWarnings, cfg.Check.RefinementUnproven == config.SeverityError)
+	addWarn(r.ExhaustWarns, cfg.Check.ExhaustRedundant == config.SeverityError)
+	return out
 }
 
 // getExprLoc extracts the source location from an expression node.
@@ -1469,6 +1524,14 @@ func runSafetyChecks(mod *ast.Module, tm typeinfo.TypeMap, src []byte, cfg *conf
 		fatal = true
 	}
 	warnings = append(warnings, r.VisWarns...)
+	if len(r.MoneyErrors) > 0 {
+		fmt.Println("FAIL: money/float errors:")
+		for _, e := range r.MoneyErrors {
+			fmt.Print(report.Render(e, src))
+		}
+		fatal = true
+	}
+	warnings = append(warnings, r.MoneyWarns...)
 	if len(r.NilchanErrors) > 0 {
 		fmt.Println("FAIL: nil-channel errors:")
 		for _, e := range r.NilchanErrors {
@@ -1493,74 +1556,6 @@ func runSafetyChecks(mod *ast.Module, tm typeinfo.TypeMap, src []byte, cfg *conf
 	}
 	warnings = append(warnings, r.ExhaustWarns...)
 	return r.RefineProven, r.RefineFuncProven, warnings, fatal
-}
-
-// lspSafetyDiagnostics returns safety check diagnostics for the LSP (errors only).
-func lspSafetyDiagnostics(mod *ast.Module, tm typeinfo.TypeMap, cfg *config.Config) []error {
-	if cfg == nil {
-		cfg = config.DefaultConfig()
-	}
-	checkpipeline.RegisterADTsFromModule(mod)
-	linearTypes := buildLinearTypes(mod)
-	r := checkpipeline.Run(mod, tm, linearTypes, cfg)
-	var out []error
-	out = append(out, r.LinearErrors...)
-	out = append(out, r.ChannelRaceErrors...)
-	out = append(out, r.DeadlockErrors...)
-	out = append(out, r.ResultErrors...)
-	out = append(out, r.UnusedErrors...)
-	out = append(out, r.VisErrors...)
-	out = append(out, r.NilchanErrors...)
-	out = append(out, r.RefineErrors...)
-	out = append(out, r.ExhaustErrors...)
-	for _, w := range r.LinearWarnings {
-		if cfg.Check.Concurrent == config.SeverityError {
-			out = append(out, w)
-		}
-	}
-	for _, w := range r.ChannelRaceWarns {
-		if cfg.Check.Concurrent == config.SeverityError {
-			out = append(out, w)
-		}
-	}
-	for _, w := range r.DeadlockWarns {
-		if cfg.Check.Deadlock == config.SeverityError {
-			out = append(out, w)
-		}
-	}
-	for _, w := range r.ResultWarns {
-		msg := w.Error()
-		if strings.Contains(msg, "OPTION001") {
-			if cfg.Check.DiscardedOption == config.SeverityError {
-				out = append(out, w)
-			}
-			continue
-		}
-		if cfg.Check.DiscardedResult == config.SeverityError {
-			out = append(out, w)
-		}
-	}
-	for _, w := range r.UnusedWarns {
-		if cfg.Check.Unused == config.SeverityError {
-			out = append(out, w)
-		}
-	}
-	for _, w := range r.VisWarns {
-		if cfg.Check.PrivateInPublic == config.SeverityError {
-			out = append(out, w)
-		}
-	}
-	for _, w := range r.RefineWarnings {
-		if cfg.Check.RefinementUnproven == config.SeverityError {
-			out = append(out, w)
-		}
-	}
-	for _, w := range r.ExhaustWarns {
-		if cfg.Check.ExhaustRedundant == config.SeverityError {
-			out = append(out, w)
-		}
-	}
-	return out
 }
 
 // buildLinearTypes extracts the set of linear type names from a module.

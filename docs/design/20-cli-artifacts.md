@@ -65,8 +65,9 @@ top-level `let` bindings with parameter/return types when annotated.
 Comments (`(* … *)`, `//`) are stripped by the lexer today, so the MVP lists
 signatures only — there is no separate `(** … *)` doc-comment form yet.
 Directory mode walks for `.goop` / `.gosig` (skips `.git`). Full curated
-`.gosig` generation is H5; `doc` best-effort extracts `module` / `type` /
-`val` lines from stubs.
+`.gosig` generation is shipped (H5); `doc` best-effort extracts `module` /
+`type` / `val` lines from stubs. It does **not** replace hand-written
+`docs/stdlib/` pages (prelude tables, doctrine, Go lowering notes).
 
 ## Flags
 

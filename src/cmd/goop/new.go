@@ -27,6 +27,8 @@ discarded_result = "warn"
 discarded_option = "warn"
 unused = "warn"
 private_in_public = "warn"
+money_float = "warn"
+verify_ffi = false
 deadlock = "warn"
 smt = false
 `

@@ -973,6 +973,9 @@ let main () =
 	if len(errs) == 0 {
 		t.Fatal("expected type error for invalid assignment target")
 	}
+	if !strings.Contains(errs[0].Error(), "TYPE012") {
+		t.Errorf("expected TYPE012 prefix, got: %v", errs[0])
+	}
 	if !strings.Contains(errs[0].Error(), "invalid assignment target") {
 		t.Errorf("unexpected error: %v", errs[0])
 	}

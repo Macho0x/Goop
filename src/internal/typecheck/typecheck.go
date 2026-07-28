@@ -113,6 +113,7 @@ type Checker struct {
 	blockedNames    map[string]string // private name → defining module path
 	importedModule  string            // module being checked (for error messages)
 	effectInference bool              // infer effect rows from bodies when true
+	verifyFFI       bool              // GOSIG003 arity check against go/types
 	mutableVars     map[string]bool   // bindings that may be assigned via <-
 	modules         map[string]*moduleExports
 	moduleTypes     map[string]*moduleSignature
@@ -153,6 +154,9 @@ func (c *Checker) bindExternValsOpts(importPath string, vals []ast.ExternVal, ra
 	for _, ev := range vals {
 		t := c.convertASTType(ev.Type)
 		if ev.Kind == ast.ExternFunc {
+			if c.verifyFFI && importPath != "" {
+				c.verifyExternArity(importPath, ev.Name, t)
+			}
 			if refined := c.refineExternType(importPath, ev.Name, t); refined != nil {
 				t = refined
 			}
@@ -176,7 +180,7 @@ func (c *Checker) bindExternValsOpts(importPath string, vals []ast.ExternVal, ra
 		scheme := types.Mono(t)
 		if ev.Kind == ast.ExternFunc {
 			if c.env.Lookup(ev.Name) != nil {
-				c.errorf("extern binding %q conflicts with existing name", ev.Name)
+				c.errorf("TYPE002: extern binding %q conflicts with existing name", ev.Name)
 			} else {
 				c.env.Bind(ev.Name, scheme)
 			}
@@ -192,6 +196,32 @@ func (c *Checker) bindExternValsOpts(importPath string, vals []ast.ExternVal, ra
 				c.env.Bind(typeName+"."+ev.Name, scheme)
 			}
 		}
+	}
+}
+
+// verifyExternArity emits GOSIG003 when hand { val } arity disagrees with go/types.
+func (c *Checker) verifyExternArity(importPath, funcName string, declared types.Type) {
+	sig, err := gosig.LookupFunc(importPath, funcName)
+	if err != nil {
+		return // keep GOSIG002 path in refine; do not double-noise
+	}
+	declaredArity := countCurriedParams(declared)
+	goArity := len(sig.Params)
+	if declaredArity != goArity {
+		fmt.Fprintf(os.Stderr, "GOSIG003: hand signature for %s.%s has %d param(s), Go has %d\n",
+			importPath, funcName, declaredArity, goArity)
+	}
+}
+
+func countCurriedParams(t types.Type) int {
+	n := 0
+	for {
+		fn, ok := t.(*types.TFun)
+		if !ok {
+			return n
+		}
+		n++
+		t = fn.To
 	}
 }
 
@@ -295,6 +325,7 @@ func checkWithDepsAndImports(mod *ast.Module, deps map[string]*ast.Module, resol
 		privateNames:    make(map[string]bool),
 		blockedNames:    make(map[string]string),
 		effectInference: cfg.Check.EffectInference,
+		verifyFFI:       cfg.Check.VerifyFFI,
 		mutableVars:     make(map[string]bool),
 		modules:         make(map[string]*moduleExports),
 		moduleTypes:     make(map[string]*moduleSignature),
@@ -858,7 +889,7 @@ func (c *Checker) convertASTType(at ast.Type) types.Type {
 
 func (c *Checker) checkLetDecl(d *ast.LetDecl) {
 	if d.Mutable {
-		c.errorf("let mutable is removed; use 'ref' instead")
+		c.errorf("PARSE-MIG010: let mutable is removed; use 'ref' instead")
 	}
 	if d.Private {
 		for _, b := range d.Bindings {
@@ -1053,7 +1084,7 @@ func (c *Checker) infer(e ast.Expr) types.Type {
 	case *ast.PipeExpr:
 		t = c.inferPipe(e)
 	case *ast.QuestionExpr:
-		c.errorfAt(e.Loc, "'?' error propagation is not supported in Goop 1.0; use `match` on `('ok, 'err) result` (or `Result.bind`) and annotate the result type if needed")
+		c.errorfAt(e.Loc, "PARSE-MIG012: '?' error propagation is not supported in Goop 1.0; use `match` on `('ok, 'err) result` (or `Result.bind`) and annotate the result type if needed")
 		t = c.fresh("removed")
 	case *ast.RecordExpr:
 		t = c.inferRecord(e)
@@ -1123,13 +1154,13 @@ func (c *Checker) infer(e ast.Expr) types.Type {
 	case *ast.LabelledArgExpr:
 		t = c.inferLabelledArg(e)
 	case *ast.GuardExpr:
-		c.errorfAt(e.Loc, "'guard' is not supported in Goop 1.0; use `match` with a `when` guard, and annotate the scrutinee if its type is ambiguous")
+		c.errorfAt(e.Loc, "PARSE-MIG014: 'guard' is not supported in Goop 1.0; use `match` with a `when` guard, and annotate the scrutinee if its type is ambiguous")
 		t = c.fresh("removed")
 	case *ast.IsExpr:
-		c.errorfAt(e.Loc, "'is' pattern tests are not supported in Goop 1.0; use `match` instead, and annotate the scrutinee if its type is ambiguous")
+		c.errorfAt(e.Loc, "PARSE-MIG014: 'is' pattern tests are not supported in Goop 1.0; use `match` instead, and annotate the scrutinee if its type is ambiguous")
 		t = types.Bool
 	case *ast.AsMatchExpr:
-		c.errorfAt(e.Loc, "expression `as` / `else` macros are not supported in Goop 1.0; use `match` instead, and annotate the scrutinee if its type is ambiguous")
+		c.errorfAt(e.Loc, "PARSE-MIG014: expression `as` / `else` macros are not supported in Goop 1.0; use `match` instead, and annotate the scrutinee if its type is ambiguous")
 		t = c.fresh("removed")
 	case *ast.GoExpr:
 		t = c.inferGo(e)
@@ -1138,15 +1169,15 @@ func (c *Checker) infer(e ast.Expr) types.Type {
 	case *ast.UsingExpr:
 		t = c.inferUsing(e)
 	case *ast.RegionExpr:
-		c.errorfAt(e.Loc, "`region { … }` is not supported in Goop 1.0; use `try`/`finally` or explicit cleanup, and annotate resource types if inference is ambiguous")
+		c.errorfAt(e.Loc, "PARSE-MIG013: `region { … }` is not supported in Goop 1.0; use `try`/`finally` or explicit cleanup, and annotate resource types if inference is ambiguous")
 		t = c.fresh("removed")
 	case *ast.CompExpr:
-		c.errorfAt(e.Loc, "computation expressions (`%s { … }`) are not supported in Goop 1.0; rewrite with `match` on `result`, or `try`/`finally` for cleanup", e.Builder)
+		c.errorfAt(e.Loc, "PARSE-MIG013: computation expressions (`%s { … }`) are not supported in Goop 1.0; rewrite with `match` on `result`, or `try`/`finally` for cleanup", e.Builder)
 		t = c.fresh("removed")
 	default:
 		// Defensive: every known ast.Expr variant has a case above. Hitting
 		// this means a new AST node was added without an infer path.
-		c.errorfAt(locOf(e), "internal error: unhandled expression %T in type inference (compiler bug — please report); rewrite using a supported form or add an explicit type annotation on the enclosing binding", e)
+		c.errorfAt(locOf(e), "TYPE003: internal error: unhandled expression %T in type inference (compiler bug — please report); rewrite using a supported form or add an explicit type annotation on the enclosing binding", e)
 		t = types.Unit
 	}
 
@@ -1193,7 +1224,7 @@ func (c *Checker) inferConstructor(e *ast.ConstructorExpr) types.Type {
 	if e.TypePrefix != "" {
 		s = c.env.Lookup(e.TypePrefix + "." + e.Name)
 		if s == nil && !c.adtHasConstructor(e.TypePrefix, e.Name) {
-			c.errorfAt(e.Loc, "constructor %s.%s is not defined", e.TypePrefix, e.Name)
+			c.errorfAt(e.Loc, "TYPE013: constructor %s.%s is not defined", e.TypePrefix, e.Name)
 			return types.Unit
 		}
 	}
@@ -1266,8 +1297,36 @@ func (c *Checker) inferApp(e *ast.AppExpr) types.Type {
 
 	resultType := c.fresh("result")
 	fnType := &types.TFun{From: argType, To: resultType}
+	// Prefer a clear ROW001 when an open-row param is applied to a record literal.
+	if tfun, ok := types.Apply(c.sub, funcType).(*types.TFun); ok {
+		c.checkOpenRowLiteral(e, types.Apply(c.sub, tfun.From), e.Arg)
+	}
 	c.unifyAt(e.Loc, funcType, fnType)
 	return resultType
+}
+
+func (c *Checker) checkOpenRowLiteral(app *ast.AppExpr, expected types.Type, arg ast.Expr) {
+	rt, ok := expected.(*types.TRecord)
+	if !ok || !rt.Open || arg == nil {
+		return
+	}
+	rec, ok := arg.(*ast.RecordExpr)
+	if !ok {
+		return
+	}
+	present := map[string]bool{}
+	for _, f := range rec.Fields {
+		present[f.Name] = true
+	}
+	funcName := "function"
+	if id, ok := app.Func.(*ast.IdentExpr); ok && id.Name != "" {
+		funcName = id.Name
+	}
+	for _, f := range rt.Fields {
+		if !present[f.Name] {
+			c.errorfAt(ast.ExprLoc(arg), "ROW001: record literal is missing field %q required by row parameter of %s", f.Name, funcName)
+		}
+	}
 }
 
 // inferFunExpected infers a function expression with a known expected type.
@@ -1360,7 +1419,7 @@ func (c *Checker) inferMatch(e *ast.MatchExpr) types.Type {
 
 func (c *Checker) inferLetIn(e *ast.LetInExpr) types.Type {
 	if e.Mutable {
-		c.errorfAt(e.Loc, "let mutable is removed; use 'ref' instead")
+		c.errorfAt(e.Loc, "PARSE-MIG010: let mutable is removed; use 'ref' instead")
 	}
 	// Process as non-recursive let: check bindings, add to env, check body
 	for _, b := range e.Bindings {
@@ -1408,7 +1467,7 @@ func (c *Checker) inferAssign(e *ast.AssignExpr) types.Type {
 		valueType := c.infer(e.Value)
 		c.unifyAt(e.Loc, valueType, bound)
 	default:
-		c.errorfAt(e.Loc, "invalid assignment target")
+		c.errorfAt(e.Loc, "TYPE012: invalid assignment target")
 	}
 	return types.Unit
 }
@@ -1628,7 +1687,7 @@ func (c *Checker) inferBinary(e *ast.BinaryExpr) types.Type {
 		return types.Int
 
 	case token.PERCENT:
-		c.errorfAt(e.Loc, "'%%' is not supported in Goop 1.0; use 'mod' for integer remainder (e.g. `a mod b`)")
+		c.errorfAt(e.Loc, "PARSE-MIG018: '%%' is not supported in Goop 1.0; use 'mod' for integer remainder (e.g. `a mod b`)")
 		return types.Int
 
 	case token.STARDOT, token.PLUSDOT, token.MINUSDOT, token.SLASHDOT:
@@ -1672,7 +1731,7 @@ func (c *Checker) inferBinary(e *ast.BinaryExpr) types.Type {
 		return result
 
 	default:
-		c.errorfAt(e.Loc, "unsupported binary operator %s; Goop 1.0 supports + - * / mod land lor lxor +. -. *. /. = == != <> < > <= >= ^ && || :: |>; rewrite using those operators, or annotate the enclosing binding with an explicit type and use a library function", e.Op)
+		c.errorfAt(e.Loc, "TYPE004: unsupported binary operator %s; Goop 1.0 supports + - * / mod land lor lxor +. -. *. /. = == != <> < > <= >= ^ && || :: |>; rewrite using those operators, or annotate the enclosing binding with an explicit type and use a library function", e.Op)
 		return types.Unit
 	}
 }
@@ -2059,12 +2118,12 @@ func (c *Checker) checkPattern(loc token.SourceLoc, p ast.Pattern, scrutType typ
 
 		// Find the constructor type and match
 		if p.TypePrefix != "" && !c.adtHasConstructor(p.TypePrefix, p.Name) {
-			c.errorfAt(loc, "constructor %s.%s is not defined", p.TypePrefix, p.Name)
+			c.errorfAt(loc, "TYPE013: constructor %s.%s is not defined", p.TypePrefix, p.Name)
 			return
 		}
 		s := c.env.Lookup(p.Name)
 		if s == nil {
-			c.errorfAt(loc, "undefined constructor pattern: %s", p.Name)
+			c.errorfAt(loc, "TYPE005: undefined constructor pattern: %s", p.Name)
 			return
 		}
 		ctorType := s.Instantiate()
@@ -2074,7 +2133,7 @@ func (c *Checker) checkPattern(loc token.SourceLoc, p ast.Pattern, scrutType typ
 				c.unifyAt(loc, fn.To, scrutType)
 				c.checkPattern(loc, p.Arg, fn.From)
 			} else {
-				c.errorfAt(loc, "constructor %s takes no argument", p.Name)
+				c.errorfAt(loc, "TYPE006: constructor %s takes no argument", p.Name)
 			}
 		} else {
 			c.unifyAt(loc, ctorType, scrutType)
@@ -2097,7 +2156,7 @@ func (c *Checker) checkPattern(loc token.SourceLoc, p ast.Pattern, scrutType typ
 		for _, f := range p.Fields {
 			fieldType := rt.Lookup(f.Name)
 			if fieldType == nil {
-				c.errorfAt(loc, "record has no field %q", f.Name)
+				c.errorfAt(loc, "TYPE007: record has no field %q", f.Name)
 				continue
 			}
 			if f.Pattern != nil {
@@ -2111,14 +2170,14 @@ func (c *Checker) checkPattern(loc token.SourceLoc, p ast.Pattern, scrutType typ
 		// Must be a tuple type of same arity
 		if tt, ok := scrutType.(*types.TTuple); ok {
 			if len(p.Elems) != len(tt.Elems) {
-				c.errorfAt(loc, "tuple pattern arity mismatch: %d vs %d", len(p.Elems), len(tt.Elems))
+				c.errorfAt(loc, "TYPE008: tuple pattern arity mismatch: %d vs %d", len(p.Elems), len(tt.Elems))
 				return
 			}
 			for i, ep := range p.Elems {
 				c.checkPattern(loc, ep, tt.Elems[i])
 			}
 		} else {
-			c.errorfAt(loc, "expected tuple type for tuple pattern")
+			c.errorfAt(loc, "TYPE009: expected tuple type for tuple pattern")
 		}
 	case *ast.ListPattern:
 		// Must be a list type
@@ -2184,7 +2243,7 @@ func (c *Checker) unifyAt(loc token.SourceLoc, t1, t2 types.Type) {
 
 	newSub, err := types.Unify(t1, t2)
 	if err != nil {
-		c.errorfAt(loc, "%v", err)
+		c.errorfAt(loc, "TYPE010: %v", err)
 		return
 	}
 	// Compose the new substitution into the current one
@@ -2746,7 +2805,7 @@ func (c *Checker) bindModuleExports(dep *ast.Module, prefix string, unqualified 
 				if s := depChecker.env.Lookup(b.Name); s != nil {
 					if unqualified {
 						if existing := c.env.Lookup(b.Name); existing != nil {
-							c.errorf("import binds %q which conflicts with existing name", b.Name)
+							c.errorf("IMPORT004: import binds %q which conflicts with existing name", b.Name)
 						} else {
 							c.env.Bind(b.Name, s)
 						}
