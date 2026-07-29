@@ -5,12 +5,12 @@ type Handle : 1
 
 (* The Close function discharges a linear handle *)
 let Close (h: Handle) : unit =
-  print_line "resource closed"
+  println "resource closed"
 
 (* A function that uses a handle *)
 let useHandle (h: Handle) : unit =
   begin
-    print_line "using handle";
+    println "using handle";
     Close h
   end
 
@@ -20,4 +20,4 @@ let process (h: Handle) : unit =
   useHandle h
 
 let main () =
-  print_line "linear resource demo"
+  println "linear resource demo"

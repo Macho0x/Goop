@@ -14,5 +14,5 @@ let compute () : (float, string) result =
 
 let main () =
   match compute () with
-  | Ok x -> print_line (float_to_string x)
-  | Error msg -> print_line msg
+  | Ok x -> println (float_to_string x)
+  | Error msg -> println msg

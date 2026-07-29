@@ -766,7 +766,7 @@ import go "strings" {
 
 let main () =
   let got = Contains "hello" "he" in
-  print_line (if got then "ok" else "no")
+  println (if got then "ok" else "no")
 `
 	mod, err := parser.Parse("test.goop", []byte(src))
 	if err != nil {

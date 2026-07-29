@@ -20,4 +20,4 @@ let describe (s: Shape) : string =
   | Point -> "point"
 
 let main () =
-  print_line (describe (Circle { radius = 5.0 }))
+  println (describe (Circle { radius = 5.0 }))

@@ -39,5 +39,5 @@ let main () =
   let log = New h in
   begin
     log.Info "hello from Goop Handler";
-    print_line h.last
+    println h.last
   end

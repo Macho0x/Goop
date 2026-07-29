@@ -94,7 +94,7 @@ func TestLSPDocumentFormatting(t *testing.T) {
 		t.Fatalf("expected documentFormattingProvider, got %#v", caps)
 	}
 
-	src := "module main\nlet main () =print_line \"hi\"\n"
+	src := "module main\nlet main () =println \"hi\"\n"
 	send(map[string]interface{}{
 		"jsonrpc": "2.0", "method": "textDocument/didOpen",
 		"params": map[string]interface{}{

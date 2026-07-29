@@ -6,7 +6,7 @@ window.GOOP_EXAMPLES = [
     source: `module main
 
 let main () =
-  print_line "Hello, Goop!"
+  println "Hello, Goop!"
 `,
   },
   {
@@ -34,7 +34,7 @@ let describe (s: Shape) : string =
   | Point -> "point"
 
 let main () =
-  print_line (describe (Circle { radius = 5.0 }))
+  println (describe (Circle { radius = 5.0 }))
 `,
   },
   {
@@ -57,7 +57,7 @@ let getUserName (id: int) : string =
   | Error (InvalidInput msg) -> "invalid: " ^ msg
 
 let main () =
-  print_line (getUserName 42)
+  println (getUserName 42)
 `,
   },
   {
@@ -74,7 +74,7 @@ let classify (opt: int option) : string =
   | None -> "none"
 
 let main () =
-  print_line (classify (Some 3))
+  println (classify (Some 3))
 `,
   },
   {
@@ -86,8 +86,8 @@ let main () =
   let table : map[string] int = Map.make () in
   let _ = Map.add table "foo" 1 in
   match Map.get table "foo" with
-  | Some n -> print_line (int_to_string n)
-  | None -> print_line "missing"
+  | Some n -> println (int_to_string n)
+  | None -> println "missing"
 `,
   },
   {
@@ -100,7 +100,7 @@ import go "net/http" {
 }
 
 let main () =
-  print_line (http.CanonicalHeaderKey "content-type")
+  println (http.CanonicalHeaderKey "content-type")
 `,
   },
   {
@@ -117,7 +117,7 @@ let place (sym: symbol) (oid: order_id) : string =
 let main () : unit =
   let oid = Order_id "ord-1" in
   let sym = Symbol "ETH-USD" in
-  print_line (place sym oid)
+  println (place sym oid)
 `,
   },
   {
@@ -215,7 +215,7 @@ let main () =
   begin
     assert (Array.length xs = 5);
     assert (xs.(0) = 10 && xs.(4) = 14);
-    print_line "arrays ok"
+    println "arrays ok"
   end
 `,
   },

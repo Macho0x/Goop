@@ -10,4 +10,4 @@ val is_positive : int -> bool
 let main () =
   let chk1 = assert (is_positive 3 = true) in
   let chk2 = assert (is_positive (-1) = false) in
-  print_line "c_embed_bool ok"
+  println "c_embed_bool ok"

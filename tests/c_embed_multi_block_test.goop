@@ -13,4 +13,4 @@ val neg : int -> int
 let main () =
   let chk1 = assert (mul 3 4 = 12) in
   let chk2 = assert (neg 7 = -7) in
-  print_line "c_embed_multi ok"
+  println "c_embed_multi ok"

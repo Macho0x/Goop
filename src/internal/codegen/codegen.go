@@ -3112,7 +3112,7 @@ func (g *Generator) emitApp(e *ast.AppExpr, isStmt bool) {
 	}
 
 	// Function application
-	// Check if this is a method-like call on a constructor (e.g., Console.print_line)
+	// Check if this is a method-like call on a constructor (e.g., Console.println)
 	if send, ok := e.Func.(*ast.MethodSendExpr); ok {
 		args := g.collectArgs(e)
 		g.emitExpr(send.Target, false)
@@ -3198,7 +3198,7 @@ func (g *Generator) emitApp(e *ast.AppExpr, isStmt bool) {
 			}
 			return
 		}
-		// Check prelude for qualified names like Console.print_line
+		// Check prelude for qualified names like Console.println
 		qualifiedName := g.fieldAccessName(field)
 		if qualifiedName != "" {
 			if b := g.prelude.Lookup(qualifiedName); b != nil {
@@ -3209,7 +3209,7 @@ func (g *Generator) emitApp(e *ast.AppExpr, isStmt bool) {
 				return
 			}
 		}
-		// qualified call like colors.gray () / Console.print_line
+		// qualified call like colors.gray () / Console.println
 		g.emitFieldAccess(field)
 		g.buf.WriteString("(")
 		if lit, ok := e.Arg.(*ast.LitExpr); ok && lit.Kind == token.UNIT {
@@ -5855,7 +5855,7 @@ func (g *Generator) findRecordType(goName string) *ast.TypeDecl {
 }
 
 // fieldAccessName returns the dotted name for a simple field access expression
-// like Console.print_line, or empty string if it's complex.
+// like Console.println, or empty string if it's complex.
 func (g *Generator) fieldAccessName(e *ast.FieldAccessExpr) string {
 	if ctor, ok := e.Left.(*ast.ConstructorExpr); ok && ctor.Arg == nil {
 		return ctor.Name + "." + e.Field
@@ -5878,7 +5878,7 @@ func (g *Generator) emitFieldAccess(e *ast.FieldAccessExpr) {
 	// If left is a constructor (like Console), emit specially
 	if ctor, ok := e.Left.(*ast.ConstructorExpr); ok {
 		if ctor.Name == "Console" && ctor.Arg == nil {
-			if e.Field == "print_line" {
+			if e.Field == "println" {
 				g.buf.WriteString("fmt.Println")
 				g.needFmt = true
 				return

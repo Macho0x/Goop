@@ -8,7 +8,7 @@ Status: implemented (language + gosiggen)
 let m : map[string] int = Map.make () in
 let _ = Map.add m "x" 1 in
 match Map.get m "x" with
-| Some n -> print_line (int_to_string n)
+| Some n -> println (int_to_string n)
 | None -> ()
 ```
 

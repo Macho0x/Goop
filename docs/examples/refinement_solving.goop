@@ -18,4 +18,4 @@ let offsetOk (base: int) (off: int) : int =
     0
 
 let main () =
-  print_line (int_to_string (compute 100 5))
+  println (int_to_string (compute 100 5))

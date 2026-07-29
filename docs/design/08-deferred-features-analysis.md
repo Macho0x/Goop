@@ -235,7 +235,7 @@ Koka uses **row-polymorphic effect inference** — a function's inferred effect 
 ```goop
 (* Inferred: f : 'a -> 'b -> 'a with { io } *)
 let f (x: 'a) (y: 'b) =
-  print_line "computing";
+  println "computing";
   x
 ```
 

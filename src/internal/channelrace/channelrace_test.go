@@ -14,7 +14,7 @@ let main () : unit =
   let counter = ref 0 in
   let ch : int chan = Chan.make () in
   let g = go (fun () -> let s = Chan.send ch !counter in ()) in
-  let dummy = print_line (int_to_string !counter) in ()
+  let dummy = println (int_to_string !counter) in ()
 `
 	mod, err := parser.Parse("test.goop", []byte(src))
 	if err != nil {
@@ -35,7 +35,7 @@ let main () : unit =
   let g = go (fun () ->
     let _ = counter := !counter + 1 in
     Chan.send ch !counter) in
-  let dummy = print_line (int_to_string !counter) in ()
+  let dummy = println (int_to_string !counter) in ()
 `
 	mod, err := parser.Parse("test.goop", []byte(src))
 	if err != nil {

@@ -3,4 +3,4 @@ module main
 import io goop "std.io"
 
 let main () =
-  io.PrintLine "import goop qualified OK"
+  io.Println "import goop qualified OK"

@@ -10,5 +10,5 @@ let main () =
   begin
     assert (ToString o.price = "1.5");
     assert (o.qty = 2);
-    print_line "decimal reexport record OK"
+    println "decimal reexport record OK"
   end

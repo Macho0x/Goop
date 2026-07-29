@@ -15,5 +15,5 @@ let handleAck (ack: OrderAck) : string =
 let main () : unit =
   begin
     let a = OrderAck.Filled { order_id = "o1"; qty = 10 } in
-    print_line (handleAck a)
+    println (handleAck a)
   end

@@ -13,4 +13,4 @@ val greet : string -> string
 
 let main () =
   let chk = assert (ToUpper "hi" = "HI") in
-  print_line (greet "Goop")
+  println (greet "Goop")

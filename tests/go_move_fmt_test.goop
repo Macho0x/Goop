@@ -2,5 +2,5 @@ module GoMoveFmt
 
 let main () : unit =
   let x = ref 1 in
-  let dummy = go (move x) (fun () -> print_line (int_to_string (!x))) in
-  print_line "ok"
+  let dummy = go (move x) (fun () -> println (int_to_string (!x))) in
+  println "ok"

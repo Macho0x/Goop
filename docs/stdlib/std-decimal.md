@@ -60,7 +60,7 @@ let main () : unit =
   let price = OfString "10.00" in
   let fee = OfString "1.50" in
   let total = price.Add fee in
-  print_line (ToString total)
+  println (ToString total)
 ```
 
 Full demo (including a `Decimal` record field):

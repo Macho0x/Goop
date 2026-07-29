@@ -27,4 +27,4 @@ let getUserName (id: int) : string =
   | Error (InvalidInput msg) -> "invalid: " ^ msg
 
 let main () =
-  print_line (getUserName 42)
+  println (getUserName 42)

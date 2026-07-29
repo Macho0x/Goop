@@ -21,7 +21,7 @@ func TestChanMakeInt(t *testing.T) {
 let main () =
   let ch : int chan = Chan.make () in
   let v = Chan.recv ch in
-  print_line (int_to_string v)
+  println (int_to_string v)
 `
 	mod, err := parser.Parse("test.goop", []byte(src))
 	if err != nil {

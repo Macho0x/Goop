@@ -1,6 +1,16 @@
 # Changelog
 
+## 1.17.0
+
+### Breaking
+
+- Prelude **`print_line` → `println`** (`fmt.Println`); **`Console.print_line` → `Console.println`**
+- **`std.io`:** `PrintLine` → `Println`
+
+No compat aliases — update call sites.
+
 ## 1.16.0
+
 
 ### Diagnostics
 

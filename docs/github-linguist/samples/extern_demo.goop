@@ -37,4 +37,4 @@ let main () =
     a ^ "\n" ^ b ^ "\n" ^ c ^ "\n" ^ d ^ "\n" ^
     "The time is " ^ e
   in
-  print_line report
+  println report

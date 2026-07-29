@@ -38,7 +38,7 @@ type order_id = | Order_id of string
 type qty = | Qty of int
 
 let main () : unit =
-  print_line "ok"
+  println "ok"
 `)
 	for _, want := range []string{
 		"type order_id string",
@@ -75,7 +75,7 @@ let area (sh : shape) : float =
   | Square s -> s
 
 let main () : unit =
-  print_line "ok"
+  println "ok"
 `)
 	for _, want := range []string{
 		"type shape interface",
@@ -101,7 +101,7 @@ type wrapper = | Wrap of { name : string }
 type pair = | Pair of (int * int)
 
 let main () : unit =
-  print_line "ok"
+  println "ok"
 `)
 	for _, want := range []string{
 		"type wrapper interface",
@@ -134,7 +134,7 @@ let qty_or_zero (q : qty) : int =
 
 let main () : unit =
   let oid = Order_id "ord-1" in
-  if qty_or_zero (Qty 7) = 7 then print_line (id_string oid) else print_line "bad qty"
+  if qty_or_zero (Qty 7) = 7 then println (id_string oid) else println "bad qty"
 `)
 	if !strings.Contains(goSrc, "s := string(") {
 		t.Fatalf("expected an unwrap conversion for the string brand:\n%s", goSrc)
@@ -162,7 +162,7 @@ let place (sym : symbol) (oid : order_id) : string =
   | Order_id s -> s
 
 let main () : unit =
-  print_line (place (Symbol "ETH-USD") (Order_id "ord-1"))
+  println (place (Symbol "ETH-USD") (Order_id "ord-1"))
 `)
 	if !strings.Contains(goSrc, "type order_id string") || !strings.Contains(goSrc, "type symbol string") {
 		t.Fatalf("expected two distinct defined types:\n%s", goSrc)

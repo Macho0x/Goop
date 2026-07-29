@@ -9,7 +9,7 @@ Wraps Go’s `fmt` package with a Goop-facing API.
 
 | Name | Type | Description |
 |---|---|---|
-| `PrintLine` | `string -> unit` | Print a line to stdout (`fmt.Println`) |
+| `Println` | `string -> unit` | Print a line to stdout (`fmt.Println`) |
 
 ## Example
 
@@ -19,12 +19,12 @@ module main
 import goop . "std.io"
 
 let main () : unit =
-  PrintLine "from std.io"
+  Println "from std.io"
 ```
 
-## vs prelude `print_line`
+## vs prelude `println`
 
-| | `print_line` | `std.io.PrintLine` |
+| | `println` | `std.io.Println` |
 |---|---|---|
 | Import | None (prelude) | `import goop . "std.io"` |
 | Naming | `snake_case` | `PascalCase` |

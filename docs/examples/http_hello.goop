@@ -8,7 +8,7 @@ import go "net/http" {
 let main () =
   begin
     let key = http.CanonicalHeaderKey "content-type" in
-    print_line key;
+    println key;
     let _ = assert (key = "Content-Type") in
     ()
   end

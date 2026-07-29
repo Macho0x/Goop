@@ -12,8 +12,8 @@ let main () =
         begin
           let _ = Map.add table "ok" 1 in
           let _ = assert (Map.mem table "ok") in
-          print_line "read ok"
+          println "read ok"
         end
     | Error _ ->
-        print_line "read failed"
+        println "read failed"
   end

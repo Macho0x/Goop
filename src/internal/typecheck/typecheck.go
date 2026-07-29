@@ -1891,7 +1891,7 @@ func (c *Checker) inferRecordUpdate(e *ast.RecordUpdateExpr) types.Type {
 }
 
 func (c *Checker) inferFieldAccess(e *ast.FieldAccessExpr) types.Type {
-	// Check for prelude-qualified names like Chan.make, Console.print_line.
+	// Check for prelude-qualified names like Chan.make, Console.println.
 	// The codegen resolves these through the prelude, so the typechecker
 	// must do the same to get correct types for polymorphic prelude calls.
 	qualified := c.fieldAccessName(e)
@@ -1948,7 +1948,7 @@ func (c *Checker) inferMethodSend(e *ast.MethodSendExpr) types.Type {
 }
 
 // fieldAccessName returns the dotted name for a simple field-access
-// expression like Console.print_line or Chan.make, or empty string.
+// expression like Console.println or Chan.make, or empty string.
 func (c *Checker) fieldAccessName(e *ast.FieldAccessExpr) string {
 	if ctor, ok := e.Left.(*ast.ConstructorExpr); ok && ctor.Arg == nil {
 		return ctor.Name + "." + e.Field

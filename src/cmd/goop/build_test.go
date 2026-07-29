@@ -32,7 +32,7 @@ func writeHelloGoop(t *testing.T, dir string) string {
 	src := `module main
 
 let main () =
-  print_line "ok"
+  println "ok"
 `
 	path := filepath.Join(dir, "hello.goop")
 	if err := os.WriteFile(path, []byte(src), 0644); err != nil {
@@ -309,7 +309,7 @@ let greet (name: string) : string = "hi " ^ name
 import goop . "example.com/demo/lib"
 
 let main () =
-  print_line (greet "world")
+  println (greet "world")
 `
 	mainPath := filepath.Join(root, "main.goop")
 	if err := os.WriteFile(mainPath, []byte(mainSrc), 0644); err != nil {

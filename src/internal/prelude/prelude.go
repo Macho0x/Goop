@@ -2,13 +2,13 @@
 // without explicit `open` statements.
 //
 // Each binding has:
-//   - A user‑visible name (e.g. "print_line")
+//   - A user‑visible name (e.g. "println")
 //   - A Goop type (e.g. "string -> unit")
 //   - A Go lowering that describes how to emit the corresponding Go code
 //
 // Prelude bindings are bound into the type‑checker environment before any
 // user declarations, but they are shadowable — a user can define their own
-// `print_line` and the prelude version is hidden.
+// `println` and the prelude version is hidden.
 package prelude
 
 import (
@@ -17,7 +17,7 @@ import (
 
 // Binding describes one prelude entry.
 type Binding struct {
-	Name     string        // user‑visible name, e.g. "print_line"
+	Name     string        // user‑visible name, e.g. "println"
 	Scheme   *types.Scheme // type scheme
 	Lowering Lowering      // how to emit Go code for a call
 	Effects  *[]string     // nil = unknown; non-nil lists effect tags for the outermost function
@@ -65,8 +65,8 @@ func Default() *Prelude {
 	panicEff := []string{"panic"}
 	pureEff := []string{}
 
-	// print_line : string -> unit
-	p.addWithEffects("print_line",
+	// println : string -> unit
+	p.addWithEffects("println",
 		types.Mono(&types.TFun{From: types.String, To: types.Unit}),
 		Lowering{Func: "fmt.Println", Pkg: "fmt"},
 		&ioEff,
@@ -224,7 +224,7 @@ func Default() *Prelude {
 		&pureEff,
 	)
 
-	p.addWithEffects("Console.print_line",
+	p.addWithEffects("Console.println",
 		types.Mono(&types.TFun{From: types.String, To: types.Unit}),
 		Lowering{Func: "fmt.Println", Pkg: "fmt"},
 		&ioEff,

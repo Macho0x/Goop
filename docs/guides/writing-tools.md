@@ -33,10 +33,10 @@ let main () =
     | Ok _ ->
         begin
           let _ = Map.add table "ok" 1 in
-          print_line "read ok"
+          println "read ok"
         end
     | Error _ ->
-        print_line "read failed"
+        println "read failed"
   end
 ```
 

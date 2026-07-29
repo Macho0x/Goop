@@ -32,25 +32,25 @@ func TestParseHello(t *testing.T) {
 	if d.Bindings[0].Name != "main" {
 		t.Errorf("expected binding name main, got %q", d.Bindings[0].Name)
 	}
-	// Body should be an AppExpr: print_line "Hello, Goop!"
+	// Body should be an AppExpr: println "Hello, Goop!"
 	app, ok := d.Bindings[0].Body.(*ast.AppExpr)
 	if !ok {
 		t.Fatalf("expected AppExpr body, got %T", d.Bindings[0].Body)
 	}
-	// Left side: print_line (ident) or Console.print_line (field access)
+	// Left side: println (ident) or Console.println (field access)
 	ident, ok := app.Func.(*ast.IdentExpr)
 	if !ok {
-		// Backward compat: may be FieldAccessExpr for Console.print_line
+		// Backward compat: may be FieldAccessExpr for Console.println
 		if field, ok2 := app.Func.(*ast.FieldAccessExpr); ok2 {
-			if field.Field != "print_line" {
-				t.Errorf("expected print_line, got %q", field.Field)
+			if field.Field != "println" {
+				t.Errorf("expected println, got %q", field.Field)
 			}
 		} else {
 			t.Fatalf("expected IdentExpr or FieldAccessExpr, got %T", app.Func)
 		}
 	} else {
-		if ident.Name != "print_line" {
-			t.Errorf("expected print_line, got %q", ident.Name)
+		if ident.Name != "println" {
+			t.Errorf("expected println, got %q", ident.Name)
 		}
 	}
 	// Right side: "Hello, Goop!" string literal
@@ -203,7 +203,7 @@ func TestParseGoEmbedPointerReceiver(t *testing.T) {
 val newBox : int -> unit
 val boxVal : unit -> int
 
-let main () = print_line "ok"
+let main () = println "ok"
 `
 	mod, err := parser.Parse("ptr_embed.goop", []byte(src))
 	if err != nil {
@@ -235,7 +235,7 @@ import go "fmt"
 }
 val nowString : unit -> string
 
-let main () = print_line (nowString ())
+let main () = println (nowString ())
 `
 	mod, err := parser.Parse("go_embed.goop", []byte(src))
 	if err != nil {
@@ -634,7 +634,7 @@ func TestParseForLoop(t *testing.T) {
 	src := `module main
 let main () =
   for i = 0 to 3 do
-    print_line (int_to_string i)
+    println (int_to_string i)
   done
 `
 	mod, err := parser.Parse("t.goop", []byte(src))
@@ -674,7 +674,7 @@ func TestParseBeginEnd(t *testing.T) {
 	src := `module main
 let main () =
   begin
-    print_line "a";
+    println "a";
     42
   end
 `

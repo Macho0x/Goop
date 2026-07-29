@@ -123,7 +123,7 @@ func TestImportFromGeneratedCode(t *testing.T) {
 import goop . "std.io"
 
 let greet () =
-  print_line "hi"
+  println "hi"
 `
 	srcFile := filepath.Join(t.TempDir(), "test.goop")
 	os.WriteFile(srcFile, []byte(c0Content), 0644)

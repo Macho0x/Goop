@@ -270,13 +270,13 @@ func (s *replSession) inferExprType(expr string) (string, error) {
 func wrapExprForPrint(expr, typ string) (wrapper string, printable bool) {
 	switch typ {
 	case "int":
-		return "let main () =\n  print_line (int_to_string (" + expr + "))", true
+		return "let main () =\n  println (int_to_string (" + expr + "))", true
 	case "float":
-		return "let main () =\n  print_line (float_to_string (" + expr + "))", true
+		return "let main () =\n  println (float_to_string (" + expr + "))", true
 	case "string":
-		return "let main () =\n  print_line (" + expr + ")", true
+		return "let main () =\n  println (" + expr + ")", true
 	case "bool":
-		return "let main () =\n  print_line (if (" + expr + ") then \"true\" else \"false\")", true
+		return "let main () =\n  println (if (" + expr + ") then \"true\" else \"false\")", true
 	case "unit":
 		return "let main () =\n  (" + expr + ")", true
 	default:

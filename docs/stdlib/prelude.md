@@ -1,6 +1,6 @@
 # Prelude reference
 
-The prelude is injected by the type checker before user declarations. Bindings are **shadowable** — a local `let print_line = ...` hides the prelude version.
+The prelude is injected by the type checker before user declarations. Bindings are **shadowable** — a local `let println = ...` hides the prelude version.
 
 **Source:** `src/internal/prelude/prelude.go`
 
@@ -8,9 +8,9 @@ The prelude is injected by the type checker before user declarations. Bindings a
 
 | Name | Type | Go lowering |
 |---|---|---|
-| `print_line` | `string -> unit` | `fmt.Println` |
+| `println` | `string -> unit` | `fmt.Println` |
 | `print` | `string -> unit` | `fmt.Print` |
-| `Console.print_line` | `string -> unit` | `fmt.Println` |
+| `Console.println` | `string -> unit` | `fmt.Println` |
 
 ## Strings and numbers
 

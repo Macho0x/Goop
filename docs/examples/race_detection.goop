@@ -7,14 +7,14 @@ module main
 let immutableExample () : unit =
   let x = 42 in
   go (fun () ->
-    print_line (int_to_string x)
+    println (int_to_string x)
   )
 
 let channelExample () : unit =
   let ch : int chan = Chan.make () in
   let dummy = go (fun () -> Chan.send ch 42) in
   let v = Chan.recv ch in
-  print_line (int_to_string v)
+  println (int_to_string v)
 
 let main () =
   immutableExample ()

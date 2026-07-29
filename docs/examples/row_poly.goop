@@ -1,7 +1,7 @@
 module main
 
 let printName (r: { name: string | .. }) : unit =
-  print_line r.name
+  println r.name
 
 let main () =
   printName { name = "Alice"; age = 30 }

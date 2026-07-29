@@ -56,7 +56,7 @@ let place (sym: symbol) (oid: order_id) : string =
   "placed"
 
 let main () =
-  print_line (place (Symbol "ETH-USD") (Order_id "ord-1"))
+  println (place (Symbol "ETH-USD") (Order_id "ord-1"))
 ```
 
 **Maps + option** — lookups are `Some` / `None`, not “did I check `ok`?”:
@@ -66,8 +66,8 @@ let main () =
   let prices : map[string] int = Map.make () in
   let _ = Map.add prices "ETH" 3200 in
   match Map.get prices "ETH" with
-  | Some px -> print_line (int_to_string px)
-  | None -> print_line "missing"
+  | Some px -> println (int_to_string px)
+  | None -> println "missing"
 ```
 
 **Go when you need it** — import packages, or drop in inline Go / C:
@@ -89,9 +89,9 @@ val c_add : int -> int -> int
 
 let main () =
   begin
-    print_line (strings.ToUpper "goop");
-    print_line (greet "world");
-    print_line (int_to_string (c_add 40 2))
+    println (strings.ToUpper "goop");
+    println (greet "world");
+    println (int_to_string (c_add 40 2))
   end
 ```
 
@@ -193,7 +193,7 @@ Compile-time checks Go leaves to tests or panics — without giving up Go’s ru
 
 ## Status
 
-**[v1.16.0](https://github.com/Macho0x/Goop/releases/tag/v1.16.0)** — UNUSED002 credits `mod.foo` expression uses; import warning locations. **[Playground](https://macho0x.github.io/Goop/)** is the fastest way to try Goop.
+**[v1.17.0](https://github.com/Macho0x/Goop/releases/tag/v1.17.0)** — prelude `println` (was `print_line`); `std.io.Println`. **[Playground](https://macho0x.github.io/Goop/)** is the fastest way to try Goop.
 
 [CHANGELOG](CHANGELOG.md) · [RELEASE_NOTES](RELEASE_NOTES.md) · [Benchmarks](benchmarks/README.md) · [Language-update checklist](docs/design/31-language-update-checklist.md)
 

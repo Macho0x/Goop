@@ -21,8 +21,8 @@ return `unit`.
 
 ```goop
 match Map.get table "foo" with
-| Some n -> print_line (int_to_string n)
-| None -> print_line "missing"
+| Some n -> println (int_to_string n)
+| None -> println "missing"
 ```
 
 | Binding | Type | Notes |

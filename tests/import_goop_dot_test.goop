@@ -3,4 +3,4 @@ module main
 import goop . "std.io"
 
 let main () =
-  PrintLine "import goop dot OK"
+  Println "import goop dot OK"

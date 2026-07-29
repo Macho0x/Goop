@@ -3,4 +3,4 @@ module main
 import goop . "std.io"
 
 let main () =
-  PrintLine "hello from std.io"
+  Println "hello from std.io"

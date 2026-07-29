@@ -390,7 +390,7 @@ type SpreadExpr struct{ Inner Expr }
 
 func (*SpreadExpr) exprNode() {}
 
-// IdentExpr is an identifier reference: `x`, `Console.print_line`.
+// IdentExpr is an identifier reference: `x`, `Console.println`.
 type IdentExpr struct {
 	Name string
 	Loc  token.SourceLoc // source location

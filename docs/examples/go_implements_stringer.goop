@@ -22,4 +22,4 @@ end
 }
 val demo : unit -> string
 
-let main () = print_line (demo ())
+let main () = println (demo ())

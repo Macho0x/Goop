@@ -15,4 +15,4 @@ let decide (px_cents: int) : string =
 let main () : unit =
   let sym = Symbol "BTC-USD" in
   let px = midPriceCents sym in
-  print_line (decide px)
+  println (decide px)

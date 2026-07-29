@@ -6,4 +6,4 @@ import go "strings" {
 
 let main () =
   let chk = assert (ToUpper "hi" = "HI") in
-  print_line "import go OK"
+  println "import go OK"

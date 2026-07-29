@@ -9,4 +9,4 @@ let place (sym: symbol) (oid: order_id) : string =
 let main () : unit =
   let oid = Order_id "ord-1" in
   let sym = Symbol "ETH-USD" in
-  print_line (place sym oid)
+  println (place sym oid)

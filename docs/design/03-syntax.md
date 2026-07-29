@@ -170,7 +170,7 @@ val helper : unit -> int
 ## Concurrency
 
 ```goop
-let _ = go (fun () -> print_line "hello")
+let _ = go (fun () -> println "hello")
 
 let r = ref 0 in
 let _ = go (move r) (fun () -> r := !r + 1)
@@ -193,7 +193,7 @@ while !r < 3 do
 done
 
 begin
-  print_line "step 1";
+  println "step 1";
   42
 end
 ```
@@ -204,7 +204,7 @@ end
 let m : map[string] int = Map.make () in
 let _ = Map.add m "x" 1 in
 match Map.get m "x" with
-| Some n -> print_line (int_to_string n)
+| Some n -> println (int_to_string n)
 | None -> ()
 ```
 

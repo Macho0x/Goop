@@ -13,4 +13,4 @@ val boxVal : any -> int
 let main () =
   let b = newBox 7 in
   let chk = assert (boxVal b = 7) in
-  print_line "go_embed_pointer ok"
+  println "go_embed_pointer ok"

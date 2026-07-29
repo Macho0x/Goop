@@ -84,7 +84,7 @@ let moved = { origin with x = 1.0 }
 
 ```goop
 let print_name (r: { name: string | .. }) : unit =
-  print_line r.name
+  println r.name
 ```
 
 ## `option` and `result`

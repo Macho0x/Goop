@@ -10,5 +10,5 @@ let main () =
     assert (Emit_request 1 2 3 4 = 10);
     assert (Zero_arg () = 42);
     assert (New_scope "log" 7 = "log:7");
-    print_line "import_capitalized_call OK"
+    println "import_capitalized_call OK"
   end

@@ -16,4 +16,4 @@ let describe (n: int) : string =
   | None -> "other"
 
 let main () =
-  print_line (describe 42)
+  println (describe 42)

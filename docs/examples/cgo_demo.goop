@@ -19,6 +19,6 @@ let main () =
   let sum = c_add 40 2 in
   let n = c_strlen "Goop" in
   begin
-    print_line ("c_add 40 2 = " ^ string_of_int sum);
-    print_line ("c_strlen Goop = " ^ string_of_int n)
+    println ("c_add 40 2 = " ^ string_of_int sum);
+    println ("c_strlen Goop = " ^ string_of_int n)
   end

@@ -17,5 +17,5 @@ let main () =
     assert (c3.name = "y");
     assert (c3.n = 7);
     assert (c4.name = "y");
-    print_line "import_record_literal OK"
+    println "import_record_literal OK"
   end

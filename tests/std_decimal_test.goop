@@ -16,5 +16,5 @@ let main () =
     assert (ToString quot = "2.5");
     assert (Cmp a b > 0);
     assert (Equal a (OfString "2.50"));
-    print_line "std.decimal OK"
+    println "std.decimal OK"
   end

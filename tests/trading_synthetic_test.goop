@@ -138,4 +138,4 @@ let main () =
     "Ret vol:     " ^ float_to_string ret_std ^ "\n" ^
     "\nDecision:    " ^ d ^ "\n"
   in
-  print_line report
+  println report

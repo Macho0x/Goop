@@ -230,13 +230,13 @@ let g1 (ch1: int chan) (ch2: int chan) : unit =
   go (fun () ->
     Chan.send ch1 42;       (* blocks until someone receives *)
     let v = Chan.recv ch2;  (* waits for g2 to send *)
-    print_line (int_to_string v))
+    println (int_to_string v))
 
 let g2 (ch1: int chan) (ch2: int chan) : unit =
   go (fun () ->
     Chan.send ch2 99;       (* blocks until someone receives *)
     let v = Chan.recv ch1;  (* waits for g1 to send *)
-    print_line (int_to_string v))
+    println (int_to_string v))
 ```
 
 This is detectable via **channel dependency graph analysis**: build a graph where nodes are goroutines and edges represent "goroutine A sends/receives on channel C before goroutine B can proceed." A cycle in this graph indicates a potential deadlock.

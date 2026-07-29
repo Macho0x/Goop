@@ -564,7 +564,7 @@ let main () =
   let ch : int chan = Chan.make () in
   let u = Chan.send ch 42 in
   let v = Chan.close ch in
-  print_line "channel operations work"
+  println "channel operations work"
 `
 	mod, err := parser.Parse("chan_test.goop", []byte(src))
 	if err != nil {
@@ -651,7 +651,7 @@ func TestChanSafetyNoChannel(t *testing.T) {
 	src := `module Main
 
 let main () =
-  print_line "no channels here!"
+  println "no channels here!"
 `
 	mod, err := parser.Parse("nochan_test.goop", []byte(src))
 	if err != nil {
@@ -678,7 +678,7 @@ func TestChanSafetyBuild(t *testing.T) {
 let main () =
   let ch : int chan = Chan.make () in
   let u = Chan.close ch in
-  print_line "channel closed"
+  println "channel closed"
 `
 	mod, err := parser.Parse("chanbuild_test.goop", []byte(src))
 	if err != nil {

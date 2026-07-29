@@ -14,7 +14,7 @@ and press **Compile** (Copy copies the generated Go).
 
 | Pair | Idea |
 |------|------|
-| [`hello.goop`](hello.goop) / [`hello.go`](hello.go) | Prelude `print_line` vs `fmt.Println` |
+| [`hello.goop`](hello.goop) / [`hello.go`](hello.go) | Prelude `println` vs `fmt.Println` |
 | [`branded_ids.goop`](branded_ids.goop) / [`branded_ids.go`](branded_ids.go) | Nominal brands vs distinct defined types |
 | [`result_match.goop`](result_match.goop) / [`result_match.go`](result_match.go) | `result` + `match` vs `(T, error)` |
 

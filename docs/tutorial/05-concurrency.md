@@ -30,8 +30,8 @@ The linear checker flags `ref` (or other mutable state) captured by `go` while s
 ```goop
 let race () : unit =
   let counter = ref 0 in
-  let ignored = go (fun () -> print_line (int_to_string (!counter))) in
-  print_line (int_to_string (!counter))   (* error: counter still in scope *)
+  let ignored = go (fun () -> println (int_to_string (!counter))) in
+  println (int_to_string (!counter))   (* error: counter still in scope *)
 ```
 
 Good patterns: [`race_detection.goop`](../examples/race_detection.goop).
@@ -43,7 +43,7 @@ Transfer a binding into a goroutine when the parent no longer uses it:
 ```goop
 let launch () : unit =
   let counter = ref 0 in
-  let dummy = go (move counter) (fun () -> print_line (int_to_string (!counter))) in
+  let dummy = go (move counter) (fun () -> println (int_to_string (!counter))) in
   ()
 ```
 

@@ -10,4 +10,4 @@ let main () =
   let y = Log 1.0 in
   let a = assert (x > 1.99 && x < 2.01) in
   let b = assert (y < 0.01) in
-  print_line "extern math OK"
+  println "extern math OK"

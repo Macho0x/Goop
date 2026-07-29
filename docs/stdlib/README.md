@@ -25,7 +25,7 @@ Reach Go packages with `import go "net/http" { ... }` (and curated `.gosig`s as 
 
 ## Prelude
 
-[Prelude reference](prelude.md) — `print_line`, `ref`, `failwith`, `Map.*`, `Chan.*`, `OwnedChan.*`, `Lazy.*`, string helpers, assertions.
+[Prelude reference](prelude.md) — `println`, `ref`, `failwith`, `Map.*`, `Chan.*`, `OwnedChan.*`, `Lazy.*`, string helpers, assertions.
 
 ## Builtins
 
@@ -35,7 +35,7 @@ Reach Go packages with `import go "net/http" { ... }` (and curated `.gosig`s as 
 
 | Module | Import path | Role | Reference |
 |---|---|---|---|
-| `std.io` | `import goop "std.io"` | Thin `fmt` wrapper (`PrintLine`) | [std.io](std-io.md) |
+| `std.io` | `import goop "std.io"` | Thin `fmt` wrapper (`Println`) | [std.io](std-io.md) |
 | `std.list` | `import goop "std.list"` | Higher-order list (`Map`) | [std.list](std-list.md) |
 | `std.map` | `import goop "std.map"` | Thin re-export of prelude `Map.*` | [prelude Maps](prelude.md#maps) · [tutorial](../tutorial/08-maps.md) · [`maps.goop`](../examples/maps.goop) |
 | `std.array` | `import goop "std.array"` | Re-export of prelude `Array.*` | [std.array](std-array.md) |
@@ -59,8 +59,8 @@ Reach Go packages with `import go "net/http" { ... }` (and curated `.gosig`s as 
 
 ```goop
 import goop "std.io"           (* qualified: must use module exports by name *)
-import goop . "std.io"         (* dot: PrintLine in scope *)
-import io goop "std.io"        (* alias: io.PrintLine *)
+import goop . "std.io"         (* dot: Println in scope *)
+import io goop "std.io"        (* alias: io.Println *)
 ```
 
 Resolution is configured in `goop.toml` `[mappings]` and defaults in the compiler. See [modules guide](../design/05-modules-and-packages.md).
@@ -69,9 +69,9 @@ Resolution is configured in `goop.toml` `[mappings]` and defaults in the compile
 
 | Layer | Convention | Example |
 |---|---|---|
-| Prelude | `snake_case` / qualified `Module.name` | `print_line`, `String.length`, `Chan.make` |
+| Prelude | `snake_case` / qualified `Module.name` | `println`, `String.length`, `Chan.make` |
 | `std.*` re-exports | lowercase matching OCaml module style | `make`, `length`, `concat` |
-| `std.*` helpers | `PascalCase` or camelCase | `PrintLine`, `Map`, `isSome` |
+| `std.*` helpers | `PascalCase` or camelCase | `Println`, `Map`, `isSome` |
 | Constructors | `PascalCase` | `Some`, `Ok`, `OrderId` |
 
 Keyword module names (`chan`, `ref`, `lazy`) cannot appear as `module …` headers; `std.chan` lives in `std/channel`, and `std.ref` uses `module Ref`.

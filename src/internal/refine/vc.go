@@ -367,7 +367,7 @@ func getFuncName(e ast.Expr) string {
 	case *ast.IdentExpr:
 		return e.Name
 	case *ast.FieldAccessExpr:
-		// Qualified name like Console.print_line
+		// Qualified name like Console.println
 		return e.Field
 	}
 	return ""

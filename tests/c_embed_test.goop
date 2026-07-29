@@ -9,4 +9,4 @@ val add : int -> int -> int
 
 let main () =
   let chk = assert (add 2 3 = 5) in
-  print_line "c_embed ok"
+  println "c_embed ok"

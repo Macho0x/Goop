@@ -27,9 +27,9 @@ let main () : unit =
     assert (equal total (OfString "31.5"));
     assert (ToString q.price = "99.5");
     assert (q.qty = 1);
-    print_line ("subtotal=" ^ ToString subtotal);
-    print_line ("total=" ^ ToString total);
-    print_line ("change=" ^ ToString change);
-    print_line ("half=" ^ ToString half);
-    print_line ("quote=" ^ ToString q.price)
+    println ("subtotal=" ^ ToString subtotal);
+    println ("total=" ^ ToString total);
+    println ("change=" ^ ToString change);
+    println ("half=" ^ ToString half);
+    println ("quote=" ^ ToString q.price)
   end

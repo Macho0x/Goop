@@ -7,7 +7,7 @@ let oid = Order_id "ord-42"
 let sym = Symbol "BTC-USD"
 
 let useIds (_id: order_id) (_s: symbol) : unit =
-  print_line "branded ids ok"
+  println "branded ids ok"
 
 let main () : unit =
   useIds oid sym

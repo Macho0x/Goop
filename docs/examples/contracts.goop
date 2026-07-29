@@ -8,4 +8,4 @@ let clamp (x: int) (lo: int) (hi: int where hi >= lo) : int where result >= lo &
   else x
 
 let main () =
-  print_line (int_to_string (safeDiv 100 5))
+  println (int_to_string (safeDiv 100 5))

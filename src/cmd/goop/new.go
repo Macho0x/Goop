@@ -11,7 +11,7 @@ const newMainGoop = `(* Scaffolded by goop new. Next: goop check main.goop && go
 module main
 
 let main () =
-  print_line "Hello, Goop!"
+  println "Hello, Goop!"
 `
 
 const newGoopToml = `# Goop project config — see docs/design/20-cli-artifacts.md

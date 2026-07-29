@@ -17,11 +17,11 @@ let run () : unit =
   let g1 = go (fun () ->
     let s1 = Chan.send ch1 42 in
     let v = Chan.recv ch2 in
-    print_line (int_to_string v)) in
+    println (int_to_string v)) in
   let g2 = go (fun () ->
     let s2 = Chan.send ch2 99 in
     let v = Chan.recv ch1 in
-    print_line (int_to_string v)) in
+    println (int_to_string v)) in
   ()
 `
 	mod, err := parser.Parse("test.goop", []byte(src))
@@ -41,7 +41,7 @@ let main () : unit =
   let ch : int chan = Chan.make () in
   let g = go (fun () ->
     select {
-      case x = ch -> print_line (int_to_string x)
+      case x = ch -> println (int_to_string x)
       default -> ()
     }) in
   ()

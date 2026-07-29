@@ -14,5 +14,5 @@ let main () =
   begin
     assert (Array.length xs = 5);
     assert (xs.(0) = 10 && xs.(4) = 14);
-    print_line "arrays ok"
+    println "arrays ok"
   end

@@ -10,10 +10,10 @@ Your project tree stays `.goop`-only unless you pass `--in-tree`.
 module main
 
 let main () =
-  print_line "Hello, Goop!"
+  println "Hello, Goop!"
 ```
 
-`print_line` is a **prelude** binding — available in every file without an import. It lowers to `fmt.Println`.
+`println` is a **prelude** binding — available in every file without an import. It lowers to `fmt.Println`.
 
 ## Build the compiler
 

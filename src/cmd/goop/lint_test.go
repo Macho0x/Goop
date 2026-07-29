@@ -32,7 +32,7 @@ func TestLintCleanFile(t *testing.T) {
 	src := `module main
 
 let main () =
-  print_line "ok"
+  println "ok"
 `
 	if err := os.WriteFile(path, []byte(src), 0644); err != nil {
 		t.Fatal(err)

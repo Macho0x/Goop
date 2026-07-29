@@ -10,4 +10,4 @@ val goop_strlen : string -> int
 
 let main () =
   let chk = assert (goop_strlen "hello" = 5) in
-  print_line "c_embed_string ok"
+  println "c_embed_string ok"

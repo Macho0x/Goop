@@ -60,9 +60,9 @@ func TestProperDischarge_NoError(t *testing.T) {
 type handle : 1
 
 let process (h: handle) : unit =
-  print_line "ok"
+  println "ok"
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod := mustParse(t, src)
 	errs := linear.Check(mod, linearTypes(mod))
@@ -75,12 +75,12 @@ func TestHandOff_NoError(t *testing.T) {
 type handle : 1
 
 let Close (h: handle) : unit =
-  print_line "closed"
+  println "closed"
 
 let process (h: handle) : unit =
   Close h
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod := mustParse(t, src)
 	errs := linear.Check(mod, linearTypes(mod))
@@ -93,12 +93,12 @@ func TestDoubleUse_Error(t *testing.T) {
 type handle : 1
 
 let Close (h: handle) : unit =
-  print_line "closed"
+  println "closed"
 
 let process (h: handle) : unit =
   let dummy = Close h in Close h
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod := mustParse(t, src)
 	errs := linear.Check(mod, linearTypes(mod))
@@ -115,7 +115,7 @@ let process (x: config) : config =
   let b = x in
   a ^ b
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod := mustParse(t, src)
 	errs := linear.Check(mod, linearTypes(mod))
@@ -128,7 +128,7 @@ func TestLinearTypeDecl_Parsed(t *testing.T) {
 type handle : 1
 type normal = string
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod, err := parser.Parse("<test>", []byte(src))
 	if err != nil {
@@ -167,15 +167,15 @@ func TestIfBranchBothDischarge_NoError(t *testing.T) {
 type handle : 1
 
 let CloseA (h: handle) : unit =
-  print_line "closed A"
+  println "closed A"
 
 let CloseB (h: handle) : unit =
-  print_line "closed B"
+  println "closed B"
 
 let process (h: handle) = 
   if true then CloseA h else CloseB h
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod := mustParse(t, src)
 	errs := linear.Check(mod, linearTypes(mod))
@@ -188,12 +188,12 @@ func TestIfBranchOnlyOneDischarge_Error(t *testing.T) {
 type handle : 1
 
 let CloseA (h: handle) : unit =
-  print_line "closed A"
+  println "closed A"
 
 let process (h: handle) = 
-  if true then CloseA h else print_line "no close"
+  if true then CloseA h else println "no close"
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod := mustParse(t, src)
 	errs := linear.Check(mod, linearTypes(mod))
@@ -207,15 +207,15 @@ func TestLinearUseDischarges_NoError(t *testing.T) {
 type handle : 1
 
 let Close (h: handle) : unit =
-  print_line "closed"
+  println "closed"
 
 let useIt (h: handle) : unit =
-  print_line "using"
+  println "using"
 
 let process (h: handle) : unit =
   useIt h
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod := mustParse(t, src)
 	errs := linear.Check(mod, linearTypes(mod))
@@ -229,12 +229,12 @@ func TestUnusedLinearParam_AutoDischarge_NoError(t *testing.T) {
 type handle : 1
 
 let Close (h: handle) : unit =
-  print_line "closed"
+  println "closed"
 
 let process (h: handle) : unit =
   ()
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod := mustParse(t, src)
 	errs := linear.Check(mod, linearTypes(mod))
@@ -248,12 +248,12 @@ func TestMultipleUnusedLinearParams_AutoDischarge_NoError(t *testing.T) {
 type handle : 1
 
 let Close (h: handle) : unit =
-  print_line "closed"
+  println "closed"
 
 let process (h1: handle) (h2: handle) : unit =
   ()
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod := mustParse(t, src)
 	errs := linear.Check(mod, linearTypes(mod))
@@ -273,7 +273,7 @@ let race () =
   let counter = ref 0 in
   go (fun () -> !counter)
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod := mustParse(t, src)
 	errs := linear.Check(mod, linearTypes(mod))
@@ -290,7 +290,7 @@ let race () =
   let dummy = go (fun () -> !counter) in
   go (fun () -> !counter)
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod := mustParse(t, src)
 	errs := linear.Check(mod, linearTypes(mod))
@@ -306,7 +306,7 @@ let safe () =
   let x = 42 in
   go (fun () -> x)
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod := mustParse(t, src)
 	errs := linear.Check(mod, linearTypes(mod))
@@ -322,7 +322,7 @@ let safe () =
   let ch : int chan = Chan.make () in
   go (fun () -> Chan.send ch 42)
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod := mustParse(t, src)
 	errs := linear.Check(mod, linearTypes(mod))
@@ -338,9 +338,9 @@ let counter = ref 0
 let race () =
   let counter = ref 0 in
   let ignored = go (fun () -> !counter) in
-  print_line (int_to_string !counter)
+  println (int_to_string !counter)
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod := mustParse(t, src)
 	errs := linear.Check(mod, linearTypes(mod))
@@ -356,7 +356,7 @@ let race () =
   let counter = ref 0 in
   go (fun () -> !counter)
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod := mustParse(t, src)
 	errs := linear.Check(mod, linearTypes(mod))
@@ -370,9 +370,9 @@ func TestMutableCapturedAndUsedAfterGo_Error(t *testing.T) {
 let race () =
   let counter = ref 0 in
   let ignored = go (fun () -> !counter) in
-  print_line (int_to_string !counter)
+  println (int_to_string !counter)
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod := mustParse(t, src)
 	errs := linear.Check(mod, linearTypes(mod))
@@ -398,7 +398,7 @@ let send3 (ch: int owned_chan) : unit =
   let _u3 = OwnedChan.send ch 3 in
   OwnedChan.close ch
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod := mustParse(t, src)
 	errs := linear.Check(mod, ownedChanLinearTypes())
@@ -414,7 +414,7 @@ let bad (ch: int owned_chan) : unit =
   let _u1 = OwnedChan.close ch in
   OwnedChan.send ch 1
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod := mustParse(t, src)
 	errs := linear.Check(mod, ownedChanLinearTypes())
@@ -430,7 +430,7 @@ let bad (ch: int owned_chan) : unit =
   let _u1 = OwnedChan.close ch in
   OwnedChan.close ch
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod := mustParse(t, src)
 	errs := linear.Check(mod, ownedChanLinearTypes())
@@ -447,7 +447,7 @@ let bad () : unit =
   OwnedChan.send ch 1
   (* no close — ch is never discharged *)
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod := mustParse(t, src)
 	errs := linear.Check(mod, ownedChanLinearTypes())
@@ -465,7 +465,7 @@ let closeIt (ch: int owned_chan) : unit =
 let process (ch: int owned_chan) : unit =
   closeIt ch
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod := mustParse(t, src)
 	errs := linear.Check(mod, ownedChanLinearTypes())
@@ -481,7 +481,7 @@ let recvThenClose (ch: int owned_chan) : unit =
   let v = OwnedChan.recv ch in
   OwnedChan.close ch
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod := mustParse(t, src)
 	errs := linear.Check(mod, ownedChanLinearTypes())
@@ -497,7 +497,7 @@ let worker (ch: int owned_chan) : unit =
     OwnedChan.close ch
   )
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod := mustParse(t, src)
 	errs := linear.Check(mod, ownedChanLinearTypes())
@@ -511,7 +511,7 @@ let ok () : unit =
   let counter = ref 0 in
   go (move counter) (fun () -> counter := !counter + 1)
 
-let main () = print_line "test"
+let main () = println "test"
 `
 	mod := mustParse(t, src)
 	errs := linear.Check(mod, linearTypes(mod))

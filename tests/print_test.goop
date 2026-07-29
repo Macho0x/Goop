@@ -6,4 +6,4 @@ let main () =
     "banana\n" ^
     "cherry\n"
   in
-  print_line msg
+  println msg

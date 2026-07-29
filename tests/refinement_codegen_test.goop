@@ -9,4 +9,4 @@ let compute (x: int) (y: int) : int =
     0
 
 let main () =
-  print_line (int_to_string (compute 10 2))
+  println (int_to_string (compute 10 2))

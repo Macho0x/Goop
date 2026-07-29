@@ -14,8 +14,8 @@ func TestFormatGoMove(t *testing.T) {
 
 let main () : unit =
   let x = ref 1 in
-  let dummy = go (move x) (fun () -> print_line (int_to_string (!x))) in
-  print_line "done"
+  let dummy = go (move x) (fun () -> println (int_to_string (!x))) in
+  println "done"
 `
 	mod, err := parser.Parse("test.goop", []byte(src))
 	if err != nil {
@@ -54,7 +54,7 @@ let main () =
 
 func TestFormatBeginEnd(t *testing.T) {
 	src := `module Main
-let main () = begin print_line "a"; 1 end
+let main () = begin println "a"; 1 end
 `
 	mod, err := parser.Parse("test.goop", []byte(src))
 	if err != nil {

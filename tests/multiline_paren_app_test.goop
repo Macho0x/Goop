@@ -12,5 +12,5 @@ let main () =
   in
   begin
     assert (x = 6);
-    print_line "multiline_paren_app OK"
+    println "multiline_paren_app OK"
   end

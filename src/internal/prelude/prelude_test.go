@@ -22,7 +22,7 @@ func TestPreludeBindings(t *testing.T) {
 	}
 
 	// Check that key bindings exist
-	names := []string{"print_line", "print", "int_to_string", "float_to_string",
+	names := []string{"println", "print", "int_to_string", "float_to_string",
 		"string_concat", "String.length", "String.sub", "list_length", "list_append", "failwith", "ref"}
 	for _, name := range names {
 		b := p.Lookup(name)
@@ -39,10 +39,10 @@ func TestPreludeBindings(t *testing.T) {
 	}
 }
 
-func TestPrintLineTypeCheck(t *testing.T) {
+func TestPrintlnTypeCheck(t *testing.T) {
 	src := `module Test
 let main () =
-  print_line "hello"
+  println "hello"
 `
 	mod := parseString(t, src)
 	errs := typecheck.Check(mod)
@@ -53,10 +53,10 @@ let main () =
 	}
 }
 
-func TestPrintLineCompiles(t *testing.T) {
+func TestPrintlnCompiles(t *testing.T) {
 	src := `module Test
 let main () =
-  print_line "hello"
+  println "hello"
 `
 	mod := parseString(t, src)
 	gen := codegen.NewGenerator("test.goop", config.DefaultConfig())
@@ -88,7 +88,7 @@ let main () =
 func TestIntToStringCompiles(t *testing.T) {
 	src := `module Test
 let main () =
-  print_line (int_to_string 42)
+  println (int_to_string 42)
 `
 	mod := parseString(t, src)
 	gen := codegen.NewGenerator("test.goop", config.DefaultConfig())
@@ -105,7 +105,7 @@ let main () =
 func TestStringConcatLowering(t *testing.T) {
 	src := `module Test
 let main () =
-  print_line (string_concat "Hello, " "World!")
+  println (string_concat "Hello, " "World!")
 `
 	mod := parseString(t, src)
 	gen := codegen.NewGenerator("test.goop", config.DefaultConfig())
@@ -120,10 +120,10 @@ let main () =
 	}
 }
 
-func TestConsoleDotPrintLineBackCompat(t *testing.T) {
+func TestConsoleDotPrintlnBackCompat(t *testing.T) {
 	src := `module Test
 let main () =
-  Console.print_line "hello"
+  Console.println "hello"
 `
 	mod := parseString(t, src)
 	gen := codegen.NewGenerator("test.goop", config.DefaultConfig())
@@ -133,16 +133,16 @@ let main () =
 	}
 
 	if !strings.Contains(goSrc, "fmt.Println") {
-		t.Error("expected fmt.Println (Console.print_line backward compat)")
+		t.Error("expected fmt.Println (Console.println backward compat)")
 	}
 }
 
 func TestPreludeShadowable(t *testing.T) {
-	// User can define their own print_line
+	// User can define their own println
 	src := `module Test
-let print_line (s: string) = s
+let println (s: string) = s
 let main () =
-  print_line "hello"
+  println "hello"
 `
 	mod := parseString(t, src)
 	errs := typecheck.Check(mod)

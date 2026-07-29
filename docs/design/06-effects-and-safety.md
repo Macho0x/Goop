@@ -116,7 +116,7 @@ Non-linear values use Go’s GC.
 let worker (ch: int chan) : unit =
   go (fun () ->
     let x = Chan.recv ch in
-    print_line (int_to_string x))
+    println (int_to_string x))
 
 let launch () : unit =
   let r = ref 0 in

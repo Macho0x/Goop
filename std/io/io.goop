@@ -9,4 +9,4 @@ import go "fmt"
 }
 val printLine : string -> unit
 
-let PrintLine (msg: string) : unit = printLine msg
+let Println (msg: string) : unit = printLine msg

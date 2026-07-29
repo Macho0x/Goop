@@ -110,7 +110,7 @@ which implements a native `slog.Handler`.
 val greet : string -> string
 
 let main () : unit =
-  print_line (greet "Goop")
+  println (greet "Goop")
 ```
 
 The `@[go] { ... }` block is embedded Go. The `val` line declares the Goop-visible signature.
@@ -130,8 +130,8 @@ Bodies become a cgo preamble (`import "C"`). Primitive `val` types are auto-wrap
 ## Import Goop modules
 
 ```goop
-import goop . "std.io"    (* dot import: PrintLine *)
-import io goop "std.io"   (* qualified: io.PrintLine *)
+import goop . "std.io"    (* dot import: Println *)
+import io goop "std.io"   (* qualified: io.Println *)
 ```
 
 See [modules guide](../design/05-modules-and-packages.md).
