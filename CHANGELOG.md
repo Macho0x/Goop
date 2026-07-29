@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.20.0
+
+### Codegen / modules
+
+- **`@[go]` embed imports** are hoisted into the package import block (no mid-file `import`).
+- **Safer Option/Result/tuple type names** for pointer and slice elements (`*T` → `PtrT`, `[]T` → `SliceT`).
+- **`import goop` deps** run sibling-module merge (multi-file packages work when imported).
+- Imported `@[go]` `val` bindings register for open-export call lowering.
+
 ## 1.19.0
 
 ### Language

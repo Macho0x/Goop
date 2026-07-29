@@ -13,7 +13,7 @@ val name : type   (* zero or more; Goop-visible bindings *)
 
 | Lang | Meaning | Lowering |
 |------|---------|----------|
-| `go` | Inline Go | Body emitted verbatim into the generated package |
+| `go` | Inline Go | Body emitted into the generated package; leading `import` decls in the body are **hoisted** into the package import block (avoids mid-file `import`) |
 | `c` | Inline C (cgo mirror) | Bodies concatenated into a cgo `/* */` preamble + `import "C"` + auto wrappers |
 
 Unknown langs (`@[rust]`, …) are hard errors. Future langs reuse this grammar.

@@ -632,7 +632,7 @@ func (g *Generator) scanUsedTypes(at ast.Type) {
 				g.usedOption[goType] = elemGo
 			case "result":
 				elemGo := g.typeToGo(t.Arg)
-				goType := "Result" + exported(elemGo)
+				goType := "Result" + goTypeIdentSuffix(elemGo)
 				// Store [okType, errType] separately
 				okType, errType := "interface{}", "interface{}"
 				if tup, ok := t.Arg.(*ast.TTuple); ok && len(tup.Elems) >= 2 {
@@ -878,7 +878,7 @@ func (g *Generator) typeToGo(at ast.Type) string {
 			return "*" + argName
 		case "result":
 			// result applied to a tuple → result<A, B>
-			return "Result" + exported(argName)
+			return "Result" + goTypeIdentSuffix(argName)
 		case "owned_chan":
 			return "*C0Chan"
 		default:
@@ -918,13 +918,30 @@ func (g *Generator) typeToGo(at ast.Type) string {
 // External types (for example io.Writer) cannot be used verbatim in an
 // identifier such as OptionIo.Writer.
 func optionTypeSuffix(goType string) string {
+	return goTypeIdentSuffix(goType)
+}
+
+// goTypeIdentSuffix turns a Go type string into a safe exported identifier fragment
+// for Option/Result/tuple type names (*string → PtrString, []byte → SliceByte).
+func goTypeIdentSuffix(goType string) string {
 	if dot := strings.LastIndex(goType, "."); dot >= 0 {
 		goType = goType[dot+1:]
 	}
 	var b strings.Builder
-	for _, r := range goType {
-		if unicode.IsLetter(r) || unicode.IsDigit(r) {
-			b.WriteRune(r)
+	for i := 0; i < len(goType); {
+		switch {
+		case strings.HasPrefix(goType[i:], "[]"):
+			b.WriteString("Slice")
+			i += 2
+		case goType[i] == '*':
+			b.WriteString("Ptr")
+			i++
+		default:
+			r, size := utf8.DecodeRuneInString(goType[i:])
+			if unicode.IsLetter(r) || unicode.IsDigit(r) || r == '_' {
+				b.WriteRune(r)
+			}
+			i += size
 		}
 	}
 	return exported(b.String())
@@ -1053,6 +1070,16 @@ func (g *Generator) collectImports(mod *ast.Module) {
 					g.cgoPreamble += ge.Body
 				}
 			}
+			if ge.Lang == "go" && ge.Body != "" {
+				_, imports := stripGoEmbedImports(ge.Body)
+				for path, alias := range imports {
+					pkg := alias
+					if pkg == "" {
+						pkg = packageNameFromPath2(path)
+					}
+					g.externImports[path] = pkg
+				}
+			}
 			for _, ev := range ge.Vals {
 				g.externNames[ev.Name] = ev.Name
 				g.externRetTypes[ev.Name] = ev.Type
@@ -1149,13 +1176,13 @@ func (g *Generator) registerResultFromTupleError(tup *ast.TTuple) {
 	okType := g.typeToGo(tup.Elems[0])
 	errType := g.typeToGo(tup.Elems[1])
 	tupleGo, _ := g.tupleGoName(tup)
-	resType := "Result" + exported(tupleGo)
+	resType := "Result" + goTypeIdentSuffix(tupleGo)
 	g.usedResult[resType] = []string{okType, errType}
 }
 
 func (g *Generator) resultGoTypeForTupleError(tup *ast.TTuple) string {
 	tupleGo, _ := g.tupleGoName(tup)
-	return "Result" + exported(tupleGo)
+	return "Result" + goTypeIdentSuffix(tupleGo)
 }
 
 func goopTypeName(t ast.Type) string {
@@ -1210,6 +1237,39 @@ func (g *Generator) collectDotExports(dep *ast.Module, goPkg string) {
 				g.importedRecords[d.Name] = d
 				g.goopToGo[d.Name] = exported(d.Name)
 				g.registerImportedOptionFields(rk, goPkg)
+			}
+		case *ast.LangEmbedDecl:
+			for _, v := range d.Vals {
+				if v.Name == "" {
+					continue
+				}
+				g.openExports[v.Name] = goPkg
+				g.goopToGo[v.Name] = v.Name
+				if v.Type != nil {
+					realCount := 0
+					paramTypes := make([]string, 0)
+					current := v.Type
+					for {
+						fn, ok := current.(*ast.TFun)
+						if !ok {
+							break
+						}
+						unit := false
+						if id, ok := fn.From.(*ast.TIdent); ok && id.Name == "unit" {
+							unit = true
+						}
+						if !unit {
+							realCount++
+							paramTypes = append(paramTypes, g.typeToGo(fn.From))
+						}
+						current = fn.To
+					}
+					g.funcParamCount[v.Name] = realCount
+					g.funcParamTypes[v.Name] = paramTypes
+					if ret := finalReturnASTType(v.Type); ret != nil {
+						g.funcRetType[v.Name] = g.typeToGo(ret)
+					}
+				}
 			}
 		}
 	}
@@ -1340,13 +1400,15 @@ func finalReturnASTType(t ast.Type) ast.Type {
 
 func (g *Generator) tupleGoName(t *ast.TTuple) (string, []string) {
 	parts := make([]string, len(t.Elems))
+	nameParts := make([]string, len(t.Elems))
 	for i, e := range t.Elems {
 		parts[i] = g.typeToGo(e)
+		nameParts[i] = goTypeIdentSuffix(parts[i])
 	}
-	if len(parts) == 2 {
-		return parts[0] + "_and_" + parts[1], parts
+	if len(nameParts) == 2 {
+		return nameParts[0] + "_and_" + nameParts[1], parts
 	}
-	return strings.Join(parts, "_and_"), parts
+	return strings.Join(nameParts, "_and_"), parts
 }
 
 func (g *Generator) externReturnTuple(funcName string) *ast.TTuple {
@@ -6459,8 +6521,9 @@ func (g *Generator) emitLangEmbedDecl(d *ast.LangEmbedDecl) {
 	switch d.Lang {
 	case "go":
 		if d.Body != "" {
+			body, _ := stripGoEmbedImports(d.Body)
 			g.buf.WriteString("\n")
-			g.buf.WriteString(d.Body)
+			g.buf.WriteString(body)
 			g.buf.WriteString("\n\n")
 		}
 		for _, ev := range d.Vals {
@@ -6472,6 +6535,69 @@ func (g *Generator) emitLangEmbedDecl(d *ast.LangEmbedDecl) {
 			g.emitCgoWrapper(ev)
 		}
 	}
+}
+
+// stripGoEmbedImports removes leading import decls from an @[go] body and returns
+// path→alias (alias empty when unaliased). Native import go already emits a package
+// import block; leaving embed imports inline yields mid-file import errors.
+func stripGoEmbedImports(body string) (string, map[string]string) {
+	imports := make(map[string]string)
+	s := strings.TrimLeft(body, " \t\r\n")
+	for strings.HasPrefix(s, "import") {
+		rest := strings.TrimSpace(s[len("import"):])
+		if strings.HasPrefix(rest, "(") {
+			end := strings.Index(rest, ")")
+			if end < 0 {
+				break
+			}
+			block := rest[1:end]
+			for _, line := range strings.Split(block, "\n") {
+				line = strings.TrimSpace(line)
+				if line == "" || strings.HasPrefix(line, "//") {
+					continue
+				}
+				path, alias := parseGoImportLine(line)
+				if path != "" {
+					imports[path] = alias
+				}
+			}
+			s = strings.TrimLeft(rest[end+1:], " \t\r\n")
+			continue
+		}
+		// single import: import "path" | import alias "path"
+		nl := strings.IndexAny(rest, "\n")
+		line := rest
+		if nl >= 0 {
+			line = rest[:nl]
+			rest = rest[nl+1:]
+		} else {
+			rest = ""
+		}
+		path, alias := parseGoImportLine(strings.TrimSpace(line))
+		if path == "" {
+			break
+		}
+		imports[path] = alias
+		s = strings.TrimLeft(rest, " \t\r\n")
+	}
+	return s, imports
+}
+
+func parseGoImportLine(line string) (path, alias string) {
+	// alias "path" or "path"
+	if i := strings.Index(line, "\""); i >= 0 {
+		j := strings.Index(line[i+1:], "\"")
+		if j < 0 {
+			return "", ""
+		}
+		path = line[i+1 : i+1+j]
+		pre := strings.TrimSpace(line[:i])
+		if pre != "" {
+			alias = pre
+		}
+		return path, alias
+	}
+	return "", ""
 }
 
 // emitCgoWrapper emits a Go function that marshals Goop primitives to/from C.

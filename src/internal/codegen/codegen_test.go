@@ -1020,3 +1020,66 @@ let m = { name = "a"; sz = 1 }
 		t.Fatalf("missing %q in:\n%s", want2, goSrc)
 	}
 }
+
+func TestGoEmbedImportHoisted(t *testing.T) {
+	src := `module T
+@[go] {
+  import "fmt"
+  func say(msg string) { fmt.Println(msg) }
+}
+val say : string -> unit
+let main () = say "hi"
+`
+	mod, err := parser.Parse("t.goop", []byte(src))
+	if err != nil {
+		t.Fatal(err)
+	}
+	mod = desugar.DesugarModule(mod)
+	tm, vtm, errs := typecheck.CheckWithTypes(mod)
+	if len(errs) > 0 {
+		t.Fatal(errs)
+	}
+	gen := codegen.NewGenerator("t.goop", config.DefaultConfig())
+	gen.SetTypeMap(tm, vtm)
+	goSrc, err := gen.Generate(mod)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(goSrc, `"fmt"`) {
+		t.Fatalf("expected fmt in import block:\n%s", goSrc)
+	}
+	idx := strings.Index(goSrc, "func say")
+	if idx < 0 {
+		t.Fatalf("missing say:\n%s", goSrc)
+	}
+	after := goSrc[idx:]
+	if strings.Contains(after, "import \"fmt\"") {
+		t.Fatalf("embed still has mid-file import:\n%s", after)
+	}
+}
+
+func TestResultPtrIdentSuffix(t *testing.T) {
+	src := `module T
+type box = { p : string }
+let f (x: (box, string) result) = x
+`
+	mod, err := parser.Parse("t.goop", []byte(src))
+	if err != nil {
+		t.Fatal(err)
+	}
+	mod = desugar.DesugarModule(mod)
+	tm, vtm, errs := typecheck.CheckWithTypes(mod)
+	if len(errs) > 0 {
+		t.Fatal(errs)
+	}
+	gen := codegen.NewGenerator("t.goop", config.DefaultConfig())
+	gen.SetTypeMap(tm, vtm)
+	goSrc, err := gen.Generate(mod)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// tuple name fragments must be identifier-safe (no * or [])
+	if strings.Contains(goSrc, "Result*") || strings.Contains(goSrc, "type Result[]") {
+		t.Fatalf("unsafe Result type name:\n%s", goSrc)
+	}
+}

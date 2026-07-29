@@ -113,7 +113,8 @@ what is deliberately out of scope.
 All sibling `.goop` files in a directory that share the same file-level
 `module Name` (other than `main` / `Main`) are merged into one compilation
 unit and emit one Go package. `private` is package-wide across those files.
-Duplicate top-level names → **MODULE001**.
+Duplicate top-level names → **MODULE001**. Merge also runs when a package is
+loaded as an `import goop` dependency.
 
 Independent programs in a flat folder (e.g. `docs/examples/*.goop`) use
 `module main` and are **not** merged.

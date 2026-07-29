@@ -38,7 +38,8 @@ Unknown `@[…]` on a field → **TAG001**.
 All sibling `.goop` files in a directory that share the same file-level
 `module Name` typecheck and emit as one Go package. `private` is package-wide.
 Files with `module main` / `Main` are never merged (flat example dirs).
-Duplicate names → **MODULE001**.
+Duplicate names → **MODULE001**. Merge applies to entry files and to packages
+loaded via `import goop`.
 See [05-modules-and-packages.md](05-modules-and-packages.md).
 
 ## B3 — Third-party sigs

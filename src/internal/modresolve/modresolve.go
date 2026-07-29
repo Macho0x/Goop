@@ -207,6 +207,9 @@ func (r *Resolver) LoadModuleGraph(entryFile string, entry *ast.Module) (map[str
 				return fmt.Errorf("parse %s: %w", resolved.SourceFile, err)
 			}
 			depMod = desugar.DesugarModule(depMod)
+			if err := MergeSiblingModules(depMod, resolved.SourceFile); err != nil {
+				return err
+			}
 			if err := load(resolved.SourceFile, depMod, resolved.GoImportPath); err != nil {
 				return err
 			}
