@@ -18,6 +18,8 @@ there (2026-07-28, release 1.14):
 | REFINE | 3 | |
 | CODEGEN | 3 | |
 | GOSIG | 4 | GOSIG001–004 (GOSIG003 behind `verify_ffi`; GOSIG004 always) |
+| TAG | 1 | TAG001 record `@[tag]` |
+| MODULE | 1 | MODULE001 sibling merge duplicate |
 | UNUSED | 2 | |
 | RESULT / OPTION | 2 | |
 | ROW | 1 | ROW001 open-row literal |

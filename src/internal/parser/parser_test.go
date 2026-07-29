@@ -1050,3 +1050,40 @@ func mustParse(t *testing.T, filename string) *ast.Module {
 	}
 	return mod
 }
+
+func TestParseRecordGoTag(t *testing.T) {
+	src := `module T
+type Meta = {
+  name : string @[tag "json:\"name\""];
+  sz : int @[tag "json:\"sz,omitempty\""];
+}
+`
+	mod, err := parser.Parse("t.goop", []byte(src))
+	if err != nil {
+		t.Fatal(err)
+	}
+	td, ok := mod.Decls[0].(*ast.TypeDecl)
+	if !ok {
+		t.Fatalf("got %T", mod.Decls[0])
+	}
+	rk, ok := td.Kind.(*ast.RecordTypeKind)
+	if !ok || len(rk.Fields) != 2 {
+		t.Fatalf("fields: %+v", td.Kind)
+	}
+	if rk.Fields[0].GoTag != `json:"name"` {
+		t.Fatalf("name tag: %q", rk.Fields[0].GoTag)
+	}
+	if rk.Fields[1].GoTag != `json:"sz,omitempty"` {
+		t.Fatalf("sz tag: %q", rk.Fields[1].GoTag)
+	}
+}
+
+func TestParseRecordGoTagUnknown(t *testing.T) {
+	src := `module T
+type Meta = { name : string @[bogus "x"] }
+`
+	_, err := parser.Parse("t.goop", []byte(src))
+	if err == nil || !strings.Contains(err.Error(), "TAG001") {
+		t.Fatalf("expected TAG001, got %v", err)
+	}
+}

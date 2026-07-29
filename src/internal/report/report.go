@@ -73,6 +73,8 @@ var helpTips = map[string]string{
 	"GOSIG002":     "Add an explicit { val … } block or improve the stub mapping.",
 	"GOSIG003":     "Align the hand { val … } signature with the Go package, or disable verify_ffi.",
 	"GOSIG004":     "Omit the generic export, use a concrete @[go] wrapper, or see docs/design/32-go-generics-sigs.md.",
+	"TAG001":       "Use @[tag \"json:\\\"field\\\"\"] (exact Go struct-tag body). See docs/design/33-sdk-blockers.md.",
+	"MODULE001":    "Rename the duplicate binding, or use different module names / directories. module main files are never merged.",
 	"UNIFY020":     "Expected a map[K] V value; check the annotation or argument.",
 	"UNIFY021":     "Expected a pointer (T ptr); check the argument type.",
 	"UNIFY022":     "Expected a go_slice; use go_slice_of_list or declare the FFI type.",
@@ -93,7 +95,7 @@ func tipForMessage(rest string) string {
 		"VIS002", "VIS001", "IMPORT004", "IMPORT003", "IMPORT002", "IMPORT001",
 		"TYPE013", "TYPE012", "TYPE011", "TYPE010", "TYPE009", "TYPE008", "TYPE007", "TYPE006", "TYPE005", "TYPE004", "TYPE003", "TYPE002",
 		"PARSE022", "PARSE017", "PARSE013", "PARSE006", "PARSE005", "PARSE004", "PARSE003", "PARSE001",
-		"CODEGEN003", "CODEGEN002", "CODEGEN001", "GOSIG004", "GOSIG003", "GOSIG002", "GOSIG001",
+		"CODEGEN003", "CODEGEN002", "CODEGEN001", "GOSIG004", "GOSIG003", "GOSIG002", "GOSIG001", "TAG001", "MODULE001",
 		"UNIFY022", "UNIFY021", "UNIFY020", "REFINE002", "REFINE001",
 		"UNIFY", "TYPE",
 	}

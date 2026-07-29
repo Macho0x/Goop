@@ -1,10 +1,11 @@
-# Goop 1.17.0
+# Goop 1.19.0
 
-Rename prelude `print_line` to `println` (and matching `Console` / `std.io` names).
+Multi-file same-module packages (sibling `.goop` merge) plus 1.18 record `@[tag]`.
 
 ## Highlights
 
-- `println` / `print` pair mirrors Go `Println` / `Print`
-- Hard cut: no `print_line` / `PrintLine` aliases
+- Sibling files sharing a non-`main` module name compile as one Go package
+- `module main` files stay independent (examples / scaffolds)
+- Record `@[tag "…"]` for Go struct tags (from 1.18)
 
-See `CHANGELOG.md` and the [playground](https://macho0x.github.io/Goop/).
+See `CHANGELOG.md` and [33-sdk-blockers.md](docs/design/33-sdk-blockers.md).

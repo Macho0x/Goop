@@ -2,7 +2,8 @@
 
 Normative conventions for Goop 1.0. Where two surfaces once existed, **only the OCaml form remains**.
 
-See also: [14-ocaml-parity.md](14-ocaml-parity.md), [03-syntax.md](03-syntax.md).
+See also: [14-ocaml-parity.md](14-ocaml-parity.md), [03-syntax.md](03-syntax.md),
+[33-sdk-blockers.md](33-sdk-blockers.md) (SDK port gaps; no `?` on `result`).
 
 ## Principles
 
@@ -37,6 +38,7 @@ See also: [14-ocaml-parity.md](14-ocaml-parity.md), [03-syntax.md](03-syntax.md)
 | Imperative sequence | `begin s1; s2; result end` | Nested `let () =` |
 | Array | `Array.make`, `arr.(i)`, `arr.(i) <-` | `arr[i]` |
 | Map | `map[K] V`, `Map.make` / `get` / `add` / `remove` / `mem` / `size` | Hand-rolled Go maps in `@[go]` for ordinary tables |
+| Wire / JSON tags | record field `@[tag "json:\"…\""]` | Guessing tags from field names; `?` error sugar |
 | Loop | `for i = 0 to n - 1 do … done` | C-style `for` |
 | While | `while e do … done` | — |
 | Mutation | `let r = ref 0 in r := !r + 1` | `let mutable` |

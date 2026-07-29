@@ -300,7 +300,9 @@ func CheckWithTypes(mod *ast.Module) (typeinfo.TypeMap, typeinfo.VarTypeMap, []e
 
 // CheckWithTypesForFile type-checks mod, resolving import goop dependencies from disk when srcFile is set.
 func CheckWithTypesForFile(mod *ast.Module, srcFile string, cfg *config.Config, lock *config.Lockfile) (typeinfo.TypeMap, typeinfo.VarTypeMap, []error) {
-	mergeSiblingModules(mod, srcFile)
+	if err := modresolve.MergeSiblingModules(mod, srcFile); err != nil {
+		return nil, nil, []error{err}
+	}
 	var deps map[string]*ast.Module
 	var resolver *modresolve.Resolver
 	if cfg == nil {

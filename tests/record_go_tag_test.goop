@@ -1,0 +1,11 @@
+module Main
+
+type Meta = {
+  name : string @[tag "json:\"name\""];
+  sz : int @[tag "json:\"sz,omitempty\""];
+}
+
+let m : Meta = { name = "x"; sz = 2 }
+
+let main () =
+  assert_equal m.name "x"

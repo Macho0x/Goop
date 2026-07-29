@@ -90,6 +90,12 @@ let g = function | Some x -> x | None -> 0
 type point = { x: float; y: float }
 type option 'a = None | Some of 'a
 type handle : 1   (* linear resource *)
+
+(* Go struct tags for JSON / msgpack wire names — see 33-sdk-blockers.md *)
+type Meta = {
+  name : string @[tag "json:\"name\""];
+  sz   : int @[tag "json:\"sz,omitempty\""];
+}
 ```
 
 ### Branding (no `newtype`)

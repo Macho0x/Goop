@@ -987,3 +987,36 @@ func TestDecimalReexportRecordCodegen(t *testing.T) {
 		t.Error("must not emit unqualified Price Decimal")
 	}
 }
+
+func TestRecordGoTagCodegen(t *testing.T) {
+	src := `module T
+type Meta = {
+  name : string @[tag "json:\"name\""];
+  sz : int @[tag "json:\"sz,omitempty\""];
+}
+let m = { name = "a"; sz = 1 }
+`
+	mod, err := parser.Parse("t.goop", []byte(src))
+	if err != nil {
+		t.Fatal(err)
+	}
+	mod = desugar.DesugarModule(mod)
+	tm, vtm, errs := typecheck.CheckWithTypes(mod)
+	if len(errs) > 0 {
+		t.Fatal(errs)
+	}
+	gen := codegen.NewGenerator("t.goop", config.DefaultConfig())
+	gen.SetTypeMap(tm, vtm)
+	goSrc, err := gen.Generate(mod)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := "Name string `json:\"name\"`"
+	if !strings.Contains(goSrc, want) {
+		t.Fatalf("missing %q in:\n%s", want, goSrc)
+	}
+	want2 := "Sz int `json:\"sz,omitempty\"`"
+	if !strings.Contains(goSrc, want2) {
+		t.Fatalf("missing %q in:\n%s", want2, goSrc)
+	}
+}

@@ -1609,6 +1609,26 @@ Narrow static analysis for circular channel communication between two goroutines
 
 ---
 
+## TAG — Record field Go tags
+
+### TAG001: Invalid `@[tag]` on record field
+
+- **Error code**: `TAG001`
+- **Severity**: Error (parse)
+- **Message**: `TAG001: unknown field attribute @[…]` / `TAG001: @[tag] requires a string payload…`
+- **Trigger**: A record field has `@[…]` that is not `@[tag "…"]`, or `@[tag]` lacks a string.
+- **Fix**: Write `@[tag "json:\"name,omitempty\""]` (payload = exact Go backtick body). See [33-sdk-blockers.md](33-sdk-blockers.md).
+
+### MODULE001: Duplicate name when merging sibling modules
+
+- **Error code**: `MODULE001`
+- **Severity**: Error
+- **Message**: `MODULE001: duplicate top-level name %q when merging …`
+- **Trigger**: Two sibling `.goop` files share the same non-`main` module name and define the same top-level binding.
+- **Fix**: Rename one binding, or split into different modules/directories.
+
+---
+
 ## NIL — Nil Channel Errors
 
 Flow-sensitive analysis for channel initialization before use.

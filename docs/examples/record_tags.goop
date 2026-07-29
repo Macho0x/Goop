@@ -1,0 +1,12 @@
+(* Record field @[tag "…"] lowers to Go struct tags (json / msgpack / …). *)
+module main
+
+type wire_meta = {
+  name : string @[tag "json:\"name\""];
+  sz   : int @[tag "json:\"sz,omitempty\""];
+}
+
+let sample : wire_meta = { name = "ETH"; sz = 1 }
+
+let main () =
+  println sample.name

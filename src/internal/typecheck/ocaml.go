@@ -543,14 +543,6 @@ func (c *Checker) checkPerformInGo(e *ast.GoExpr) {
 	walk(e.Expr)
 }
 
-// mergeSiblingModules documents/stubs multi-file same-module merge.
-// Full merge is optional; currently a no-op with a comment for future work.
-func mergeSiblingModules(mod *ast.Module, srcFile string) {
-	_ = mod
-	_ = srcFile
-	// STUB: when multiple sibling .goop files share `module Name`, decls
-	// would be concatenated here before typechecking. Not implemented yet.
-}
 
 func (c *Checker) inferMatchEffectArms(e *ast.MatchExpr, scrutType, resultType types.Type) {
 	for _, arm := range e.Arms {

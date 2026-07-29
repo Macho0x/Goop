@@ -1,0 +1,4 @@
+module multifile_demo
+
+let main () =
+  assert_equal (add1 41) 42

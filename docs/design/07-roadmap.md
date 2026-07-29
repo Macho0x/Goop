@@ -84,6 +84,16 @@ This file presents the same task list as `TODO.md`, organized by development pha
 - [x] Standard library reference — `docs/stdlib/` (hand-written from prelude.go + std/*)
 - [x] Contributing guide — `CONTRIBUTING.md` (build, editors, documentation accuracy)
 
+## SDK / Hyperliquid blockers
+
+See [33-sdk-blockers.md](33-sdk-blockers.md).
+
+- [x] **B1 (1.18):** record `@[tag "…"]` → Go struct tags.
+- [x] **B2 (1.19):** multi-file same `module` → one Go package.
+- [ ] **B3:** deeper third-party `.gosig` (project hand-sigs for now).
+- [x] **B4 policy:** GOSIG004 + concrete wrappers ([32-go-generics-sigs.md](32-go-generics-sigs.md)).
+- [x] **No `?` on `result`** — rejected (STYLE).
+
 ## Deferred or rejected
 
 - **Self-hosting the compiler in Goop — not planned.** Bootstrap stays Go;

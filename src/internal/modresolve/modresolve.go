@@ -110,7 +110,8 @@ func (r *Resolver) resolveGoImport(path string) (goImportPath, pkgName string) {
 
 func packageNameFromPath(path string) string {
 	segments := strings.Split(path, "/")
-	return segments[len(segments)-1]
+	name := segments[len(segments)-1]
+	return strings.ReplaceAll(name, "-", "_")
 }
 
 func (r *Resolver) locateSourceFile(goImport string) string {

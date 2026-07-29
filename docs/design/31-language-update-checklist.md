@@ -58,6 +58,7 @@ Docs must match the compiler, not aspirational design. Prefer OCaml forms from
 Also: `[check] verify_ffi` / GOSIG003 when touching hand `import go { val … }`;
 **GOSIG004** (always warn) when a hand val names a generic Go export;
 `money_float` / DECIMAL001 for trading examples.
+SDK port gaps / `@[tag]` / multi-file modules: [33-sdk-blockers.md](33-sdk-blockers.md).
 
 ## 6. Editors & highlighting
 

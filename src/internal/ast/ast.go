@@ -230,6 +230,7 @@ type FieldType struct {
 	Name    string
 	Type    Type
 	Mutable bool
+	GoTag   string // raw Go struct-tag body from @[tag "…"] (empty = no tag)
 }
 
 // ---------------------------------------------------------------------------

@@ -64,7 +64,7 @@ Status legend: `✅` same · `🔄` different-by-design · `➕` Goop extension 
 | Topic | Notes |
 |-------|-------|
 | Effectful codegen | Shallow CPS only; no deep handlers / stack capture |
-| Attributes | Parse+strip; `@[go] { }` is the only active extension (no PPX) |
+| Attributes | `[@…]` parse+strip (no PPX); active `@[…]`: `@[go]` / `@[c]` embeds, `@[tag "…"]` on record fields ([33-sdk-blockers.md](33-sdk-blockers.md)) |
 | Imports | Go-style paths kept |
 | Concurrency | `go` / channels, not OCaml Domains |
 | Stdlib | Thin prelude + `import go`; not full OCaml stdlib |

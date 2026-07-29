@@ -1066,11 +1066,20 @@ func (g *Generator) collectImports(mod *ast.Module) {
 }
 
 func (g *Generator) collectGoImport(spec ast.ImportSpec) {
+	pkgName := packageNameFromPath2(spec.Path)
+	if spec.Alias != "" && spec.Alias != "." {
+		pkgName = spec.Alias
+	}
 	if spec.Path != "" {
-		g.externImports[spec.Path] = packageNameFromPath2(spec.Path)
+		g.externImports[spec.Path] = pkgName
+	}
+	// Register opaque types before vals so (T, error)→result mangling sees goTypeQual.
+	for _, et := range spec.Types {
+		qual := pkgName + "." + et.Name
+		g.goTypeQual[et.Name] = qual
+		g.ffiTypeAliases[et.Name] = qual
 	}
 	for _, ev := range spec.Vals {
-		pkgName := packageNameFromPath2(spec.Path)
 		if ev.Kind == ast.ExternMethod {
 			g.externMethods[ev.Name] = externMethod{
 				recvGoType: g.typeToGo(ev.RecvType),
@@ -1109,11 +1118,6 @@ func (g *Generator) collectGoImport(spec ast.ImportSpec) {
 		if ret := finalReturnASTType(ev.Type); ret != nil {
 			g.scanUsedTypes(ret)
 		}
-	}
-	for _, et := range spec.Types {
-		qual := packageNameFromPath2(spec.Path) + "." + et.Name
-		g.goTypeQual[et.Name] = qual
-		g.ffiTypeAliases[et.Name] = qual
 	}
 }
 
@@ -1450,25 +1454,68 @@ func (g *Generator) emitImports() {
 	if len(imports) == 0 {
 		return
 	}
+	emitOne := func(path, pkg string) {
+		last := path
+		if i := strings.LastIndex(path, "/"); i >= 0 {
+			last = path[i+1:]
+		}
+		// Alias when qualifier differs from the raw last path segment (e.g.
+		// goop-hyperliquid → goop_hyperliquid) so selectors match the import.
+		if pkg != "" && pkg != last {
+			g.emitf("%s %q\n", pkg, path)
+		} else {
+			g.emitf("%q\n", path)
+		}
+	}
 	if len(imports) == 1 {
-		for path := range imports {
-			g.emitf("import %q\n\n", path)
+		for path, pkg := range imports {
+			g.emitf("import ")
+			emitOne(path, pkg)
+			g.emitf("\n")
 		}
 		return
 	}
 	g.emitf("import (\n")
 	g.indent++
-	for path := range imports {
-		g.emitf("%q\n", path)
+	for path, pkg := range imports {
+		emitOne(path, pkg)
 	}
 	g.indent--
 	g.emitf(")\n\n")
 }
 
-// packageNameFromPath2 extracts the last segment of a Go import path.
+// packageNameFromPath2 extracts a Go-safe import qualifier from a path.
+// The last path segment is used, with characters illegal in Go identifiers
+// (notably '-') replaced so qualifiers like goop-hyperliquid.Foo become
+// goop_hyperliquid.Foo. emitImports must emit a matching import alias.
 func packageNameFromPath2(path string) string {
 	segments := strings.Split(path, "/")
-	return segments[len(segments)-1]
+	return sanitizeGoImportAlias(segments[len(segments)-1])
+}
+
+// sanitizeGoImportAlias turns a path segment into a valid Go identifier used as
+// an import alias / selector prefix.
+func sanitizeGoImportAlias(name string) string {
+	if name == "" {
+		return name
+	}
+	var b strings.Builder
+	b.Grow(len(name))
+	for i, r := range name {
+		switch {
+		case r >= 'a' && r <= 'z', r >= 'A' && r <= 'Z', r == '_':
+			b.WriteRune(r)
+		case r >= '0' && r <= '9':
+			if i == 0 {
+				b.WriteByte('_')
+			}
+			b.WriteRune(r)
+		default:
+			// hyphens, dots, etc.
+			b.WriteByte('_')
+		}
+	}
+	return b.String()
 }
 
 // ---------------------------------------------------------------------------
@@ -1626,7 +1673,11 @@ func (g *Generator) emitRecordTypes() {
 		g.emitf("type %s struct {\n", goName)
 		g.indent++
 		for _, f := range rk.Fields {
-			g.emitf("%s %s\n", exported(f.Name), g.typeToGo(f.Type))
+			if f.GoTag != "" {
+				g.emitf("%s %s `%s`\n", exported(f.Name), g.typeToGo(f.Type), f.GoTag)
+			} else {
+				g.emitf("%s %s\n", exported(f.Name), g.typeToGo(f.Type))
+			}
 		}
 		g.indent--
 		g.emitf("}\n\n")
@@ -1717,7 +1768,11 @@ func (g *Generator) emitVariantFields(arg ast.Type) {
 	switch t := arg.(type) {
 	case *ast.TRecord:
 		for _, f := range t.Fields {
-			g.emitf("%s %s\n", exported(f.Name), g.typeToGo(f.Type))
+			if f.GoTag != "" {
+				g.emitf("%s %s `%s`\n", exported(f.Name), g.typeToGo(f.Type), f.GoTag)
+			} else {
+				g.emitf("%s %s\n", exported(f.Name), g.typeToGo(f.Type))
+			}
 		}
 	case *ast.TIdent:
 		g.emitf("Value %s\n", g.typeToGo(t))

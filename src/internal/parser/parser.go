@@ -794,6 +794,7 @@ func (p *Parser) parseRecordTypeKind() *ast.RecordTypeKind {
 		}
 		p.expect(token.COLON)
 		ft.Type = p.parseType()
+		p.parseFieldGoTags(&ft)
 		rk.Fields = append(rk.Fields, ft)
 		if !p.match(token.SEMI) {
 			break
@@ -801,6 +802,52 @@ func (p *Parser) parseRecordTypeKind() *ast.RecordTypeKind {
 	}
 	p.expect(token.RBRACE)
 	return rk
+}
+
+// parseFieldGoTags parses zero or more trailing `@[tag "…"]` on a record field.
+// Multiple tags are joined with a space (Go's multi-key struct-tag form).
+func (p *Parser) parseFieldGoTags(ft *ast.FieldType) {
+	var parts []string
+	for p.cur().Type == token.AT {
+		p.advance() // @
+		if p.cur().Type != token.LBRACKET {
+			p.errorf("TAG001: expected @[tag \"…\"] after @ on record field, got @%s", p.cur().Lexeme)
+			return
+		}
+		p.advance() // [
+		nameTok := p.cur()
+		name := ""
+		if nameTok.Type == token.IDENT || nameTok.Type == token.CONSTRUCTOR {
+			name = nameTok.Lexeme
+			p.advance()
+		} else {
+			p.errorf("TAG001: expected tag name inside @[…], got %s", nameTok.Type)
+			return
+		}
+		if name != "tag" {
+			p.errorf("TAG001: unknown field attribute @[%s] (expected @[tag \"…\"])", name)
+			// recover: consume until ]
+			for p.cur().Type != token.RBRACKET && p.cur().Type != token.EOF {
+				p.advance()
+			}
+			p.match(token.RBRACKET)
+			continue
+		}
+		if p.cur().Type != token.STRING {
+			p.errorf("TAG001: @[tag] requires a string payload, got %s", p.cur().Type)
+			for p.cur().Type != token.RBRACKET && p.cur().Type != token.EOF {
+				p.advance()
+			}
+			p.match(token.RBRACKET)
+			continue
+		}
+		parts = append(parts, p.cur().Lexeme)
+		p.advance()
+		p.expect(token.RBRACKET)
+	}
+	if len(parts) > 0 {
+		ft.GoTag = strings.Join(parts, " ")
+	}
 }
 
 func (p *Parser) parseADTTypeKindNoPipe() *ast.ADTTypeKind {
@@ -2246,6 +2293,7 @@ func (p *Parser) parsePrimaryType() ast.Type {
 			}
 			p.expect(token.COLON)
 			ft.Type = p.parseType()
+			p.parseFieldGoTags(&ft)
 			rt.Fields = append(rt.Fields, ft)
 			if !p.match(token.SEMI) {
 				break

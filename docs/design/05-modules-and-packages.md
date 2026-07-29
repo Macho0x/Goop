@@ -110,4 +110,13 @@ what is deliberately out of scope.
 
 ## Compilation unit
 
-One Go package is emitted per Goop module file. Transitive `import goop` is resolved for type-checking and test builds.
+All sibling `.goop` files in a directory that share the same file-level
+`module Name` (other than `main` / `Main`) are merged into one compilation
+unit and emit one Go package. `private` is package-wide across those files.
+Duplicate top-level names → **MODULE001**.
+
+Independent programs in a flat folder (e.g. `docs/examples/*.goop`) use
+`module main` and are **not** merged.
+
+Transitive `import goop` is resolved for type-checking and test builds.
+See [33-sdk-blockers.md](33-sdk-blockers.md).

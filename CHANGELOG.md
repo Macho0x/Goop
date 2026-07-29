@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.19.0
+
+### Language
+
+- **Multi-file modules:** sibling `.goop` files with the same non-`main` module
+  name merge into one Go package (`private` is package-wide). **MODULE001** on
+  duplicate top-level names. See [05-modules-and-packages.md](docs/design/05-modules-and-packages.md).
+
+## 1.18.0
+
+### Language
+
+- Record fields may carry **`@[tag "…"]`** — payload is the exact Go struct-tag body
+  (`json:"name"`, `omitempty`, msgpack, …).
+- **TAG001** on unknown field `@[…]` attributes.
+- SDK blocker policy: [docs/design/33-sdk-blockers.md](docs/design/33-sdk-blockers.md)
+  (no `?` on `result`).
+
 ## 1.17.0
 
 ### Breaking
