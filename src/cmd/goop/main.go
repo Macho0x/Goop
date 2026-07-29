@@ -117,6 +117,7 @@ type ServerCapabilities struct {
 var (
 	cliInTree  bool // --in-tree: write .go beside source (legacy)
 	cliEmitMap bool // --emit-map: write .map.json next to generated .go
+	cliStdout  bool // --stdout: print generated Go to stdout (compile only)
 )
 
 func main() {
@@ -133,6 +134,8 @@ func main() {
 			cliEmitMap = true
 		case "--in-tree":
 			cliInTree = true
+		case "--stdout":
+			cliStdout = true
 		case "--color":
 			colorOutput = true
 		case "-i", "--in-place":
@@ -143,9 +146,10 @@ func main() {
 	}
 
 	if len(filtered) == 0 || (len(filtered) < 2 && filtered[0] != "test" && filtered[0] != "lsp" && filtered[0] != "fmt" && filtered[0] != "version" && filtered[0] != "lint" && filtered[0] != "doc" && filtered[0] != "gen-sig" && filtered[0] != "get-go-sig" && filtered[0] != "repl" && filtered[0] != "new") {
-		fmt.Fprintf(os.Stderr, "Usage: goop [--in-tree] [--emit-map] [--no-source-map] [--color] [-i] <command> <file.goop>\n")
+		fmt.Fprintf(os.Stderr, "Usage: goop [--in-tree] [--emit-map] [--stdout] [--no-source-map] [--color] [-i] <command> <file.goop>\n")
 		fmt.Fprintf(os.Stderr, "Commands: lex, parse, check, lint, compile, build, test, new, get, get-go-sig, gen-sig, resolve, lsp, fmt (format), doc, repl, version\n")
 		fmt.Fprintf(os.Stderr, "  compile/build write to $GOOP_HOME/build by default; --in-tree writes beside source\n")
+		fmt.Fprintf(os.Stderr, "  compile --stdout prints generated Go to stdout (no cache write)\n")
 		fmt.Fprintf(os.Stderr, "  gen-sig / get-go-sig write .gosig stubs under $GOOP_HOME/build/go-sigs\n")
 		os.Exit(1)
 	}
@@ -191,7 +195,7 @@ func main() {
 	if len(filtered) >= 2 {
 		file = filtered[1]
 	} else if cmd != "lint" {
-		fmt.Fprintf(os.Stderr, "Usage: goop [--in-tree] [--emit-map] [--no-source-map] [--color] [-i] <command> <file.goop>\n")
+		fmt.Fprintf(os.Stderr, "Usage: goop [--in-tree] [--emit-map] [--stdout] [--no-source-map] [--color] [-i] <command> <file.goop>\n")
 		fmt.Fprintf(os.Stderr, "Commands: lex, parse, check, lint, compile, build, test, new, get, get-go-sig, gen-sig, resolve, lsp, fmt (format), doc, repl, version\n")
 		os.Exit(1)
 	}
@@ -1112,9 +1116,16 @@ func generateGo(file string, src []byte, cfg *config.Config, parseAndDesugar fun
 }
 
 func runCompile(file string, src []byte, cfg *config.Config, parseAndDesugar func() (*ast.Module, error)) error {
+	if cliStdout && cliInTree {
+		return fmt.Errorf("CLI012: --stdout and --in-tree cannot be used together")
+	}
 	goSrc, gen, _, err := generateGo(file, src, cfg, parseAndDesugar)
 	if err != nil {
 		return err
+	}
+	if cliStdout {
+		fmt.Print(goSrc)
+		return nil
 	}
 	outFile := gen.GoFileName()
 	var outDir string

@@ -1,0 +1,20 @@
+module main
+
+(* result + exhaustive match vs Go's (T, error) idiom. *)
+
+let div (x: float) (y: float) : (float, string) result =
+  if y = 0.0 then Error "division by zero"
+  else Ok (x/.y)
+
+let compute () : (float, string) result =
+  match div 10.0 2.0 with
+  | Error e -> Error e
+  | Ok a ->
+      match div 6.0 3.0 with
+      | Error e -> Error e
+      | Ok b -> Ok (a+.b)
+
+let main () =
+  match compute () with
+  | Ok x -> print_line (float_to_string x)
+  | Error msg -> print_line msg

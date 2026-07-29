@@ -1,22 +1,13 @@
-# Goop 1.14.0
+# Goop 1.15.0
 
-Decimal annotations work across modules; generics-in-sigs honesty (catalog + GOSIG004).
+Show generated Go from the CLI and playground; teach Goop ↔ Go with a small gallery.
 
 ## Highlights
 
-- **`import goop` re-exports FFI opaque types** — e.g. `price: Decimal` after
-  `import goop . "std.decimal"` (check + build).
-- **GOSIG004** warns when a hand `{ val … }` names a generic Go export.
-- Curated **TODO(generics)** skip catalog in
-  [32-go-generics-sigs.md](docs/design/32-go-generics-sigs.md).
-- Self-hosting remains **not planned**.
+- **`goop compile --stdout`** — pipe or copy real codegen without a cache path dance
+- **Playground** — Copy Go, shortcuts (`Ctrl/Cmd+Enter`), diagnostic jump
+- **[Snippet gallery](docs/examples/gallery/)** — hand-written Goop vs idiomatic Go pairs
 
-## Try it
-
-```goop
-import goop . "std.decimal"
-
-type Quote = { price: Decimal; qty: int }
-```
+There is **no** Go → Goop auto-translator. Write Goop; inspect Go.
 
 See `CHANGELOG.md` and the [playground](https://macho0x.github.io/Goop/).

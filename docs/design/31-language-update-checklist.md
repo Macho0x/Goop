@@ -18,12 +18,13 @@ Docs must match the compiler, not aspirational design. Prefer OCaml forms from
 
 ## 2. Examples & scaffold
 
-- [ ] `for f in docs/examples/*.goop; do goop check "$f"; done` — clean
+- [ ] `for f in docs/examples/*.goop docs/examples/gallery/*.goop; do goop check "$f"; done` — clean
   (fix warn-as-noise; prefer `_` / real fixes over turning checks `off`)
 - [ ] `goop new /tmp/goop-new-smoke --force && goop check …/main.goop`
 - [ ] New features have a teachable `docs/examples/*.goop` when user-visible
+  (gallery pairs under `docs/examples/gallery/` when teaching Goop ↔ Go)
 - [ ] Playground still builds if WASM / safety wiring changed
-  (`playground/build.sh` or CI Pages workflow)
+  (`playground/build.sh` or CI Pages workflow); UI-only playground tweaks need no wasm rebuild
 
 ## 3. Config & CLI surface
 
@@ -80,6 +81,6 @@ Also: `[check] verify_ffi` / GOSIG003 when touching hand `import go { val … }`
 ```bash
 cd src && go build -o ../goop ./cmd/goop && go test ./...
 ../goop test ../tests/
-for f in ../docs/examples/*.goop; do ../goop check "$f"; done
+for f in ../docs/examples/*.goop ../docs/examples/gallery/*.goop; do ../goop check "$f"; done
 ../goop new /tmp/goop-new-smoke --force && ../goop check /tmp/goop-new-smoke/main.goop
 ```

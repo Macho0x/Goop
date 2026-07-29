@@ -167,6 +167,26 @@ button:disabled {
   letter-spacing: 0.04em;
 }
 
+.panel-btn {
+  padding: 0.2rem 0.55rem;
+  font-size: 0.72rem;
+  text-transform: none;
+  letter-spacing: 0;
+  border-radius: 4px;
+}
+
+.go-hint {
+  margin: 0;
+  padding: 0.55rem 1rem 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-family: var(--sans);
+}
+
+.go-hint[hidden] {
+  display: none;
+}
+
 .status {
   text-transform: none;
   letter-spacing: 0;
@@ -201,7 +221,7 @@ button:disabled {
   white-space: pre-wrap;
   word-break: break-word;
   font-family: var(--mono);
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   line-height: 1.45;
   color: var(--text);
   min-height: 6rem;
@@ -209,11 +229,19 @@ button:disabled {
 
 .code {
   color: #c8d0da;
+  flex: 1;
 }
 
 .diag-error { color: var(--err); }
 .diag-warning { color: var(--warn); }
 .diag-empty { color: var(--muted); }
+.diag-clickable {
+  cursor: pointer;
+  text-decoration: underline dotted transparent;
+}
+.diag-clickable:hover {
+  text-decoration-color: currentColor;
+}
 
 .foot {
   padding: 0.65rem 1.25rem 1rem;
@@ -222,7 +250,14 @@ button:disabled {
   border-top: 1px solid var(--border);
 }
 
-.foot code {
+.foot code, .foot kbd {
   font-family: var(--mono);
   font-size: 0.78rem;
+}
+
+.foot kbd {
+  padding: 0.05rem 0.3rem;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--panel);
 }

@@ -46,7 +46,7 @@ jobs:
 
       - name: Check all examples
         run: |
-          for f in ../docs/examples/*.goop; do
+          for f in ../docs/examples/*.goop ../docs/examples/gallery/*.goop; do
             /tmp/goop check "$f"
           done
 

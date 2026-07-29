@@ -17,6 +17,7 @@ import (
 func resetCLIFlags() {
 	cliInTree = false
 	cliEmitMap = false
+	cliStdout = false
 }
 
 func withGOOPHome(t *testing.T) string {
@@ -111,6 +112,45 @@ func TestCompileCacheDefault(t *testing.T) {
 	}
 	if !strings.Contains(out, "build") {
 		t.Fatalf("expected cache build path, got %q", out)
+	}
+}
+
+func TestCompileStdout(t *testing.T) {
+	resetCLIFlags()
+	cliStdout = true
+	home := withGOOPHome(t)
+	dir := t.TempDir()
+	path := writeHelloGoop(t, dir)
+	out := captureStdout(t, func() {
+		if err := runCompileReal(t, path); err != nil {
+			t.Fatal(err)
+		}
+	})
+	if !strings.Contains(out, "package main") {
+		t.Fatalf("expected generated Go on stdout, got %q", out)
+	}
+	if strings.Contains(out, "wrote ") {
+		t.Fatalf("stdout mode should not print wrote path, got %q", out)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "main.go")); !os.IsNotExist(err) {
+		t.Fatal("expected no in-tree write for --stdout")
+	}
+	matches, _ := filepath.Glob(filepath.Join(home, "build", "compile-*", "*"))
+	if len(matches) > 0 {
+		t.Fatalf("expected no cache compile artifacts for --stdout, got %v", matches)
+	}
+}
+
+func TestCompileStdoutConflictsInTree(t *testing.T) {
+	resetCLIFlags()
+	cliStdout = true
+	cliInTree = true
+	_ = withGOOPHome(t)
+	dir := t.TempDir()
+	path := writeHelloGoop(t, dir)
+	err := runCompileReal(t, path)
+	if err == nil || !strings.Contains(err.Error(), "CLI012") {
+		t.Fatalf("expected CLI012 conflict, got %v", err)
 	}
 }
 

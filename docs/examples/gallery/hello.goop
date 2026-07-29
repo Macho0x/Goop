@@ -1,0 +1,4 @@
+module main
+
+let main () =
+  print_line "Hello, Goop!"

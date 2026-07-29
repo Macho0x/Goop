@@ -69,10 +69,21 @@ cache, then runs `go build` there. For `module main`, the binary is written to
 | Command | Default output | Notes |
 |---------|----------------|-------|
 | `goop compile` | `$GOOP_HOME/build/compile-*/` | Emit Go only; no `go build` |
+| `goop compile --stdout` | stdout | Print generated Go (no cache write); pipe to copy |
 | `goop build` | `$GOOP_HOME/build/build-*/` + `./goop-out` for main | Full Goop build |
 | `goop test` | `$GOOP_HOME/build/test-*/` (ephemeral) | Runs `*_test.goop` |
 | `goop doc` | Markdown on stdout | API docs for modules / stubs |
 | `goop repl` | stdin session; temp `$GOOP_HOME/build/repl-*/` | Compile-to-Go REPL |
+
+### Show generated Go
+
+```bash
+./goop compile --stdout docs/examples/hello.goop
+```
+
+There is no Go → Goop auto-translator. Lowering is one-way: write Goop, inspect
+Go via `--stdout`, the [playground](https://macho0x.github.io/Goop/), or the
+[snippet gallery](../examples/gallery/).
 
 ## REPL
 

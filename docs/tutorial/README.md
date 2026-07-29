@@ -4,10 +4,10 @@ A step-by-step introduction to Goop. Each chapter links to runnable examples che
 
 | Chapter | Topic | Example |
 |---|---|---|
-| [1. Getting started](01-getting-started.md) | Build, check, first program, REPL | [`hello.goop`](../examples/hello.goop) |
+| [1. Getting started](01-getting-started.md) | Build, check, first program, REPL, show Go | [`hello.goop`](../examples/hello.goop), [gallery](../examples/gallery/) |
 | [2. Types and patterns](02-types-and-patterns.md) | ADTs, `match`, branded IDs | [`shapes.goop`](../examples/shapes.goop) |
 | [3. Errors and effects](03-errors-and-effects.md) | `result`, `failwith`, effect handlers | [`result.goop`](../examples/result.goop), [`effects.goop`](../examples/effects.goop), [`exceptions.goop`](../examples/exceptions.goop) |
-| [4. Go / C interop](04-go-interop.md) | `import go`, `@[go]`, `@[c]` | [`extern_demo.goop`](../examples/extern_demo.goop), [`cgo_demo.goop`](../examples/cgo_demo.goop) |
+| [4. Go / C interop](04-go-interop.md) | `import go`, `@[go]`, `@[c]` | [`extern_demo.goop`](../examples/extern_demo.goop), [`cgo_demo.goop`](../examples/cgo_demo.goop), [gallery](../examples/gallery/) |
 | [5. Concurrency](05-concurrency.md) | `go`, `chan`, `ref`, race checks | [`concurrency.goop`](../examples/concurrency.goop), [`race_detection.goop`](../examples/race_detection.goop) |
 | [6. Safety checks](06-safety-checks.md) | Exhaustiveness, branding, refinements | [`branded_ids.goop`](../examples/branded_ids.goop), [`trading_order.goop`](../examples/trading_order.goop) |
 | [7. Arrays and loops](07-arrays-and-loops.md) | `Array.make`, `for`/`while`, `begin`/`end` | [`arrays.goop`](../examples/arrays.goop), [`trading_decision_lut.goop`](../examples/trading_decision_lut.goop) |

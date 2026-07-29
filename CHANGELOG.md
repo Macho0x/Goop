@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.15.0
+
+### Goop ↔ Go surfaces
+
+- **`goop compile --stdout`** — print generated Go to stdout (no cache write; conflicts with `--in-tree`)
+- **Playground:** Copy Go button, matching pane fonts, keyboard shortcuts, click diagnostic to jump
+- **Snippet gallery:** [`docs/examples/gallery/`](docs/examples/gallery/) — hand Goop vs idiomatic Go pairs
+- Honesty: no Go → Goop auto-translator (one-way lowering only)
+
 ## 1.14.0
 
 ### FFI / Decimal

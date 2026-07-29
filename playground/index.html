@@ -27,8 +27,8 @@
         Example
         <select id="examples"></select>
       </label>
-      <button type="button" id="btn-check">Check</button>
-      <button type="button" id="btn-run" class="primary">Compile</button>
+      <button type="button" id="btn-check" title="Ctrl/Cmd+Shift+Enter">Check</button>
+      <button type="button" id="btn-run" class="primary" title="Ctrl/Cmd+Enter">Compile</button>
     </div>
   </header>
 
@@ -47,7 +47,11 @@
         <pre id="diagnostics" class="out"></pre>
       </div>
       <div class="panel grow">
-        <div class="panel-head">Generated Go</div>
+        <div class="panel-head">
+          <span>Generated Go</span>
+          <button type="button" id="btn-copy-go" class="panel-btn" disabled title="Copy generated Go">Copy</button>
+        </div>
+        <p id="go-hint" class="go-hint">Compile to see generated Go</p>
         <pre id="go-out" class="out code"></pre>
       </div>
     </section>
@@ -55,6 +59,8 @@
 
   <footer class="foot">
     Browser playground shows Goop diagnostics and generated Go only — it does not run <code>go build</code>.
+    Shortcuts: <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>Enter</kbd> Compile · <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> Check.
+    There is no Go → Goop auto-translator.
   </footer>
 
   <script src="wasm_exec.js"></script>

@@ -72,6 +72,14 @@ python3 -m http.server 8080
 
 Then open http://localhost:8080/
 
+### UI (1.15)
+
+- Left: Goop source; right: diagnostics + generated Go
+- **Copy** on the Generated Go panel copies the last successful compile
+- Shortcuts: `Ctrl/Cmd+Enter` Compile, `Ctrl/Cmd+Shift+Enter` Check
+- Click a diagnostic with a line number to jump in the source
+- There is **no** Go → Goop auto-translator (one-way lowering only)
+
 Alternatives:
 
 ```bash

@@ -1,0 +1,14 @@
+module Gallery.BrandedIds
+
+(* Nominal brands: order_id and symbol are distinct types. *)
+
+type order_id = | Order_id of string
+type symbol = | Symbol of string
+
+let place (sym: symbol) (oid: order_id) : string =
+  "placed"
+
+let main () : unit =
+  let oid = Order_id "ord-1" in
+  let sym = Symbol "ETH-USD" in
+  print_line (place sym oid)

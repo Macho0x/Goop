@@ -2,6 +2,10 @@
 
 Goop’s primary standard library is **Go itself**. Use `import go` for packages and `@[go]` for inline Go. For C, use `@[c]` (cgo-shaped).
 
+Lowering is **one-way** (Goop → Go). There is no Go → Goop auto-translator.
+Compare ideas side-by-side in the [snippet gallery](../examples/gallery/), or
+inspect real codegen with `goop compile --stdout` / the playground **Compile** pane.
+
 ## Import Go packages
 
 ```goop

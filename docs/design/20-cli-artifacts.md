@@ -40,6 +40,14 @@ files, prints a summary count, and exits non-zero on errors. See
 Emits Go into `$GOOP_HOME/build/compile-*` and prints the path.
 Does not run `go build`.
 
+With **`--stdout`**, prints generated Go to stdout and does **not** write a
+cache artifact (pipe-friendly; conflicts with `--in-tree`):
+
+```bash
+goop compile --stdout docs/examples/hello.goop
+goop compile --stdout hello.goop | wl-copy   # or pbcopy / clip
+```
+
 ### `goop build <file.goop>`
 
 1. Type-check + safety on the entry file
@@ -75,6 +83,7 @@ Directory mode walks for `.goop` / `.gosig` (skips `.git`). Full curated
 |------|---------|--------|
 | (none) | cache | Write under `$GOOP_HOME/build` |
 | `--in-tree` | off | Write `.go` beside the `.goop` source |
+| `--stdout` | off | `compile` only: print Go to stdout (no cache write; conflicts with `--in-tree`) |
 | `--emit-map` | off | Write `.map.json` next to the generated `.go` |
 | `--no-source-map` | — | Accepted; maps stay off (compat with older scripts) |
 

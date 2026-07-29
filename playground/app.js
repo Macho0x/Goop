@@ -2,12 +2,15 @@
   const sourceEl = document.getElementById("source");
   const diagEl = document.getElementById("diagnostics");
   const goEl = document.getElementById("go-out");
+  const goHintEl = document.getElementById("go-hint");
   const statusEl = document.getElementById("status");
   const examplesEl = document.getElementById("examples");
   const btnCheck = document.getElementById("btn-check");
   const btnRun = document.getElementById("btn-run");
+  const btnCopy = document.getElementById("btn-copy-go");
 
   let ready = false;
+  let lastGo = "";
 
   function setStatus(text, kind) {
     statusEl.textContent = text;
@@ -20,13 +23,37 @@
     if (busy) setStatus("working…", "busy");
   }
 
+  function setGoOutput(text, isPlaceholder) {
+    lastGo = isPlaceholder ? "" : text || "";
+    goEl.textContent = isPlaceholder ? "" : text || "";
+    goHintEl.hidden = !isPlaceholder && !!text;
+    if (isPlaceholder) {
+      goHintEl.textContent = text || "Compile to see generated Go";
+      goHintEl.hidden = false;
+    }
+    btnCopy.disabled = !lastGo;
+  }
+
   function formatDiag(d) {
     const loc =
       d.line > 0
         ? `${d.file || "playground.goop"}:${d.line}:${d.column || 1}: `
         : "";
     const sev = (d.severity || "error").toUpperCase();
-    return { text: `${sev} ${loc}${d.message}`, severity: d.severity || "error" };
+    return { text: `${sev} ${loc}${d.message}`, severity: d.severity || "error", line: d.line || 0, column: d.column || 1 };
+  }
+
+  function jumpToLine(line, column) {
+    if (!line || line < 1) return;
+    const lines = sourceEl.value.split("\n");
+    let offset = 0;
+    for (let i = 0; i < line - 1 && i < lines.length; i++) {
+      offset += lines[i].length + 1;
+    }
+    const col = Math.max(1, column || 1) - 1;
+    const start = offset + Math.min(col, (lines[line - 1] || "").length);
+    sourceEl.focus();
+    sourceEl.setSelectionRange(start, start);
   }
 
   function renderDiagnostics(diags) {
@@ -39,11 +66,16 @@
       return;
     }
     diags.forEach((d, i) => {
-      const { text, severity } = formatDiag(d);
-      const line = document.createElement("div");
-      line.className = severity === "warning" ? "diag-warning" : "diag-error";
-      line.textContent = text;
-      diagEl.appendChild(line);
+      const { text, severity, line, column } = formatDiag(d);
+      const row = document.createElement("div");
+      row.className = severity === "warning" ? "diag-warning" : "diag-error";
+      if (line > 0) {
+        row.classList.add("diag-clickable");
+        row.title = "Jump to source";
+        row.addEventListener("click", () => jumpToLine(line, column));
+      }
+      row.textContent = text;
+      diagEl.appendChild(row);
       if (i < diags.length - 1) diagEl.appendChild(document.createTextNode("\n"));
     });
   }
@@ -63,7 +95,8 @@
     if (!ready) return;
     const src = sourceEl.value;
     setBusy(true);
-    goEl.textContent = "";
+    setGoOutput("", true);
+    goHintEl.textContent = "working…";
     // Yield so the UI can paint "working…" before the sync WASM call.
     setTimeout(() => {
       try {
@@ -72,13 +105,18 @@
         if (res.error && (!res.diagnostics || res.diagnostics.length === 0)) {
           renderDiagnostics([{ severity: "error", message: res.error }]);
           setStatus("error", "err");
+          setGoOutput("Compile to see generated Go", true);
           return;
         }
         renderDiagnostics(res.diagnostics || []);
         if (mode === "compile") {
-          goEl.textContent = res.go || (res.ok ? "" : "(no Go generated)");
+          if (res.ok && res.go) {
+            setGoOutput(res.go, false);
+          } else {
+            setGoOutput(res.ok ? "Compile to see generated Go" : "Compile failed — see diagnostics", true);
+          }
         } else {
-          goEl.textContent = res.ok ? "(check only — press Compile for Go)" : "(check failed)";
+          setGoOutput(res.ok ? "Compile to see generated Go" : "Check failed — see diagnostics", true);
         }
         if (res.ok) {
           const warns = (res.diagnostics || []).filter((d) => d.severity === "warning");
@@ -89,10 +127,24 @@
       } catch (e) {
         renderDiagnostics([{ severity: "error", message: String(e) }]);
         setStatus("error", "err");
+        setGoOutput("Compile to see generated Go", true);
       } finally {
         setBusy(false);
       }
     }, 0);
+  }
+
+  async function copyGo() {
+    if (!lastGo) return;
+    try {
+      await navigator.clipboard.writeText(lastGo);
+      setStatus("Copied", "ok");
+      setTimeout(() => {
+        if (statusEl.textContent === "Copied") setStatus("ready", "ok");
+      }, 1200);
+    } catch (e) {
+      setStatus("copy failed", "err");
+    }
   }
 
   function loadExamples() {
@@ -110,6 +162,7 @@
     examplesEl.addEventListener("change", () => {
       const ex = examples[Number(examplesEl.value)];
       if (ex) sourceEl.value = ex.source;
+      setGoOutput("Compile to see generated Go", true);
     });
   }
 
@@ -124,11 +177,20 @@
     sourceEl.selectionStart = sourceEl.selectionEnd = start + 2;
   });
 
+  document.addEventListener("keydown", (e) => {
+    if (!(e.ctrlKey || e.metaKey) || e.key !== "Enter") return;
+    e.preventDefault();
+    if (e.shiftKey) run("check");
+    else run("compile");
+  });
+
   btnCheck.addEventListener("click", () => run("check"));
   btnRun.addEventListener("click", () => run("compile"));
+  btnCopy.addEventListener("click", () => copyGo());
 
   async function boot() {
     loadExamples();
+    setGoOutput("Compile to see generated Go", true);
     setBusy(true);
     setStatus("loading wasm…", "busy");
     try {

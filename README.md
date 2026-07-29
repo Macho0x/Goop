@@ -26,7 +26,7 @@ Exhaustive ADTs · branded IDs · maps · Go interop · same binaries and stdlib
 
 <p align="center">
   <strong><a href="https://macho0x.github.io/Goop/">Try Goop in the browser →</a></strong><br>
-  <sub>Playground: check &amp; compile online — no install</sub>
+  <sub>Playground: check, compile, and copy generated Go — no install</sub>
 </p>
 
 Editors: [VS Code](editors/vscode/) · [Zed](editors/zed/) · [Neovim](editors/neovim/) · [Helix](editors/helix/)
@@ -142,7 +142,7 @@ let greet (name: string option) : string =
 
 ### Playground (fastest)
 
-**[Open the playground](https://macho0x.github.io/Goop/)** — type Goop, run check/compile in the browser. No install, no local toolchain.
+**[Open the playground](https://macho0x.github.io/Goop/)** — type Goop, run check/compile in the browser, copy generated Go. No install, no local toolchain.
 
 ### Install locally
 
@@ -158,7 +158,15 @@ cd src && go build -o ../goop ./cmd/goop
 ./goop-out
 ```
 
-Generated Go stays under `$GOOP_HOME/build` by default.
+Show what the compiler emits (no cache write):
+
+```bash
+goop compile --stdout docs/examples/hello.goop
+```
+
+Generated Go stays under `$GOOP_HOME/build` by default (unless `--stdout` or `--in-tree`).
+Lowering is **one-way** — there is no Go → Goop auto-translator. Teaching pairs:
+[docs/examples/gallery/](docs/examples/gallery/).
 [Tutorial](docs/tutorial/README.md) ([maps](docs/tutorial/08-maps.md)) · [CLI artifacts](docs/design/20-cli-artifacts.md) · [`maps.goop`](docs/examples/maps.goop) · [`branded_ids.goop`](docs/examples/branded_ids.goop)
 
 ## How Goop compares
@@ -185,7 +193,7 @@ Compile-time checks Go leaves to tests or panics — without giving up Go’s ru
 
 ## Status
 
-**[v1.14.0](https://github.com/Macho0x/Goop/releases/tag/v1.14.0)** — Decimal across modules, GOSIG004 generics honesty, curated skip catalog. **[Playground](https://macho0x.github.io/Goop/)** is the fastest way to try Goop.
+**[v1.15.0](https://github.com/Macho0x/Goop/releases/tag/v1.15.0)** — `compile --stdout`, playground Copy Go, Goop↔Go snippet gallery. **[Playground](https://macho0x.github.io/Goop/)** is the fastest way to try Goop.
 
 [CHANGELOG](CHANGELOG.md) · [RELEASE_NOTES](RELEASE_NOTES.md) · [Benchmarks](benchmarks/README.md) · [Language-update checklist](docs/design/31-language-update-checklist.md)
 
@@ -199,10 +207,11 @@ Compile-time checks Go leaves to tests or panics — without giving up Go’s ru
 
 | | |
 |---|---|
-| [**Playground**](https://macho0x.github.io/Goop/) | Try Goop in the browser (no install) |
+| [**Playground**](https://macho0x.github.io/Goop/) | Try Goop in the browser (check, compile, copy Go) |
 | [Tutorial](docs/tutorial/README.md) | Getting started through [maps](docs/tutorial/08-maps.md) |
 | [Stdlib](docs/stdlib/README.md) | Prelude and `std.*` |
 | [Examples](docs/examples/) | Checked in CI |
+| [Goop ↔ Go gallery](docs/examples/gallery/) | Hand-written teaching pairs (not a translator) |
 | [Writing tools](docs/guides/writing-tools.md) | Files + maps via `import go` |
 | [Language-update checklist](docs/design/31-language-update-checklist.md) | Required sweep after language changes |
 | [Contributing](CONTRIBUTING.md) | Build and test |
