@@ -903,7 +903,7 @@ func (p *Parser) parseImportDecl() []ast.ImportSpec {
 }
 
 func (p *Parser) parseImportSpec() ast.ImportSpec {
-	spec := ast.ImportSpec{}
+	spec := ast.ImportSpec{Loc: p.cur().Loc}
 
 	// Hard-break: bare `golang` is no longer a keyword
 	if p.cur().Type == token.IDENT && p.cur().Lexeme == "golang" {

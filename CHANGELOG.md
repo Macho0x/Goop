@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.16.0
+
+### Diagnostics
+
+- **UNUSED002:** credit Goop imports used via `mod.foo` / `Mod.Foo` field access,
+  constructor `TypePrefix`, and local opens `Mod.( … )` (was false-positive when
+  only expression-position module uses existed).
+- Import warnings carry source locations; location-less `report.Render` falls back
+  with a trailing newline so warnings no longer concatenate on `fmt.Print`.
+
 ## 1.15.0
 
 ### Goop ↔ Go surfaces

@@ -97,7 +97,7 @@ func CheckWithConfig(mod *ast.Module, tm typeinfo.TypeMap, cfg *config.Config) (
 			continue
 		}
 		if !c.importUsed[qual] {
-			c.emit(CodeImport, fmt.Sprintf("unused import %q", spec.Path), token.SourceLoc{})
+			c.emit(CodeImport, fmt.Sprintf("unused import %q", spec.Path), spec.Loc)
 		}
 	}
 	return c.errors, c.warnings
@@ -150,6 +150,19 @@ func (c *checker) markIdent(name string) {
 	}
 }
 
+// markImportQual credits a module qualifier used in expression position
+// (e.g. sanitize in sanitize.foo). Extra keys for non-imports are harmless.
+func (c *checker) markImportQual(name string) {
+	if name == "" || name == "." {
+		return
+	}
+	if i := strings.IndexByte(name, '.'); i > 0 {
+		c.importUsed[name[:i]] = true
+		return
+	}
+	c.importUsed[name] = true
+}
+
 func (c *checker) walkExpr(e ast.Expr) {
 	if e == nil {
 		return
@@ -161,6 +174,7 @@ func (c *checker) walkExpr(e ast.Expr) {
 		c.markIdent(e.Name)
 		if e.TypePrefix != "" {
 			c.markIdent(e.TypePrefix)
+			c.markImportQual(e.TypePrefix)
 		}
 		c.walkExpr(e.Arg)
 	case *ast.LetInExpr:
@@ -257,6 +271,16 @@ func (c *checker) walkExpr(e ast.Expr) {
 		}
 	case *ast.FieldAccessExpr:
 		c.walkExpr(e.Left)
+		// Module-qualified use: mod.name / Mod.Name marks import `mod` as used.
+		switch l := e.Left.(type) {
+		case *ast.IdentExpr:
+			c.markImportQual(l.Name)
+		case *ast.ConstructorExpr:
+			c.markImportQual(l.Name)
+		}
+	case *ast.LocalOpenExpr:
+		c.markImportQual(e.Path)
+		c.walkExpr(e.Body)
 	case *ast.MethodSendExpr:
 		c.walkExpr(e.Target)
 	case *ast.IndexExpr:
@@ -416,6 +440,7 @@ func (c *checker) walkPat(p ast.Pattern) {
 		c.markIdent(p.Name)
 		if p.TypePrefix != "" {
 			c.markIdent(p.TypePrefix)
+			c.markImportQual(p.TypePrefix)
 		}
 		c.walkPat(p.Arg)
 	case *ast.PolyvarPattern:

@@ -115,7 +115,10 @@ func Render(err error, src []byte) string {
 	// Parse "file:line:col: rest"
 	parts := strings.SplitN(msg, ":", 4)
 	if len(parts) < 4 {
-		return msg // fallback for CLI errors without location
+		if strings.HasSuffix(msg, "\n") {
+			return msg
+		}
+		return msg + "\n" // location-less diagnostics must not concatenate on fmt.Print
 	}
 	file := strings.TrimSpace(parts[0])
 	line, _ := strconv.Atoi(strings.TrimSpace(parts[1]))
@@ -124,7 +127,10 @@ func Render(err error, src []byte) string {
 
 	lines := strings.Split(string(src), "\n")
 	if line < 1 || line > len(lines) {
-		return msg
+		if strings.HasSuffix(msg, "\n") {
+			return msg
+		}
+		return msg + "\n"
 	}
 
 	// Build the box (3-line window around the error)

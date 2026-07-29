@@ -193,7 +193,7 @@ Compile-time checks Go leaves to tests or panics — without giving up Go’s ru
 
 ## Status
 
-**[v1.15.0](https://github.com/Macho0x/Goop/releases/tag/v1.15.0)** — `compile --stdout`, playground Copy Go, Goop↔Go snippet gallery. **[Playground](https://macho0x.github.io/Goop/)** is the fastest way to try Goop.
+**[v1.16.0](https://github.com/Macho0x/Goop/releases/tag/v1.16.0)** — UNUSED002 credits `mod.foo` expression uses; import warning locations. **[Playground](https://macho0x.github.io/Goop/)** is the fastest way to try Goop.
 
 [CHANGELOG](CHANGELOG.md) · [RELEASE_NOTES](RELEASE_NOTES.md) · [Benchmarks](benchmarks/README.md) · [Language-update checklist](docs/design/31-language-update-checklist.md)
 

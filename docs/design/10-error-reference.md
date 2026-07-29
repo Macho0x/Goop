@@ -1525,7 +1525,8 @@ Narrow static analysis for circular channel communication between two goroutines
 - **Severity**: Warning by default; `[check] unused`
 - **Message**: `UNUSED002: unused import %q`
 - **Trigger**: A Goop module import qualifier is never referenced (Go `import go`
-  packages are skipped).
+  packages are skipped). Expression uses like `mod.foo` / `Mod.Foo`, type
+  annotations `mod.T`, and local opens `Mod.( … )` all count as references.
 - **Fix**: Remove the import or use a binding from it.
 
 ---

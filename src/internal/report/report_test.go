@@ -13,8 +13,8 @@ func TestRender(t *testing.T) {
 
 func TestRenderNoLoc(t *testing.T) {
 	err := &mockErr{msg: "usage error"}
-	if Render(err, nil) != "usage error" {
-		t.Error("fallback failed")
+	if Render(err, nil) != "usage error\n" {
+		t.Errorf("fallback failed: %q", Render(err, nil))
 	}
 }
 
