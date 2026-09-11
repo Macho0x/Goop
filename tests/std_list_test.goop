@@ -1,13 +1,13 @@
 module main
 
-// List construction + match behavioral coverage.
-let rec list_length (xs: 'a list) : int =
-  match xs with
-  | [] -> 0
-  | _ :: rest -> 1 + list_length rest
-
 let main () =
   let xs = 1 :: 2 :: 3 :: [] in
-  let one = 0 :: [] in
-  let chk1 = assert (list_length xs = 3) in
-  assert (list_length one = 1)
+  let evens = List.filter (fun n -> n mod 2 = 0) xs in
+  let sum = List.fold (fun acc n -> acc + n) 0 xs in
+  let doubled = xs.map (fun n -> n * 2) in
+  let chk1 = assert (list_length evens = 1) in
+  let chk2 = assert (sum = 6) in
+  let chk3 = assert (list_length doubled = 3) in
+  match List.find (fun n -> n = 2) xs with
+  | Some n -> assert (n = 2)
+  | None -> assert false

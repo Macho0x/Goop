@@ -238,7 +238,7 @@ import go "bytes" {
 **Shipped (H5):** a `go/types`-driven generator emits `.gosig` stubs for a
 curated package set into the build cache (`$GOOP_HOME/build/go-sigs/…`), with
 repo overrides under `goop-sigs/`. Bare `import go "…"` auto-loads (override →
-cache → generate-on-miss for curated paths). Hand `{ val … }` blocks remain
+cache → generate-on-miss if `packages.Load` succeeds). Hand `{ val … }` blocks remain
 authoritative and are **not** a full proof against upstream Go — `[check]
 verify_ffi` (default **true**) fails the check on **GOSIG003** arity /
 missing-export mismatches. Set `verify_ffi = false` to skip. Hand `{ val … }`

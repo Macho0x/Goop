@@ -13,6 +13,12 @@ or discard explicitly: `let _ = …`.
 Float annotations/fields with money-ish names (`price`, `px`, …) warn by default
 (`[check] money_float`). Prefer `std.decimal` or integer cents.
 
+## Go idioms (`[check] go_idioms`)
+
+Default **warn**. FLOAT001 (float `=` / `==` / `<>`), STR001 (ToLower then compare),
+REGEXP001 (compile/match in a loop), WG001 (`Add` inside `go`), URL001 (discarded
+`Query().Set`), EXIT001 (`os.Exit` in `try`/`finally`), CTX001 (discarded cancel).
+
 ## Unused bindings / imports (UNUSED001 / UNUSED002)
 
 Unused locals and Goop imports warn by default (`[check] unused`). Prefer `_`
@@ -88,6 +94,7 @@ smt = false                    # optional Z3
 | `unused` | `warn` | UNUSED001/002 |
 | `private_in_public` | `warn` | VIS002 |
 | `money_float` | `warn` | DECIMAL001 |
+| `go_idioms` | `warn` | FLOAT001, STR001, REGEXP001, WG001, URL001, EXIT001, CTX001 |
 | `verify_ffi` | `true` | GOSIG003 hand-sig arity / missing-export check |
 | `smt` | `false` | Optional Z3 for refinements |
 

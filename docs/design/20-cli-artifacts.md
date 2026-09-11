@@ -11,7 +11,7 @@ and optional source maps live under `$GOOP_HOME` (default `~/.cache/goop`).
 | `$GOOP_HOME/build/compile-*` | `goop compile` output |
 | `$GOOP_HOME/build/build-*` | `goop build` sandbox (entry + deps + `go.mod`) |
 | `$GOOP_HOME/build/test-*` | `goop test` sandbox (removed after each test) |
-| `$GOOP_HOME/build/go-sigs/` | Generated `.gosig` stubs (`goop get-go-sig`; see [23-go-sig-resolution.md](23-go-sig-resolution.md)) |
+| `$GOOP_HOME/build/go-sigs/` | Generated `.gosig` stubs (`goop get` / `goop get-go-sig`; see [28-go-sig-resolution.md](28-go-sig-resolution.md)) |
 
 ## Commands
 
@@ -33,7 +33,7 @@ Type-check and safety only. Writes nothing. Single file only.
 
 Same diagnostic pipeline as `check`, but accepts a directory of `.goop`
 files, prints a summary count, and exits non-zero on errors. See
-[22-diagnostics.md](22-diagnostics.md).
+[26-diagnostics.md](26-diagnostics.md).
 
 ### `goop compile <file.goop>`
 
@@ -76,6 +76,12 @@ Directory mode walks for `.goop` / `.gosig` (skips `.git`). Full curated
 `.gosig` generation is shipped (H5); `doc` best-effort extracts `module` /
 `type` / `val` lines from stubs. It does **not** replace hand-written
 `docs/stdlib/` pages (prelude tables, doctrine, Go lowering notes).
+
+### `goop get <path>[@version]`
+
+Goop modules: clone + pin in `goop.toml` / `goop.lock`.
+Go import paths (`os`, `github.com/…`): also `get-go-sig` + consumer `go.mod`.
+See [11-package-manager.md](11-package-manager.md).
 
 ## Flags
 

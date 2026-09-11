@@ -151,6 +151,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  compile/build write to $GOOP_HOME/build by default; --in-tree writes beside source\n")
 		fmt.Fprintf(os.Stderr, "  compile --stdout prints generated Go to stdout (no cache write)\n")
 		fmt.Fprintf(os.Stderr, "  gen-sig / get-go-sig write .gosig stubs under $GOOP_HOME/build/go-sigs\n")
+		fmt.Fprintf(os.Stderr, "  get on a Go import path also runs get-go-sig\n")
 		os.Exit(1)
 	}
 
@@ -658,6 +659,8 @@ func lspSafetyDiagnostics(mod *ast.Module, tm typeinfo.TypeMap, cfg *config.Conf
 	addWarn(r.MoneyWarns, cfg.Check.MoneyFloat == config.SeverityError)
 	addWarn(r.RefineWarnings, cfg.Check.RefinementUnproven == config.SeverityError)
 	addWarn(r.ExhaustWarns, cfg.Check.ExhaustRedundant == config.SeverityError)
+	addErr(r.GoIdiomErrors)
+	addWarn(r.GoIdiomWarns, cfg.Check.GoIdioms == config.SeverityError)
 	return out
 }
 
@@ -1566,6 +1569,14 @@ func runSafetyChecks(mod *ast.Module, tm typeinfo.TypeMap, src []byte, cfg *conf
 		fatal = true
 	}
 	warnings = append(warnings, r.ExhaustWarns...)
+	if len(r.GoIdiomErrors) > 0 {
+		fmt.Println("FAIL: Go-idiom errors:")
+		for _, e := range r.GoIdiomErrors {
+			fmt.Print(report.Render(e, src))
+		}
+		fatal = true
+	}
+	warnings = append(warnings, r.GoIdiomWarns...)
 	return r.RefineProven, r.RefineFuncProven, warnings, fatal
 }
 

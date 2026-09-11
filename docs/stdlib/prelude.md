@@ -19,6 +19,7 @@ The prelude is injected by the type checker before user declarations. Bindings a
 | `int_to_string` | `int -> string` | `strconv.Itoa` |
 | `float_to_string` | `float -> string` | `fmt.Sprintf` |
 | `string_concat` | `string -> string -> string` | `+` operator |
+| `sprintf` | `string -> … -> string` | `fmt.Sprintf` (no interpolation lexer) |
 | `String.length` | `string -> int` | `len` (byte count) |
 | `String.sub` | `string -> int -> int -> string` | `s[i:i+n]` (byte slice; OOB panics) |
 
@@ -32,6 +33,12 @@ Optional import-style access: [`std.string`](std-string.md).
 |---|---|---|
 | `list_length` | `'a list -> int` | `len` |
 | `list_append` | `'a list -> 'a list -> 'a list` | `append` |
+| `List.filter` | `('a -> bool) -> 'a list -> 'a list` | Go generic `list_filter` |
+| `List.map` | `('a -> 'b) -> 'a list -> 'b list` | Go generic `list_map` |
+| `List.fold` | `('acc -> 'a -> 'acc) -> 'acc -> 'a list -> 'acc` | Go generic `list_fold` |
+| `List.find` | `('a -> bool) -> 'a list -> 'a option` | Go generic `list_find` |
+
+UFCS on list/array/go_slice only: `xs.filter f` → `List.filter f xs`.
 
 List syntax (`[]`, `::`, `[a; b]`) is built into the language — see [builtins](builtins.md).
 

@@ -25,7 +25,8 @@ import (
 - **Bare import** — `go "fmt"` with no block loads `.gosig` stubs automatically:
   1. project `goop-sigs/` override (wins),
   2. `$GOOP_HOME/build/go-sigs/` cache,
-  3. curated generate-on-miss for known packages.
+  3. generate-on-miss whenever `packages.Load` succeeds (curated = quality flag).
+  Codegen uses the same stubs for H6 `(T, error)→result` wrapping.
 
 Generate or refresh stubs with `goop gen-sig` / `goop get-go-sig`. For a walkthrough
 (files + maps without hand-writing every `val`), see
@@ -94,7 +95,9 @@ end
 ```
 
 This emits a Go assertion that `*point` satisfies `fmt.Stringer`; `@[go]` is
-not needed for method bodies expressible in Goop. For complete examples, see
+not needed for method bodies expressible in Goop. You can also declare the
+method once as `let (p : point).String () : string = …` and leave the
+`implements` body empty so it reuses that method. For complete examples, see
 [`go_implements_stringer.goop`](../examples/go_implements_stringer.goop) and
 [`go_implements_slog_handler.goop`](../examples/go_implements_slog_handler.goop),
 which implements a native `slog.Handler`.

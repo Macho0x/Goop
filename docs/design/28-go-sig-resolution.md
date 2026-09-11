@@ -28,9 +28,14 @@ When the compiler sees a **bare** `import go "P"` (no `{ val … }` block):
    exists as a regular file, use it. Always wins over cache.
 2. **Generated cache** — if `$GOOP_HOME/build/go-sigs/<safe(P)>.gosig`
    exists, use it.
-3. **Miss** — for curated packages, auto-generate into the cache once;
-   otherwise leave unbound (callers can add an explicit `{ val … }` block
-   and/or use the runtime `gosig` fallback for declared names).
+3. **Miss** — auto-generate into the cache if `packages.Load` succeeds
+   (stdlib or any module on GOPATH/`go.mod`). The curated list is a
+   **quality** flag (warnings), not a permission. Load failures print
+   **GOSIG002** and do not fail the check.
+
+Codegen of bare `import go "P"` loads the same stubs so H6 `(T, error)→result`
+wrapping applies (`os.ReadFile` etc.). `goop get <go-path>` also runs
+`get-go-sig` and ensures a consumer `go.mod` for module paths.
 
 Explicit `import go "P" { … }` blocks are authoritative: stubs are **not**
 merged on top of them (avoids collisions with hand-written FFI).

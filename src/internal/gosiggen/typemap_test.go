@@ -205,6 +205,15 @@ func TestIsCurated(t *testing.T) {
 	}
 }
 
+func TestAlwaysGenerate(t *testing.T) {
+	if !alwaysGenerate("regexp") || !alwaysGenerate("github.com/foo/bar") {
+		t.Fatal("generate-on-miss should allow any non-empty path")
+	}
+	if alwaysGenerate("") {
+		t.Fatal("empty path must not generate")
+	}
+}
+
 // parseTypeViaScope builds types manually for test cases we care about.
 func parseTypeViaScope(pkg *gotypes.Package, src string) (gotypes.Type, error) {
 	src = strings.TrimSpace(src)

@@ -9,6 +9,7 @@ val Replace : string -> string -> string -> int -> string
 val Split : string -> string -> string go_slice
 val ToLower : string -> string
 val ToUpper : string -> string
+val EqualFold : string -> string -> bool
 val TrimSpace : string -> string
 val Cut : string -> string -> string * string * bool
 

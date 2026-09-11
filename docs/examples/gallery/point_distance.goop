@@ -1,0 +1,15 @@
+module main
+
+import go "math"
+
+type point = { x : float; y : float }
+
+let (p : point).distance (q : point) : float =
+  let dx = p.x -. q.x in
+  let dy = p.y -. q.y in
+  math.Sqrt (dx *. dx +. dy *. dy)
+
+let main () =
+  let a = { x = 0.0; y = 0.0 } in
+  let b = { x = 3.0; y = 4.0 } in
+  println (float_to_string (a.distance b))

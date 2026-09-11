@@ -53,6 +53,7 @@ Error messages fall into three severity levels:
 | GOSIG | Go signature load/fallback | `internal/gosig`, CLI |
 | NIL | Nil channel errors | `internal/nilchan` |
 | REFINE | Refinement solver errors/warnings | `internal/refine` |
+| FLOAT / STR / REGEXP / WG / URL / EXIT / CTX | Go-idiom warnings | `internal/goidioms` |
 | CLI | CLI/file/system errors | `cmd/goop`, `internal/config` |
 
 Corpus size and `goop lint` are summarized in
@@ -1552,6 +1553,60 @@ Narrow static analysis for circular channel communication between two goroutines
 
 ---
 
+## GO IDIOMS — Go-stdlib usage (default warn; `[check] go_idioms`)
+
+### FLOAT001: Float equality
+
+- **Error code**: `FLOAT001`
+- **Severity**: Warning (`go_idioms`)
+- **Message**: `FLOAT001: float equality is inexact; compare with a tolerance or use std.decimal`
+- **Trigger**: `=` / `==` / `<>` / `!=` on `float`.
+- **Fix**: Tolerance compare, or `std.decimal` for money.
+
+### STR001: ToLower/ToUpper then compare
+
+- **Error code**: `STR001`
+- **Severity**: Warning (`go_idioms`)
+- **Message**: `STR001: case-fold then compare; use strings.EqualFold`
+- **Fix**: `strings.EqualFold a b`.
+
+### REGEXP001: regexp in a loop
+
+- **Error code**: `REGEXP001`
+- **Severity**: Warning (`go_idioms`)
+- **Message**: `REGEXP001: regexp compile/match inside a loop; compile once outside`
+- **Fix**: Hoist `MustCompile` / `Compile` out of `for` / `while`.
+
+### WG001: WaitGroup.Add inside `go`
+
+- **Error code**: `WG001`
+- **Severity**: Warning (`go_idioms`)
+- **Message**: `WG001: WaitGroup.Add inside go; call Add before spawning`
+- **Fix**: `wg.Add 1` then `go (fun () -> …)`.
+
+### URL001: discarded Query().Set
+
+- **Error code**: `URL001`
+- **Severity**: Warning (`go_idioms`)
+- **Message**: `URL001: url.Values.Query().Set is discarded; assign Query, Set, then write RawQuery`
+- **Fix**: `let q = u.Query () in … q.Set …; u.RawQuery <- q.Encode ()` (or equivalent).
+
+### EXIT001: os.Exit inside try/finally
+
+- **Error code**: `EXIT001`
+- **Severity**: Warning (`go_idioms`)
+- **Message**: `EXIT001: os.Exit skips try/finally (Go defer); return an error instead`
+- **Fix**: Return from `main` / propagate `result`; do not `os.Exit` inside `try`.
+
+### CTX001: discarded WithCancel/WithTimeout
+
+- **Error code**: `CTX001`
+- **Severity**: Warning (`go_idioms`)
+- **Message**: `CTX001: WithCancel/WithTimeout cancel func is discarded; keep it and call it`
+- **Fix**: Bind the cancel function and call it (e.g. in `try/finally`).
+
+---
+
 ## CODEGEN — Code generation
 
 ### CODEGEN001: Unhandled expression
@@ -1615,8 +1670,8 @@ Narrow static analysis for circular channel communication between two goroutines
 - **Error code**: `TAG001`
 - **Severity**: Error (parse)
 - **Message**: `TAG001: unknown field attribute @[…]` / `TAG001: @[tag] requires a string payload…`
-- **Trigger**: A record field has `@[…]` that is not `@[tag "…"]`, or `@[tag]` lacks a string.
-- **Fix**: Write `@[tag "json:\"name,omitempty\""]` (payload = exact Go backtick body). See [33-sdk-blockers.md](33-sdk-blockers.md).
+- **Trigger**: A record field has `@[…]` that is not `@[tag "…"]` or `@[json…]`, or `@[tag]` lacks a string.
+- **Fix**: Prefer `@[json]` / `@[json "name"]` / `@[json omitempty]`, or `@[tag "json:\"name,omitempty\""]` as the escape hatch.
 
 ### MODULE001: Duplicate name when merging sibling modules
 

@@ -470,16 +470,38 @@ func (p *Parser) parseLetDecl(isPrivate bool) *ast.LetDecl {
 func (p *Parser) parseBinding() ast.LetBinding {
 	b := ast.LetBinding{}
 
-	tok := p.cur()
-	if tok.Type != token.IDENT && tok.Type != token.CONSTRUCTOR && tok.Type != token.UNDERSCORE {
-		p.errorf("PARSE006: expected binding name, got %s", tok.Type)
-		if p.cur().Type != token.EOF {
+	if p.cur().Type == token.LPAREN && p.peek().Type != token.PIPE {
+		p.advance() // (
+		recvTok := p.cur()
+		if recvTok.Type == token.IDENT {
+			b.RecvName = recvTok.Lexeme
 			p.advance()
+		} else {
+			p.errorf("PARSE006: expected receiver name, got %s", recvTok.Type)
 		}
-		return b
+		p.expect(token.COLON)
+		b.RecvType = p.parseType()
+		p.expect(token.RPAREN)
+		p.expect(token.DOT)
+		nameTok := p.cur()
+		if nameTok.Type != token.IDENT && nameTok.Type != token.CONSTRUCTOR {
+			p.errorf("PARSE006: expected method name, got %s", nameTok.Type)
+			return b
+		}
+		p.advance()
+		b.Name = nameTok.Lexeme
+	} else {
+		tok := p.cur()
+		if tok.Type != token.IDENT && tok.Type != token.CONSTRUCTOR && tok.Type != token.UNDERSCORE {
+			p.errorf("PARSE006: expected binding name, got %s", tok.Type)
+			if p.cur().Type != token.EOF {
+				p.advance()
+			}
+			return b
+		}
+		p.advance()
+		b.Name = tok.Lexeme
 	}
-	p.advance()
-	b.Name = tok.Lexeme
 
 	// Parse parameters (zero or more)
 	b.Params = p.parseParams()
@@ -828,13 +850,27 @@ func (p *Parser) parseFieldGoTags(ft *ast.FieldType) {
 			p.errorf("TAG001: expected tag name inside @[…], got %s", nameTok.Type)
 			return
 		}
-		if name != "tag" {
-			p.errorf("TAG001: unknown field attribute @[%s] (expected @[tag \"…\"])", name)
+		if name != "tag" && name != "json" {
+			p.errorf("TAG001: unknown field attribute @[%s] (expected @[tag \"…\"] or @[json])", name)
 			// recover: consume until ]
 			for p.cur().Type != token.RBRACKET && p.cur().Type != token.EOF {
 				p.advance()
 			}
 			p.match(token.RBRACKET)
+			continue
+		}
+		if name == "json" {
+			jsonKey := ft.Name
+			if p.cur().Type == token.STRING {
+				jsonKey = p.cur().Lexeme
+				p.advance()
+			}
+			if p.cur().Type == token.IDENT && p.cur().Lexeme == "omitempty" {
+				jsonKey = jsonKey + ",omitempty"
+				p.advance()
+			}
+			parts = append(parts, fmt.Sprintf("json:%q", jsonKey))
+			p.expect(token.RBRACKET)
 			continue
 		}
 		if p.cur().Type != token.STRING {

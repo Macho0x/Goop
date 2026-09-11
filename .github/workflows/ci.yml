@@ -39,6 +39,10 @@ jobs:
           # Fixed import corpus must typecheck with auto-loaded stubs
           /tmp/goop check ../docs/examples/writing_tools.goop
           /tmp/goop check ../docs/examples/maps.goop
+          /tmp/goop build ../docs/examples/writing_tools.goop
+          /tmp/goop build ../docs/examples/maps.goop
+          /tmp/goop build ../docs/examples/http_hello.goop
+          rm -f ./goop-out
 
       - name: End-to-end tests
         run: |
@@ -57,6 +61,14 @@ jobs:
           /tmp/goop build ../docs/examples/hello.goop
           test -x ./goop-out
           ./goop-out | grep -q Hello
+          rm -f ./goop-out
+          /tmp/goop build ../docs/examples/list_combinators.goop
+          test -x ./goop-out
+          ./goop-out | grep -q 10
+          rm -f ./goop-out
+          /tmp/goop build ../docs/examples/point_distance.goop
+          test -x ./goop-out
+          ./goop-out | grep -q 5
           rm -f ./goop-out
           # Default build must not leave generated Go beside examples
           if ls ../docs/examples/*.go >/dev/null 2>&1; then

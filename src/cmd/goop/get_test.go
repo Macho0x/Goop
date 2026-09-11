@@ -15,6 +15,24 @@ func TestGetUsage(t *testing.T) {
 	}
 }
 
+func TestLooksLikeGoImport(t *testing.T) {
+	if !looksLikeGoImport("os") || !looksLikeGoImport("encoding/json") {
+		t.Fatal("stdlib paths should be Go imports")
+	}
+	if !looksLikeGoImport("github.com/foo/bar") {
+		t.Fatal("module path should be a Go import")
+	}
+	if looksLikeGoImport("std.list") {
+		t.Fatal("std.list is a Goop module, not a Go import")
+	}
+	if looksLikeGitHost("os") || looksLikeGitHost("std.list") {
+		t.Fatal("stdlib / std.* should not clone as git hosts")
+	}
+	if !looksLikeGitHost("github.com/foo/bar") {
+		t.Fatal("github.com should look like a git host")
+	}
+}
+
 func TestWriteTomlDependencies(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "goop.toml")

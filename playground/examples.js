@@ -91,6 +91,32 @@ let main () =
 `,
   },
   {
+    id: "lists",
+    title: "List combinators",
+    source: `module main
+
+let main () =
+  let xs = 1 :: 2 :: 3 :: 4 :: [] in
+  let evens = xs.filter (fun n -> n mod 2 = 0) in
+  let sum = List.fold (fun acc n -> acc + n) 0 xs in
+  println (int_to_string (list_length evens) ^ " " ^ int_to_string sum)
+`,
+  },
+  {
+    id: "methods",
+    title: "Native methods",
+    source: `module main
+
+type point = { x : int; y : int }
+
+let (p : point).sum () : int = p.x + p.y
+
+let main () =
+  let a = { x = 3; y = 4 } in
+  println (int_to_string (a.sum ()))
+`,
+  },
+  {
     id: "http_hello",
     title: "HTTP (typed import)",
     source: `module main

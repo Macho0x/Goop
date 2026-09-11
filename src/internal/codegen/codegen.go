@@ -25,6 +25,7 @@ import (
 	"goop.dev/compiler/internal/active"
 	"goop.dev/compiler/internal/ast"
 	"goop.dev/compiler/internal/config"
+	"goop.dev/compiler/internal/gosiggen"
 	"goop.dev/compiler/internal/modresolve"
 	"goop.dev/compiler/internal/prelude"
 	"goop.dev/compiler/internal/refine"
@@ -91,6 +92,7 @@ type Generator struct {
 	ffiTypeAliases     map[string]string   // local export: type Name = pkg.Name (import go opaque)
 	externMethods      map[string]externMethod
 	externFields       map[string]map[string]string
+	nativeMethods      map[string]map[string]bool // record type → method names (Go receivers)
 
 	// row-polymorphic function params: funcName → field names
 	rowParams     map[string][]string
@@ -149,6 +151,7 @@ func NewGenerator(srcFile string, cfg *config.Config) *Generator {
 		ffiTypeAliases:     make(map[string]string),
 		externMethods:      make(map[string]externMethod),
 		externFields:       make(map[string]map[string]string),
+		nativeMethods:      make(map[string]map[string]bool),
 		rowParams:          make(map[string][]string),
 		rowParamName:       make(map[string]string),
 		rowParamIndex:      make(map[string]int),
@@ -255,6 +258,10 @@ func (g *Generator) internalTypeToGo(t types.Type) string {
 			return "struct{}"
 		case "any":
 			return "interface{}"
+		case "bytes":
+			return "[]byte"
+		case "rune":
+			return "rune"
 		default:
 			return t.Name
 		}
@@ -506,6 +513,12 @@ func (g *Generator) prescan(mod *ast.Module) {
 			g.extensibleCases[d.TypeName] = append(g.extensibleCases[d.TypeName], d.Cases...)
 		case *ast.LetDecl:
 			for _, b := range d.Bindings {
+				if recv := astTypeIdent(b.RecvType); recv != "" {
+					if g.nativeMethods[recv] == nil {
+						g.nativeMethods[recv] = make(map[string]bool)
+					}
+					g.nativeMethods[recv][b.Name] = true
+				}
 				emitName := b.Name
 				if !d.ActivePattern {
 					if !d.Private && b.Name != "main" {
@@ -859,6 +872,10 @@ func (g *Generator) typeToGo(at ast.Type) string {
 			return "owned_chan"
 		case "error":
 			return "error"
+		case "bytes":
+			return "[]byte"
+		case "rune":
+			return "rune"
 		default:
 			if qualified, ok := g.goTypeQual[t.Name]; ok {
 				return qualified
@@ -1101,13 +1118,23 @@ func (g *Generator) collectGoImport(spec ast.ImportSpec) {
 	if spec.Path != "" {
 		g.externImports[spec.Path] = pkgName
 	}
+	types, vals := spec.Types, spec.Vals
+	// Bare `import go "pkg"` typechecks via .gosig; codegen must load the same
+	// stubs so H6 (T, error)→result wrapping actually fires at call sites.
+	if !spec.Raw && spec.Path != "" && len(types) == 0 && len(vals) == 0 {
+		root := findProjectRootFromFile(g.srcFile)
+		loadedT, loadedV, _, err := gosiggen.LoadImportBindings(root, gosiggen.GoopHome(), spec.Path, true)
+		if err == nil {
+			types, vals = loadedT, loadedV
+		}
+	}
 	// Register opaque types before vals so (T, error)→result mangling sees goTypeQual.
-	for _, et := range spec.Types {
+	for _, et := range types {
 		qual := pkgName + "." + et.Name
 		g.goTypeQual[et.Name] = qual
 		g.ffiTypeAliases[et.Name] = qual
 	}
-	for _, ev := range spec.Vals {
+	for _, ev := range vals {
 		if ev.Kind == ast.ExternMethod {
 			g.externMethods[ev.Name] = externMethod{
 				recvGoType: g.typeToGo(ev.RecvType),
@@ -2000,6 +2027,14 @@ func (g *Generator) emitLetDecl(d *ast.LetDecl) {
 		g.currentFunc = b.Name
 		funcName := b.Name
 		g.funcPrivate[funcName] = d.Private
+		if b.RecvType != nil {
+			g.emitNativeMethod(d, b)
+			continue
+		}
+		if helper := listCombinatorHelper(b.Body); helper != "" && b.RecvType == nil {
+			g.emitListCombinatorAlias(b, helper)
+			continue
+		}
 
 		// Record source mapping: we don't have the AST source location directly,
 		// so we use the current Go output position and approximate Goop line from
@@ -2183,6 +2218,10 @@ func (g *Generator) isChanMakeExpr(e ast.Expr) bool {
 func (g *Generator) emitImplementsDecl(d *ast.ImplementsDecl) {
 	receiverType := g.goName(d.ForType)
 	for _, method := range d.Methods {
+		if g.nativeMethods[d.ForType][method.Name] {
+			// Native `let (x : T).M` already emitted this method.
+			continue
+		}
 		if len(method.Params) == 0 {
 			continue
 		}
@@ -2211,6 +2250,105 @@ func (g *Generator) emitImplementsDecl(d *ast.ImplementsDecl) {
 	}
 }
 
+func astTypeIdent(t ast.Type) string {
+	switch t := t.(type) {
+	case *ast.TIdent:
+		return t.Name
+	case *ast.TPtr:
+		return astTypeIdent(t.Elem)
+	default:
+		return ""
+	}
+}
+
+func (g *Generator) emitNativeMethod(d *ast.LetDecl, b ast.LetBinding) {
+	recvType := g.goName(astTypeIdent(b.RecvType))
+	if recvType == "" {
+		recvType = g.typeToGo(b.RecvType)
+	}
+	recvName := b.RecvName
+	if recvName == "" {
+		recvName = "recv"
+	}
+	g.currentFunc = b.Name
+	if b.RetType != nil {
+		g.funcRetType[b.Name] = g.typeToGo(b.RetType)
+	}
+	realParams := make([]ast.Param, 0, len(b.Params))
+	for _, p := range b.Params {
+		if p.Name != "" && !isUnitParam(p) {
+			realParams = append(realParams, p)
+		}
+	}
+	g.emitf("func (%s *%s) %s", recvName, recvType, exported(b.Name))
+	g.emitParams(realParams)
+	hasReturn := b.RetType != nil && g.typeToGo(b.RetType) != "struct{}"
+	if hasReturn {
+		g.buf.WriteString(" " + g.typeToGo(b.RetType))
+	}
+	g.buf.WriteString(" {\n")
+	g.indent++
+	if hasReturn {
+		g.emitReturnExpr(b.Body)
+	} else {
+		g.emitExpr(b.Body, true)
+	}
+	g.indent--
+	g.emitf("}\n\n")
+	g.currentFunc = ""
+	_ = d
+}
+
+func listCombinatorHelper(body ast.Expr) string {
+	cur := body
+	for {
+		app, ok := cur.(*ast.AppExpr)
+		if !ok {
+			break
+		}
+		cur = app.Func
+	}
+	fa, ok := cur.(*ast.FieldAccessExpr)
+	if !ok {
+		return ""
+	}
+	leftName := ""
+	switch l := fa.Left.(type) {
+	case *ast.ConstructorExpr:
+		if l.Arg == nil {
+			leftName = l.Name
+		}
+	case *ast.IdentExpr:
+		leftName = l.Name
+	}
+	if leftName != "List" {
+		return ""
+	}
+	switch fa.Field {
+	case "filter":
+		return "list_filter"
+	case "map":
+		return "list_map"
+	case "fold":
+		return "list_fold"
+	default:
+		return ""
+	}
+}
+
+func (g *Generator) emitListCombinatorAlias(b ast.LetBinding, helper string) {
+	name := exported(b.Name)
+	g.goopToGo[b.Name] = name
+	switch helper {
+	case "list_filter":
+		g.emitf("func %s[T any](f func(T) bool, xs []T) []T { return list_filter(f, xs) }\n\n", name)
+	case "list_map":
+		g.emitf("func %s[A, B any](f func(A) B, xs []A) []B { return list_map(f, xs) }\n\n", name)
+	case "list_fold":
+		g.emitf("func %s[A, Acc any](f func(Acc, A) Acc, acc Acc, xs []A) Acc { return list_fold(f, acc, xs) }\n\n", name)
+	}
+}
+
 func (g *Generator) emitGoSliceHelpers() {
 	g.emit("func any_of[T any](x T) interface{} { return x }\n\n")
 	g.emit("func go_slice_len[T any](xs []T) int { return len(xs) }\n\n")
@@ -2218,6 +2356,37 @@ func (g *Generator) emitGoSliceHelpers() {
 	g.emit("func go_slice_get[T any](xs []T, i int) T { return xs[i] }\n\n")
 	g.emit("func go_slice_of_list[T any](xs []T) []T { return xs }\n\n")
 	g.emit("func list_of_go_slice[T any](xs []T) []T { return xs }\n\n")
+	g.emit("func list_filter[T any](f func(T) bool, xs []T) []T {\n")
+	g.emit("\tout := make([]T, 0, len(xs))\n")
+	g.emit("\tfor _, x := range xs {\n")
+	g.emit("\t\tif f(x) {\n")
+	g.emit("\t\t\tout = append(out, x)\n")
+	g.emit("\t\t}\n")
+	g.emit("\t}\n")
+	g.emit("\treturn out\n")
+	g.emit("}\n\n")
+	g.emit("func list_map[A, B any](f func(A) B, xs []A) []B {\n")
+	g.emit("\tout := make([]B, len(xs))\n")
+	g.emit("\tfor i, x := range xs {\n")
+	g.emit("\t\tout[i] = f(x)\n")
+	g.emit("\t}\n")
+	g.emit("\treturn out\n")
+	g.emit("}\n\n")
+	g.emit("func list_fold[A, Acc any](f func(Acc, A) Acc, acc Acc, xs []A) Acc {\n")
+	g.emit("\tfor _, x := range xs {\n")
+	g.emit("\t\tacc = f(acc, x)\n")
+	g.emit("\t}\n")
+	g.emit("\treturn acc\n")
+	g.emit("}\n\n")
+	g.emit("func list_find[T any](f func(T) bool, xs []T) (T, bool) {\n")
+	g.emit("\tfor _, x := range xs {\n")
+	g.emit("\t\tif f(x) {\n")
+	g.emit("\t\t\treturn x, true\n")
+	g.emit("\t\t}\n")
+	g.emit("\t}\n")
+	g.emit("\tvar z T\n")
+	g.emit("\treturn z, false\n")
+	g.emit("}\n\n")
 }
 
 func isUnitParam(p ast.Param) bool {
@@ -3251,6 +3420,9 @@ func (g *Generator) emitApp(e *ast.AppExpr, isStmt bool) {
 		return
 	}
 	if field, ok := e.Func.(*ast.FieldAccessExpr); ok {
+		if g.emitListUFCS(field, e, isStmt) {
+			return
+		}
 		if method, ok := g.externMethods[field.Field]; ok {
 			args := g.collectArgs(e)[1:]
 			receiver := field.Left
@@ -3381,6 +3553,12 @@ func (g *Generator) emitApp(e *ast.AppExpr, isStmt bool) {
 
 	funcExpr := args[0].(ast.Expr)
 	args = args[1:]
+
+	if field, ok := funcExpr.(*ast.FieldAccessExpr); ok {
+		if g.emitListUFCS(field, e, isStmt) {
+			return
+		}
+	}
 
 	// Flatten ConstructorExpr with embedded Arg for user lets and externs.
 	// The parser represents "Add 2 3" / "Mod a b" as
@@ -3951,6 +4129,51 @@ func (g *Generator) emitPreludeCall(b *prelude.Binding, args []ast.Expr, callExp
 		g.buf.WriteString(")")
 		return
 
+	case "list_find":
+		optType := "OptionT"
+		if g.typeMap != nil && callExpr != nil {
+			if t, ok := g.typeMap[callExpr]; ok {
+				if tc, ok := t.(*types.TCon); ok && tc.Name == "option" && len(tc.Args) > 0 {
+					valGo := g.internalTypeToGo(tc.Args[0])
+					optType = "Option" + optionTypeSuffix(valGo)
+					g.usedOption[optType] = valGo
+				}
+			}
+		}
+		g.buf.WriteString("func() " + optType + " {\n")
+		g.indent++
+		g.emitf("__v, __ok := list_find(")
+		if len(args) >= 1 {
+			g.emitExpr(args[0], false)
+		} else {
+			g.buf.WriteString("nil")
+		}
+		g.buf.WriteString(", ")
+		if len(args) >= 2 {
+			g.emitExpr(args[1], false)
+		} else {
+			g.buf.WriteString("nil")
+		}
+		g.buf.WriteString(")\n")
+		g.emitf("if __ok { return %s(__v) }\n", g.qualifyOptionCtor("New"+optType+"Some"))
+		g.emitf("return %s\n", g.qualifyOptionCtor("New"+optType+"None()"))
+		g.indent--
+		g.buf.WriteString("}()")
+		return
+
+	case "sprintf":
+		g.needFmt = true
+		g.importPkgs["fmt"] = "fmt"
+		g.buf.WriteString("fmt.Sprintf(")
+		for i, arg := range args {
+			if i > 0 {
+				g.buf.WriteString(", ")
+			}
+			g.emitExpr(arg, false)
+		}
+		g.buf.WriteString(")")
+		return
+
 	case "array_make":
 		g.varCounter++
 		arrName := fmt.Sprintf("_arr%d", g.varCounter)
@@ -4191,6 +4414,42 @@ func (g *Generator) collectArgs(e ast.Expr) []ast.Expr {
 		}
 	}
 	return result
+}
+
+func isCollectionType(t types.Type) bool {
+	if t == nil {
+		return false
+	}
+	switch t := t.(type) {
+	case *types.TCon:
+		return (t.Name == "list" || t.Name == "array") && len(t.Args) > 0
+	case *types.TGoSlice:
+		return true
+	default:
+		return false
+	}
+}
+
+func (g *Generator) emitListUFCS(field *ast.FieldAccessExpr, call ast.Expr, isStmt bool) bool {
+	switch field.Field {
+	case "filter", "map", "find", "fold":
+	default:
+		return false
+	}
+	if !isCollectionType(g.typeOf(field.Left)) {
+		return false
+	}
+	b := g.prelude.Lookup("List." + field.Field)
+	if b == nil {
+		return false
+	}
+	args := g.collectArgs(call)
+	combArgs := append(append([]ast.Expr{}, args[1:]...), field.Left)
+	g.emitPreludeCall(b, combArgs, call, isStmt)
+	if isStmt {
+		g.buf.WriteString("\n")
+	}
+	return true
 }
 
 // isNotPattern checks if an IfExpr matches the desugaring of `not expr`:
@@ -5459,8 +5718,7 @@ func (g *Generator) emitBinary(e *ast.BinaryExpr) {
 	switch e.Op {
 	case token.CONS:
 		// x :: xs → append([]T{x}, xs...)
-		// Determine the element type from the right side's context.
-		elemType := g.currentListElemType()
+		elemType := g.listElemGo(e)
 		g.buf.WriteString("append([]" + elemType + "{")
 		g.emitExpr(e.Left, false)
 		g.buf.WriteString("}, ")
@@ -6140,12 +6398,15 @@ func (g *Generator) tupleGoTypeFromExpr(e *ast.TupleExpr) string {
 }
 
 func (g *Generator) emitList(e *ast.ListExpr) {
+	elemType := g.listElemGo(e)
 	if len(e.Elems) == 0 {
+		if elemType != "interface{}" {
+			g.buf.WriteString("[]" + elemType + "{}")
+			return
+		}
 		g.buf.WriteString("nil")
 		return
 	}
-	// Determine element type from enclosing function's return type if possible
-	elemType := g.currentListElemType()
 	g.buf.WriteString("[]" + elemType + "{")
 	for i, el := range e.Elems {
 		if i > 0 {
@@ -6163,6 +6424,36 @@ func (g *Generator) currentListElemType() string {
 		}
 	}
 	return "interface{}"
+}
+
+func listElemType(t types.Type) types.Type {
+	switch t := t.(type) {
+	case *types.TCon:
+		if (t.Name == "list" || t.Name == "array") && len(t.Args) > 0 {
+			return t.Args[0]
+		}
+	case *types.TGoSlice:
+		return t.Elem
+	}
+	return nil
+}
+
+func (g *Generator) listElemGo(e ast.Expr) string {
+	if t := g.typeOf(e); t != nil {
+		if elem := listElemType(t); elem != nil {
+			if goT := g.internalTypeToGo(elem); goT != "" {
+				return goT
+			}
+		}
+	}
+	if bin, ok := e.(*ast.BinaryExpr); ok && bin.Op == token.CONS {
+		if t := g.typeOf(bin.Left); t != nil {
+			if goT := g.internalTypeToGo(t); goT != "interface{}" {
+				return goT
+			}
+		}
+	}
+	return g.currentListElemType()
 }
 
 // ---------------------------------------------------------------------------

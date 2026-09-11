@@ -1,0 +1,5 @@
+module main
+
+let main () =
+  let s = sprintf "n=%d" 3 in
+  assert (s = "n=3")

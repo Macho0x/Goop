@@ -83,5 +83,8 @@ SDK port gaps / `@[tag]` / multi-file modules: [33-sdk-blockers.md](33-sdk-block
 cd src && go build -o ../goop ./cmd/goop && go test ./...
 ../goop test ../tests/
 for f in ../docs/examples/*.goop ../docs/examples/gallery/*.goop; do ../goop check "$f"; done
+../goop build ../docs/examples/writing_tools.goop
+../goop build ../docs/examples/list_combinators.goop
+../goop build ../docs/examples/point_distance.goop
 ../goop new /tmp/goop-new-smoke --force && ../goop check /tmp/goop-new-smoke/main.goop
 ```

@@ -121,6 +121,47 @@ func Default() *Prelude {
 		&pureEff,
 	)
 
+	acc := types.Fresh("'acc")
+	listA2 := types.ListType(a)
+	p.addWithEffects("List.filter",
+		types.Generalize(&types.TFun{
+			From: &types.TFun{From: a, To: types.Bool},
+			To:   &types.TFun{From: listA2, To: listA2},
+		}, nil),
+		Lowering{Func: "list_filter"},
+		&pureEff,
+	)
+	p.addWithEffects("List.map",
+		types.Generalize(&types.TFun{
+			From: &types.TFun{From: a, To: b},
+			To:   &types.TFun{From: listA2, To: types.ListType(b)},
+		}, nil),
+		Lowering{Func: "list_map"},
+		&pureEff,
+	)
+	p.addWithEffects("List.fold",
+		types.Generalize(&types.TFun{
+			From: &types.TFun{From: acc, To: &types.TFun{From: a, To: acc}},
+			To:   &types.TFun{From: acc, To: &types.TFun{From: listA2, To: acc}},
+		}, nil),
+		Lowering{Func: "list_fold"},
+		&pureEff,
+	)
+	p.addWithEffects("List.find",
+		types.Generalize(&types.TFun{
+			From: &types.TFun{From: a, To: types.Bool},
+			To:   &types.TFun{From: listA2, To: types.OptionType(a)},
+		}, nil),
+		Lowering{Custom: "list_find"},
+		&pureEff,
+	)
+
+	p.addWithEffects("sprintf",
+		types.Generalize(&types.TFun{From: types.String, To: a}, nil),
+		Lowering{Custom: "sprintf", Pkg: "fmt"},
+		&pureEff,
+	)
+
 	// Go-slice FFI helpers. Goop lists already lower to Go slices, so the two
 	// conversion helpers are identity functions at runtime.
 	goSliceA := &types.TGoSlice{Elem: a}

@@ -221,8 +221,13 @@ match Map.get m "x" with
 - Prelude: `Map.make` / `get` / `add` / `remove` / `mem` / `size` (see [29-maps.md](29-maps.md)).
 
 Bare `import go "pkg"` (no `{ val … }` block) loads `.gosig` stubs from
-`goop-sigs/` → `$GOOP_HOME` cache → curated generate-on-miss; explicit blocks
-stay authoritative ([28-go-sig-resolution.md](28-go-sig-resolution.md)).
+`goop-sigs/` → `$GOOP_HOME` cache → generate-on-miss if `packages.Load`
+succeeds; explicit blocks stay authoritative
+([28-go-sig-resolution.md](28-go-sig-resolution.md)).
+
+Record JSON: `@[json]` / `@[json "name"]` / `@[json omitempty]` (or `@[tag "…"]`).
+Native methods: `let (p : point).distance (q : point) : float = …`.
+Formatting: `^` and prelude `sprintf` (no interpolation lexer).
 
 ## Modules / OOP / effects (brief)
 

@@ -79,11 +79,26 @@ xs.(i)   // when xs : 'a go_slice → go_slice_get xs i
 spread xs
 ```
 
+## Native methods on Goop records (1.23)
+
+Same selector spelling as FFI, not a new `impl` keyword:
+
+```goop
+type point = { x : int; y : int }
+let (p : point).sum () : int = p.x + p.y
+// a.sum ()
+```
+
+Codegen emits a pointer method. `implements` can reuse it (`with end`).
+See [17-go-implements.md](17-go-implements.md).
+
 ## Non-goals (1.4.0)
 
-- `defer` keyword
-- Auto-discovery of all exports from a bare `import go "pkg"`
+- `defer` keyword (Goop has `try`/`finally`, which lowers to `defer`)
 - Changing OCaml `#method` object semantics
+
+Bare `import go "pkg"` auto-loads `.gosig` (1.10+; codegen H6 wrap in 1.23).
+See [28-go-sig-resolution.md](28-go-sig-resolution.md).
 
 ## Pointer receivers and heap types (1.6.0)
 

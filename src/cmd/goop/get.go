@@ -12,7 +12,7 @@ import (
 
 func runGet(args []string) int {
 	if len(args) == 0 {
-		fmt.Fprintf(os.Stderr, "usage: goop get <module-path>[@version]\n")
+		fmt.Fprintf(os.Stderr, "usage: goop get <module-path>[@version]  (Goop module or Go import path)\n")
 		return 1
 	}
 	modPath := args[0]
@@ -23,6 +23,18 @@ func runGet(args []string) int {
 	}
 
 	cwd, _ := os.Getwd()
+	if looksLikeGoImport(modPath) {
+		sigArgs := []string{modPath}
+		code := runGetGoSig(sigArgs)
+		ensureConsumerGoMod(cwd, modPath)
+		if !looksLikeGitHost(modPath) {
+			if code != 0 {
+				return code
+			}
+			fmt.Printf("added go sig %s\n", modPath)
+			return 0
+		}
+	}
 	cfgPath := filepath.Join(cwd, "goop.toml")
 	cfg, err := config.LoadConfig(cfgPath)
 	if err != nil {
@@ -109,4 +121,41 @@ func writeTomlDependencies(path string, cfg *config.Config) error {
 	depsWritten = true
 	_ = depsWritten
 	return os.WriteFile(path, []byte(strings.Join(out, "\n")+"\n"), 0644)
+}
+
+func looksLikeGoImport(p string) bool {
+	if p == "" || strings.HasPrefix(p, "std.") {
+		return false
+	}
+	first := strings.Split(p, "/")[0]
+	if strings.Contains(first, ".") {
+		return true
+	}
+	return p == strings.ToLower(p)
+}
+
+func looksLikeGitHost(p string) bool {
+	if strings.HasPrefix(p, "std.") {
+		return false
+	}
+	first := strings.Split(p, "/")[0]
+	return strings.Contains(first, ".")
+}
+
+func ensureConsumerGoMod(dir, importPath string) {
+	if dir == "" {
+		return
+	}
+	goMod := filepath.Join(dir, "go.mod")
+	if _, err := os.Stat(goMod); os.IsNotExist(err) {
+		cmd := exec.Command("go", "mod", "init", "goopmod")
+		cmd.Dir = dir
+		_ = cmd.Run()
+	}
+	if looksLikeGitHost(importPath) {
+		cmd := exec.Command("go", "get", importPath)
+		cmd.Dir = dir
+		cmd.Stderr = os.Stderr
+		_ = cmd.Run()
+	}
 }

@@ -2,7 +2,7 @@
 
 Lisette advertises **250+** diagnostics. Goop’s catalog lives in
 [10-error-reference.md](10-error-reference.md). Counted from `###` headings
-there (1.22; recount after LEX002 comment change):
+there (1.23; recount after Lisette-level tracks):
 
 | Prefix | Count | Notes |
 |--------|------:|-------|
@@ -18,16 +18,17 @@ there (1.22; recount after LEX002 comment change):
 | REFINE | 3 | |
 | CODEGEN | 3 | |
 | GOSIG | 4 | GOSIG001–004 (GOSIG003 error when `verify_ffi`; GOSIG004 always warn) |
-| TAG | 1 | TAG001 record `@[tag]` |
+| TAG | 1 | TAG001 record `@[json]` / `@[tag]` |
 | MODULE | 1 | MODULE001 sibling merge duplicate |
 | UNUSED | 2 | |
 | RESULT / OPTION | 2 | |
 | ROW | 1 | ROW001 open-row literal |
 | DECIMAL | 1 | DECIMAL001 (`money_float`) |
+| FLOAT / STR / REGEXP / WG / URL / EXIT / CTX | 7 | Go idioms (`go_idioms`) |
 | DEADLOCK | 1 | |
 | NIL | 1 | |
 | FFI-IMPL | 1 | |
-| **Total** | **~130** | unique catalog headings |
+| **Total** | **~137** | unique catalog headings |
 
 CLI diagnostics also print a short `help:` line via `src/internal/report`.
 
@@ -45,7 +46,7 @@ file**. `goop lint <file-or-dir>` packages that pipeline for CI:
 - Prints each diagnostic, then `N error(s), M warning(s)`
 - Exits non-zero on errors; `goop.toml` `[check]` severities elevate warnings
 
-## `[check]` keys (1.21)
+## `[check]` keys (1.23)
 
 | Key | Default | Codes |
 |-----|---------|-------|
@@ -59,6 +60,7 @@ file**. `goop lint <file-or-dir>` packages that pipeline for CI:
 | `unused` | `warn` | UNUSED001/002 |
 | `private_in_public` | `warn` | VIS002 |
 | `money_float` | `warn` | DECIMAL001 |
+| `go_idioms` | `warn` | FLOAT001, STR001, REGEXP001, WG001, URL001, EXIT001, CTX001 |
 | `verify_ffi` | `true` | GOSIG003 |
 | `smt` | `false` | optional Z3 |
 | `effect_inference` | `true` | effect row inference |

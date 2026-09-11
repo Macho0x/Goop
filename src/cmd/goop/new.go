@@ -28,6 +28,7 @@ discarded_option = "warn"
 unused = "warn"
 private_in_public = "warn"
 money_float = "warn"
+go_idioms = "warn"
 verify_ffi = true
 deadlock = "warn"
 smt = false

@@ -80,9 +80,11 @@ Kit-style `${…}`, or brace-in-string `"…{expr}…"`.
 
 ## Non-goals for this decision
 
-- No lexer/parser/typecheck changes.
-- No STYLE.md amendment.
-- No prelude `sprintf` wrapper (stdlib consistency is M4, separate).
+- No interpolation lexer (still NO in 1.23).
+- Formatting is `^` concat plus prelude `sprintf` → `fmt.Sprintf`.
+
+**1.23:** interpolation is still **NO**. Prelude `sprintf` → `fmt.Sprintf` is
+the formatting path (`^` for concat). Do not add an interpolation lexer.
 
 ## Related
 

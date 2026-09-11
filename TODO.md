@@ -84,13 +84,14 @@ This file tracks the remaining work to make Goop a usable language. It is kept i
 - [x] Standard library reference — [docs/stdlib/](docs/stdlib/) (prelude, builtins, std.*)
 - [x] Contributing guide — [CONTRIBUTING.md](CONTRIBUTING.md) (build, editors, doc accuracy)
 
-## Remaining (post-1.21)
+## Remaining (post-1.23)
 
-Goop already ships as **v1.21.x** (compiler → Go). Open work is maturity, not bootstrap.
+Goop already ships as **v1.23.x** (compiler → Go). Open work is maturity, not bootstrap.
 
 - [ ] Language / interop **freeze** (API stability bar — not “never shipped 1.0”). See [30-freeze-checklist.md](docs/design/30-freeze-checklist.md).
+- [x] **Lisette-level tracks (1.23):** automatic Go FFI, `List.*` generics + UFCS, Go-idiom diagnostics, `@[json]` / native methods / `sprintf`.
 - [x] **B3:** trimmed third-party `.gosig` corpus for Hyperliquid deps — [33-sdk-blockers.md](docs/design/33-sdk-blockers.md).
-- **`std.*` stays thin by doctrine.** Go’s stdlib is the library surface (`import go`). Do not grow `std.net` / `std.json`. Optional: more `std.list` combinators. See [docs/stdlib/README.md](docs/stdlib/README.md).
+- **`std.*` stays thin by doctrine.** Go’s stdlib is the library surface (`import go`). Do not grow `std.net` / `std.json`. See [docs/stdlib/README.md](docs/stdlib/README.md).
 
 ## Deferred or rejected
 

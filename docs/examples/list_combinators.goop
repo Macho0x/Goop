@@ -1,11 +1,14 @@
-// std.list Map / Filter / Fold — goop check only (polymorphic lowering is interface{}).
+// Prelude List.filter / map / fold (Go generics) — `goop build`s.
 module main
-
-import goop . "std.list"
 
 let main () =
   let xs = 1 :: 2 :: 3 :: 4 :: [] in
-  let _ = Map (fun x -> x) xs in
-  let _ = Filter (fun n -> n mod 2 = 0) xs in
-  let _ = Fold (fun acc n -> acc + n) 0 xs in
-  println "ok"
+  let evens = List.filter (fun n -> n mod 2 = 0) xs in
+  let doubled = List.map (fun n -> n * 2) xs in
+  let sum = List.fold (fun acc n -> acc + n) 0 xs in
+  let evens2 = xs.filter (fun n -> n mod 2 = 0) in
+  let _ = List.find (fun n -> n > 2) xs in
+  let _ = evens in
+  let _ = doubled in
+  let _ = evens2 in
+  println (int_to_string sum)

@@ -69,7 +69,8 @@ This file presents the same task list as `TODO.md`, organized by development pha
 - [x] IDE support (LSP) - full implementation with diagnostics, hover, definition, completion
 - [x] Formatter (`goop fmt` command)
 - [x] Documentation generator (`goop doc` — see [20-cli-artifacts.md](20-cli-artifacts.md)).
-- [ ] Language / interop **freeze** (stability bar at current 1.22.x — not a missing 1.0). See [30-freeze-checklist.md](30-freeze-checklist.md).
+- [ ] Language / interop **freeze** (stability bar at current 1.23.x — not a missing 1.0). See [30-freeze-checklist.md](30-freeze-checklist.md).
+- **Lisette-level bar (1.23):** automatic Go FFI (bare import + H6 at codegen, generate-on-miss, `goop get` sigs), collection combinators that `goop build`, Go-idiom lints, `@[json]` / native `let (x : T).m` / prelude `sprintf`. Freeze still open.
 - **`std.*` stays thin.** Go’s stdlib is the coverage layer; do not add `std.net` / `std.json`.
 
 ## Documentation

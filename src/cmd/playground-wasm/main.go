@@ -163,6 +163,8 @@ func safetyDiagnostics(r checkpipeline.Result) ([]diagnostic, bool) {
 	add(r.MoneyWarns, "warning")
 	add(r.RefineWarnings, "warning")
 	add(r.ExhaustWarns, "warning")
+	add(r.GoIdiomErrors, "error")
+	add(r.GoIdiomWarns, "warning")
 
 	fatal := len(r.LinearErrors) > 0 ||
 		len(r.ChannelRaceErrors) > 0 ||
@@ -173,7 +175,8 @@ func safetyDiagnostics(r checkpipeline.Result) ([]diagnostic, bool) {
 		len(r.MoneyErrors) > 0 ||
 		len(r.NilchanErrors) > 0 ||
 		len(r.RefineErrors) > 0 ||
-		len(r.ExhaustErrors) > 0
+		len(r.ExhaustErrors) > 0 ||
+		len(r.GoIdiomErrors) > 0
 	return diags, fatal
 }
 

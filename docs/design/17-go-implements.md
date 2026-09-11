@@ -53,6 +53,10 @@ Rules:
 3. Method names are case-sensitive and must match the Go interface.
 4. Codegen emits pointer receivers: `func (p *point) String() string`.
 5. Codegen emits `var _ fmt.Stringer = (*point)(nil)`.
+6. **1.23:** native `let (p : point).String () : string = …` emits the same
+   pointer method. `implements` can then be `with end` (assertion only) and
+   reuse those methods — no `impl` keyword (`implements` already means Go
+   interfaces).
 
 ### FFI supporting types (1.3.0 MVP)
 

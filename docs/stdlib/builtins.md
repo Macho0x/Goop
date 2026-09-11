@@ -28,7 +28,7 @@ Prelude string ops: `string_concat`, `String.length`, `String.sub` — see [prel
 | `x :: xs` | Cons |
 | `[a; b; c]` | List literal |
 
-Prelude: `list_length`, `list_append`. Higher-order: `std.list.Map`.
+Prelude: `list_length`, `list_append`, `List.filter` / `map` / `fold` / `find`. `std.list` re-exports `Filter` / `Map` / `Fold`.
 
 ## Arrays
 

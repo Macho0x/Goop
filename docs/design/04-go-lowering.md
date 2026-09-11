@@ -125,7 +125,12 @@ so `Record.Attrs r (fun a -> true)` lowers to `r.Attrs(func(a slog.Attr) bool
 
 ## Tuples and lists
 
-Tuples → generated positional structs. `'a list` → `[]T` with `append` for cons.
+Tuples → generated positional structs. `'a list` → `[]T` (element type from
+the type map) with `append` for cons. Prelude `List.filter` / `map` / `fold` /
+`find` lower to Go generic helpers; `xs.filter f` is UFCS on list/array/go_slice.
+
+Native methods `let (p : T).m …` emit `func (p *T) M(…)`. Record `@[json]` /
+`@[tag "…"]` become Go struct tags. Prelude `sprintf` → `fmt.Sprintf`.
 
 ## Extern multi-value returns
 

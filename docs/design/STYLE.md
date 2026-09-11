@@ -38,7 +38,7 @@ See also: [14-ocaml-parity.md](14-ocaml-parity.md), [03-syntax.md](03-syntax.md)
 | Imperative sequence | `begin s1; s2; result end` | Nested `let () =` |
 | Array | `Array.make`, `arr.(i)`, `arr.(i) <-` | `arr[i]` |
 | Map | `map[K] V`, `Map.make` / `get` / `add` / `remove` / `mem` / `size` | Hand-rolled Go maps in `@[go]` for ordinary tables |
-| Wire / JSON tags | record field `@[tag "json:\"…\""]` | Guessing tags from field names; `?` error sugar |
+| Wire / JSON tags | `@[json]` / `@[json "name"]` / `@[json omitempty]`; `@[tag "…"]` escape hatch | Guessing tags; `?` error sugar |
 | Loop | `for i = 0 to n - 1 do … done` | C-style `for` |
 | While | `while e do … done` | — |
 | Mutation | `let r = ref 0 in r := !r + 1` | `let mutable` |
@@ -48,6 +48,9 @@ See also: [14-ocaml-parity.md](14-ocaml-parity.md), [03-syntax.md](03-syntax.md)
 | Bug / abort | `failwith "msg"` / `raise E` | `panic` |
 | Branding | `type order_id = Order_id of string` | `newtype` |
 | Pipeline | `x \|> f` | — |
+| Lists | `List.filter` / `map` / `fold` / `find`; `xs.filter f` | Fat `std.list` |
+| Methods | `let (p : T).m …` (FFI selector spelling) | Rust `impl` keyword |
+| Format | `^` and `sprintf` | Interpolation lexer / f-strings |
 | Comments | `//` to end of line | `(* … *)` (LEX002) |
 | Concurrency | `go (fun () -> …)`, `go (move x) …` | Capturing `ref` without `move` |
 

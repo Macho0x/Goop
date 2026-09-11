@@ -125,6 +125,13 @@ type Checker struct {
 	goImportPaths   map[string]string          // Goop type name → Go import path
 	projectRoot     string                     // for .gosig override resolution
 	goopHome        string                     // $GOOP_HOME for .gosig cache
+	nativeMethods   map[string]map[string]*types.Scheme // record type → method (recv applied)
+	namedRecords    []namedRecord
+}
+
+type namedRecord struct {
+	name string
+	rec  *types.TRecord
 }
 
 // goStructSchema holds exported (+ promoted) fields for an imported Go struct.
@@ -375,6 +382,7 @@ func checkWithDepsAndImports(mod *ast.Module, deps map[string]*ast.Module, resol
 		goFields:        make(map[string]map[string]types.Type),
 		goStructs:       make(map[string]*goStructSchema),
 		goImportPaths:   make(map[string]string),
+		nativeMethods:   make(map[string]map[string]*types.Scheme),
 		projectRoot:     "",
 		goopHome:        gosiggen.GoopHome(),
 	}
@@ -672,6 +680,7 @@ func (c *Checker) convertTypeDecl(td *ast.TypeDecl) *types.Scheme {
 			fields[i] = types.Field{Name: f.Name, Type: c.convertASTType(f.Type)}
 		}
 		t := &types.TRecord{Fields: fields}
+		c.namedRecords = append(c.namedRecords, namedRecord{name: td.Name, rec: t})
 		// Quantify type params if present
 		if len(td.TypeParams) > 0 {
 			vars := make([]*types.TVar, len(td.TypeParams))
@@ -933,8 +942,10 @@ func (c *Checker) checkLetDecl(d *ast.LetDecl) {
 	}
 	if d.Private {
 		for _, b := range d.Bindings {
-			c.markPrivate(b.Name)
-			c.checkPrivateName(b.Name)
+			if b.RecvType == nil {
+				c.markPrivate(b.Name)
+				c.checkPrivateName(b.Name)
+			}
 		}
 	}
 	// Active pattern: let (|Name|_|) (arg: T) : U option = body
@@ -967,11 +978,15 @@ func (c *Checker) checkLetDecl(d *ast.LetDecl) {
 	}
 	for _, b := range d.Bindings {
 		t := types.Apply(c.sub, c.checkBinding(b))
-		// Generalize and bind (Apply first so multi-value extern results,
-		// which infer as a fresh TVar unified to a tuple, are not frozen
-		// as polymorphic type variables).
 		inScope := c.env.InScope()
 		scheme := types.Generalize(t, inScope)
+		if recv := astRecvTypeName(b.RecvType); recv != "" {
+			if c.nativeMethods[recv] == nil {
+				c.nativeMethods[recv] = make(map[string]*types.Scheme)
+			}
+			c.nativeMethods[recv][b.Name] = scheme
+			continue
+		}
 		c.env.Bind(b.Name, scheme)
 	}
 }
@@ -1037,6 +1052,10 @@ func (c *Checker) checkBinding(b ast.LetBinding) types.Type {
 	// Create a nested scope for params
 	saved := c.env
 	c.env = NewEnv(c.env)
+
+	if b.RecvType != nil && b.RecvName != "" {
+		c.env.Bind(b.RecvName, types.Mono(c.convertASTType(b.RecvType)))
+	}
 
 	// Bind parameters with fresh or annotated types
 	var paramTypes []types.Type
@@ -1935,15 +1954,23 @@ func (c *Checker) inferFieldAccess(e *ast.FieldAccessExpr) types.Type {
 		}
 		c.errorfAt(e.Loc, "Go type has no imported field %s", e.Field)
 	}
-	// For field access, we only need the field to exist in the record.
-	// We don't require the records to be identical.
 	resultType := c.fresh(e.Field)
 
-	// If the left side is already a known record, look up the field.
-	if rec, ok := leftType.(*types.TRecord); ok {
+	applied := types.Apply(c.sub, leftType)
+	if rec, ok := applied.(*types.TRecord); ok {
 		if ft := rec.Lookup(e.Field); ft != nil {
 			c.unify(resultType, ft)
 			return resultType
+		}
+	}
+	if recName := c.namedRecordOf(applied); recName != "" {
+		if m := c.nativeMethods[recName][e.Field]; m != nil {
+			return m.Instantiate()
+		}
+	}
+	if elem, kind, ok := collectionElem(applied); ok {
+		if t := ufcsRemainingType(e.Field, elem, kind); t != nil {
+			return t
 		}
 	}
 
@@ -1984,6 +2011,96 @@ func (c *Checker) fieldAccessName(e *ast.FieldAccessExpr) string {
 		return ident.Name + "." + e.Field
 	}
 	return ""
+}
+
+func astRecvTypeName(t ast.Type) string {
+	id, ok := t.(*ast.TIdent)
+	if !ok {
+		return ""
+	}
+	return id.Name
+}
+
+func (c *Checker) namedRecordOf(t types.Type) string {
+	rec, ok := t.(*types.TRecord)
+	if !ok {
+		return ""
+	}
+	for _, nr := range c.namedRecords {
+		if recordFieldsMatch(rec, nr.rec) {
+			return nr.name
+		}
+	}
+	return ""
+}
+
+func recordFieldsMatch(got, want *types.TRecord) bool {
+	if got == nil || want == nil || len(got.Fields) != len(want.Fields) {
+		return false
+	}
+	names := make(map[string]bool, len(want.Fields))
+	for _, f := range want.Fields {
+		names[f.Name] = true
+	}
+	for _, f := range got.Fields {
+		if !names[f.Name] {
+			return false
+		}
+	}
+	return true
+}
+
+func collectionElem(t types.Type) (elem types.Type, kind string, ok bool) {
+	switch t := t.(type) {
+	case *types.TCon:
+		if (t.Name == "list" || t.Name == "array") && len(t.Args) > 0 {
+			return t.Args[0], t.Name, true
+		}
+	case *types.TGoSlice:
+		return t.Elem, "go_slice", true
+	}
+	return nil, "", false
+}
+
+func rebuildCollection(kind string, elem types.Type) types.Type {
+	switch kind {
+	case "array":
+		return types.ArrayType(elem)
+	case "go_slice":
+		return &types.TGoSlice{Elem: elem}
+	default:
+		return types.ListType(elem)
+	}
+}
+
+func ufcsRemainingType(field string, elem types.Type, kind string) types.Type {
+	coll := rebuildCollection(kind, elem)
+	switch field {
+	case "filter":
+		return &types.TFun{
+			From: &types.TFun{From: elem, To: types.Bool},
+			To:   coll,
+		}
+	case "map":
+		b := types.Fresh("'b")
+		return &types.TFun{
+			From: &types.TFun{From: elem, To: b},
+			To:   rebuildCollection(kind, b),
+		}
+	case "find":
+		return &types.TFun{
+			From: &types.TFun{From: elem, To: types.Bool},
+			To:   types.OptionType(elem),
+		}
+	case "fold":
+		acc := types.Fresh("'acc")
+		return &types.TFun{
+			From: &types.TFun{From: acc, To: &types.TFun{From: elem, To: acc}},
+			To:   &types.TFun{From: acc, To: acc},
+		}
+	default:
+		return nil
+	}
 }
 
 func (c *Checker) inferTuple(e *ast.TupleExpr) types.Type {
@@ -2770,7 +2887,7 @@ func (c *Checker) bindImportSpecs(imports []ast.ImportSpec, deps map[string]*ast
 					c.projectRoot, c.goopHome, spec.Path, true,
 				)
 				if loadErr != nil {
-					fmt.Fprintf(os.Stderr, "GOSIG001: .gosig load for %q: %v\n", spec.Path, loadErr)
+					fmt.Fprintf(os.Stderr, "GOSIG002: .gosig load for %q: %v\n", spec.Path, loadErr)
 				}
 				mergedTypes = sigTypes
 				mergedVals = sigVals
@@ -2829,6 +2946,7 @@ func (c *Checker) bindModuleExports(dep *ast.Module, prefix string, unqualified 
 		goFields:      make(map[string]map[string]types.Type),
 		goStructs:     make(map[string]*goStructSchema),
 		goImportPaths: make(map[string]string),
+		nativeMethods: make(map[string]map[string]*types.Scheme),
 	}
 	depChecker.initBuiltins()
 	if len(dep.Imports) > 0 {

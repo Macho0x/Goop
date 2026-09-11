@@ -1083,3 +1083,38 @@ let f (x: (box, string) result) = x
 		t.Fatalf("unsafe Result type name:\n%s", goSrc)
 	}
 }
+
+func TestCompileWritingToolsH6(t *testing.T) {
+	mod := mustParse(t, "writing_tools.goop")
+	gen := codegen.NewGenerator("writing_tools.goop", config.DefaultConfig())
+	goSrc, err := gen.Generate(mod)
+	if err != nil {
+		t.Fatalf("generate: %v", err)
+	}
+	if !strings.Contains(goSrc, "os.ReadFile") {
+		t.Fatalf("expected os.ReadFile wrap:\n%s", goSrc)
+	}
+	if !strings.Contains(goSrc, "__e != nil") {
+		t.Fatalf("expected H6 (T, error) wrap:\n%s", goSrc)
+	}
+}
+
+func TestCompileListFilterUsesTypedSlice(t *testing.T) {
+	mod := mustParse(t, "list_combinators.goop")
+	tm, vtm, errs := typecheck.CheckWithTypes(mod)
+	if len(errs) > 0 {
+		t.Fatalf("typecheck: %v", errs)
+	}
+	gen := codegen.NewGenerator("list_combinators.goop", config.DefaultConfig())
+	gen.SetTypeMap(tm, vtm)
+	goSrc, err := gen.Generate(mod)
+	if err != nil {
+		t.Fatalf("generate: %v", err)
+	}
+	if !strings.Contains(goSrc, "append([]int{") {
+		t.Fatalf("expected typed int cons, got:\n%s", goSrc)
+	}
+	if !strings.Contains(goSrc, "list_filter(") {
+		t.Fatalf("expected list_filter call:\n%s", goSrc)
+	}
+}

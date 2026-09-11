@@ -8,6 +8,7 @@ import (
 	"goop.dev/compiler/internal/deadlock"
 	"goop.dev/compiler/internal/discardedresult"
 	"goop.dev/compiler/internal/exhaustive"
+	"goop.dev/compiler/internal/goidioms"
 	"goop.dev/compiler/internal/linear"
 	"goop.dev/compiler/internal/moneyfloat"
 	"goop.dev/compiler/internal/nilchan"
@@ -40,9 +41,13 @@ type Result struct {
 	RefineErrors      []error
 	ExhaustErrors     []error
 	ExhaustWarns      []error
+	GoIdiomErrors     []error
+	GoIdiomWarns      []error
 }
 
-// Run executes linear, channelrace, deadlock, nil-channel, refinement, and exhaustiveness checks.
+// Run executes linear, channelrace, deadlock, discarded result, unused,
+// visibility, money-float, nil-channel, refinement, exhaustiveness, and
+// Go-idiom checks.
 func Run(mod *ast.Module, tm typeinfo.TypeMap, linearTypes map[string]bool, cfg *config.Config) Result {
 	var r Result
 	r.LinearErrors, r.LinearWarnings = linear.CheckWithConfig(mod, linearTypes, cfg)
@@ -57,6 +62,7 @@ func Run(mod *ast.Module, tm typeinfo.TypeMap, linearTypes map[string]bool, cfg 
 	exErrs, exWarns := exhaustive.CheckWithConfig(mod, cfg)
 	r.ExhaustErrors = exErrs
 	r.ExhaustWarns = exWarns
+	r.GoIdiomErrors, r.GoIdiomWarns = goidioms.CheckWithConfig(mod, tm, cfg)
 	return r
 }
 

@@ -1,5 +1,34 @@
 # Changelog
 
+## 1.23.0
+
+### Interop
+
+- Bare `import go "pkg"` **codegen** loads the same `.gosig` stubs as typecheck
+  (H6 `(T, error)→result`). `goop build docs/examples/writing_tools.goop` works.
+- Generate-on-miss for any path `packages.Load` succeeds; curated list is quality
+  only. Load failures stay **GOSIG002**.
+- `goop get` on a Go import path also runs `get-go-sig` and ensures a consumer
+  `go.mod`. `get-go-sig` remains the low-level command.
+
+### Collections
+
+- Prelude `List.filter` / `map` / `fold` / `find` lower to Go generics.
+- UFCS on list/array/go_slice: `xs.filter f` → `List.filter f xs`.
+- `std.list` re-exports `Filter` / `Map` / `Fold` as generic aliases.
+
+### Diagnostics
+
+- `[check] go_idioms` (default warn): FLOAT001, STR001, REGEXP001, WG001,
+  URL001, EXIT001, CTX001.
+
+### Ergonomics
+
+- `@[json]` / `@[json "name"]` / `@[json omitempty]` desugar to Go `json` tags
+  (`@[tag "…"]` remains).
+- Native methods: `let (p : T).m …` emit Go methods; `implements` can reuse them.
+- Prelude `sprintf` → `fmt.Sprintf`. No interpolation lexer, no `?`.
+
 ## 1.22.0
 
 ### Breaking

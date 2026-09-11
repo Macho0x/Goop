@@ -22,7 +22,7 @@ For **every** language / diagnostics / CLI change (not only freezes), use
 
 ## Interop
 
-- [x] `.gosig` auto-load on `import go` (override → cache → curated generate-on-miss)
+- [x] `.gosig` auto-load on `import go` (override → cache → generate-on-miss)
 - [x] `obj` ≡ `any` in stubs
 - [x] Multi-result products (non-error) emitted as Goop tuples where representable
 - [x] Curated overrides present under `goop-sigs/` for toolchain pkgs (`os`, `path/filepath`, `bytes`, `bufio`, `strings`, `encoding/json`)

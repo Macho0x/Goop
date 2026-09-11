@@ -13,8 +13,13 @@ goop gen-sig os path/filepath bytes bufio encoding/json
 ```
 
 Project overrides in `goop-sigs/` win over `$GOOP_HOME/build/go-sigs/`.
-On `goop check` / `goop build`, curated packages auto-load (and may
-auto-generate into the cache on miss).
+On `goop check` / `goop build`, any Go import path `packages.Load` can see
+auto-loads (and may auto-generate into the cache on miss). Curated packages
+are a quality flag, not a permission. Codegen applies H6 `(T, error)→result`
+for those stubs, so `os.ReadFile` matches as `result`.
+
+`goop get os` / `goop get github.com/…` also runs `get-go-sig` and ensures a
+consumer `go.mod` for module paths. `goop get-go-sig` remains the low-level command.
 
 ## Minimal file + map example
 

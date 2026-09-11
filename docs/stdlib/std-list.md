@@ -3,35 +3,23 @@
 **Source:** `std/list/list.goop`  
 **Import:** `import goop "std.list"` or `import goop . "std.list"`
 
+Combinators live in the **prelude** as `List.filter` / `List.map` / `List.fold` /
+`List.find` (Go generics — `goop build` works). This module re-exports
+`Filter` / `Map` / `Fold` as thin aliases of those helpers.
+
 ## Exports
 
 | Name | Type | Description |
 |---|---|---|
-| `Map` | `('a -> 'b) -> 'a list -> 'b list` | Map a function over every element |
 | `Filter` | `('a -> bool) -> 'a list -> 'a list` | Keep elements where `f` is true |
+| `Map` | `('a -> 'b) -> 'a list -> 'b list` | Map a function over every element |
 | `Fold` | `('acc -> 'a -> 'acc) -> 'acc -> 'a list -> 'acc` | Left fold |
 
-## Implementation
-
-Recursive `match` on `[]` and `::`:
+Prefer prelude spelling in new code:
 
 ```goop
-let rec Map (f: 'a -> 'b) (xs: 'a list) : 'b list =
-  match xs with
-  | [] -> []
-  | x :: rest -> f x :: Map f rest
+let evens = List.filter (fun n -> n mod 2 = 0) xs
+let evens2 = xs.filter (fun n -> n mod 2 = 0)
 ```
 
-## Example
-
-```goop
-import goop . "std.list"
-
-let doubleAll (xs: int list) : int list =
-  Map (fun x -> x + x) xs
-```
-
-List construction (`[]`, `::`) is builtin — this module adds `Map`, `Filter`,
-and `Fold` only. `goop check` covers them; polymorphic lowering through a
-Goop module still uses `interface{}`, so prefer local `match` in `goop build`
-hot paths.
+List construction (`[]`, `::`) is builtin. Keep this module thin.

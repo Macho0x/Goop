@@ -25,6 +25,7 @@ var CuratedPackages = []string{
 	"encoding/base64",
 	"crypto/sha256",
 	"log/slog",
+	"regexp",
 }
 
 // SmokePackages is a small subset used for CI / quick verification.

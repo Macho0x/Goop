@@ -82,6 +82,7 @@ sig_item         := 'val' ident ':' type | 'type' type_binding | 'exception' …
 ```
 val_decl     := 'let' rec? binding ('and' binding)*
 binding      := ident labeled_param* (':' type)? '=' expr
+              | '(' ident ':' type ')' '.' ident labeled_param* (':' type)? '=' expr
 labeled_param := param | '~' ident | '?' ident | '?' '(' ident '=' expr ')'
 param        := ident | '(' ident ':' type ')'
 
@@ -185,6 +186,9 @@ linear       := ':' '1'
 type_param   := tyvar | '_'
 type_rhs     := record_type | adt_type | gadt_type | type
 record_type  := '{' field_type (';' field_type)* '}'
+field_type   := 'mutable'? ident ':' type field_attr*
+field_attr   := '@[' 'tag' string ']'
+              | '@[' 'json' string? 'omitempty'? ']'
 adt_type     := '|'? adt_case ('|' adt_case)*
 adt_case     := constr ('of' type)?
 gadt_type    := '|'? gadt_case ('|' gadt_case)*

@@ -25,7 +25,7 @@ Reach Go packages with `import go "net/http" { ... }` (and curated `.gosig`s as 
 
 ## Prelude
 
-[Prelude reference](prelude.md) — `println`, `ref`, `failwith`, `Map.*`, `Chan.*`, `OwnedChan.*`, `Lazy.*`, string helpers, assertions.
+[Prelude reference](prelude.md) — `println`, `sprintf`, `List.filter` / `map` / `fold` / `find`, `ref`, `failwith`, `Map.*`, `Chan.*`, `OwnedChan.*`, `Lazy.*`, string helpers, assertions.
 
 ## Builtins
 
@@ -36,7 +36,7 @@ Reach Go packages with `import go "net/http" { ... }` (and curated `.gosig`s as 
 | Module | Import path | Role | Reference |
 |---|---|---|---|
 | `std.io` | `import goop "std.io"` | Thin `fmt` wrapper (`Println`) | [std.io](std-io.md) |
-| `std.list` | `import goop "std.list"` | Higher-order list (`Map`, `Filter`, `Fold`) | [std.list](std-list.md) |
+| `std.list` | `import goop "std.list"` | Re-exports prelude `List.*` (`Filter` / `Map` / `Fold`) | [std.list](std-list.md) |
 | `std.map` | `import goop "std.map"` | Thin re-export of prelude `Map.*` | [prelude Maps](prelude.md#maps) · [tutorial](../tutorial/08-maps.md) · [`maps.goop`](../examples/maps.goop) |
 | `std.array` | `import goop "std.array"` | Re-export of prelude `Array.*` | [std.array](std-array.md) |
 | `std.option` | `import goop "std.option"` | Option predicates | [std.option](std-option.md) |
@@ -50,7 +50,7 @@ Reach Go packages with `import go "net/http" { ... }` (and curated `.gosig`s as 
 
 | Candidate | Status | Notes |
 |---|---|---|
-| More `std.list` combinators | **Landed** `Filter` / `Fold` | Keep thin; prefer `match` for the rest |
+| More `std.list` combinators | **Landed** prelude `List.filter` / `map` / `fold` / `find` (Go generics) | Keep thin |
 | `std.lazy` | **Deferred** | Keyword `lazy` cannot appear in `'a lazy` annotations inside a `std.lazy` wrapper (`PARSE001`); prelude `Lazy.*` / `lazy e` stay |
 | Decimal / money | **Landed** | `std.decimal` + cross-module `Decimal` annotations ([25-decimal.md](../design/25-decimal.md)); H5/H6 polish remain |
 | `std.net` / `std.codec` / … | **Out of scope** | Use `import go` |

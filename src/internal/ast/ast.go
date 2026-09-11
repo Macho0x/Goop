@@ -138,6 +138,8 @@ type LetBinding struct {
 	RetType    Type           // nil if omitted
 	RetEffects *EffectRowType // nil if no `with` clause
 	Body       Expr
+	RecvName   string // `let (p : T).m` receiver name; empty for functions
+	RecvType   Type   // nil for functions
 }
 
 // Param is a function parameter.

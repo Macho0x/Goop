@@ -1078,6 +1078,54 @@ type Meta = {
 	}
 }
 
+func TestParseRecordJSONShorthand(t *testing.T) {
+	src := `module T
+type Meta = {
+  name : string @[json];
+  sz : int @[json omitempty];
+  user_id : string @[json "userID"];
+}
+`
+	mod, err := parser.Parse("t.goop", []byte(src))
+	if err != nil {
+		t.Fatal(err)
+	}
+	td := mod.Decls[0].(*ast.TypeDecl)
+	rk := td.Kind.(*ast.RecordTypeKind)
+	if rk.Fields[0].GoTag != `json:"name"` {
+		t.Fatalf("name: %q", rk.Fields[0].GoTag)
+	}
+	if rk.Fields[1].GoTag != `json:"sz,omitempty"` {
+		t.Fatalf("sz: %q", rk.Fields[1].GoTag)
+	}
+	if rk.Fields[2].GoTag != `json:"userID"` {
+		t.Fatalf("user_id: %q", rk.Fields[2].GoTag)
+	}
+}
+
+func TestParseNativeMethod(t *testing.T) {
+	src := `module T
+type point = { x : float; y : float }
+let (p : point).distance (q : point) : float = p.x
+`
+	mod, err := parser.Parse("t.goop", []byte(src))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ld, ok := mod.Decls[1].(*ast.LetDecl)
+	if !ok || len(ld.Bindings) != 1 {
+		t.Fatalf("decls: %#v", mod.Decls)
+	}
+	b := ld.Bindings[0]
+	if b.Name != "distance" || b.RecvName != "p" {
+		t.Fatalf("binding: %+v", b)
+	}
+	id, ok := b.RecvType.(*ast.TIdent)
+	if !ok || id.Name != "point" {
+		t.Fatalf("recv type: %#v", b.RecvType)
+	}
+}
+
 func TestParseRecordGoTagUnknown(t *testing.T) {
 	src := `module T
 type Meta = { name : string @[bogus "x"] }

@@ -1,0 +1,5 @@
+// Hand-curated math stubs for examples.
+val Sqrt : float -> float
+val Abs : float -> float
+val Floor : float -> float
+val Ceil : float -> float

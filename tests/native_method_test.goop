@@ -1,0 +1,9 @@
+module main
+
+type point = { x : int; y : int }
+
+let (p : point).sum () : int = p.x + p.y
+
+let main () =
+  let a = { x = 3; y = 4 } in
+  assert (a.sum () = 7)

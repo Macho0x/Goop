@@ -13,12 +13,13 @@ import (
 // declarations into ExternType / ExternVal slices suitable for typecheck.
 //
 // Resolution: project goop-sigs/ override → $GOOP_HOME cache.
-// If generateOnMiss is true and the path is curated (or alwaysGenerate),
-// GenerateAndWrite fills the cache on miss.
+// If generateOnMiss is true, GenerateAndWrite fills the cache on miss for any
+// import path (curated list is a quality flag, not a permission). Load failures
+// are returned to the caller (GOSIG002), not as typecheck errors.
 func LoadImportBindings(projectRoot, goopHome, importPath string, generateOnMiss bool) (types []ast.ExternType, vals []ast.ExternVal, fromOverride bool, err error) {
 	path, fromOv, exists := ResolveSigPath(projectRoot, goopHome, importPath)
 	if !exists {
-		if generateOnMiss && (IsCurated(importPath) || alwaysGenerate(importPath)) {
+		if generateOnMiss && alwaysGenerate(importPath) {
 			_, _, genErr := GenerateAndWrite(importPath, Options{LoadDir: projectRoot}, goopHome, "")
 			if genErr != nil {
 				return nil, nil, false, fmt.Errorf("auto-generate .gosig for %q: %w", importPath, genErr)
@@ -38,8 +39,9 @@ func LoadImportBindings(projectRoot, goopHome, importPath string, generateOnMiss
 }
 
 func alwaysGenerate(importPath string) bool {
-	// Keep generate-on-miss limited to curated packages for v1 of this train.
-	return false
+	// CuratedPackages is a quality flag, not a permission. Any path
+	// packages.Load can see is eligible; load failures stay GOSIG002.
+	return importPath != ""
 }
 
 // ParseSigContent parses a .gosig file body into ExternType / ExternVal lists

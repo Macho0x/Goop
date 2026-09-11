@@ -117,7 +117,7 @@ goop gen-sig --out ./tmp-sigs fmt
 `strings`, `fmt`, `errors`, `strconv`, `bytes`, `io`, `os`, `time`, `context`,
 `sync`, `sync/atomic`, `sort`, `math`, `math/rand`, `net`, `net/http`,
 `database/sql`, `encoding/json`, `encoding/csv`, `encoding/base64`,
-`crypto/sha256`, `log/slog`.
+`crypto/sha256`, `log/slog`, `regexp`.
 
 Smoke subset for CI-ish checks: `strings`, `fmt`, `errors`, `strconv`.
 
@@ -137,7 +137,10 @@ Smoke subset for CI-ish checks: `strings`, `fmt`, `errors`, `strconv`.
 **Shipped (1.10):** compile-time auto-load of `.gosig` for bare `import go`;
 Go `map[K]V` → `map[K] V` in gosiggen; `obj` ≡ `any`; H6 `(T, error)` →
 `result` coercion is live. Generics policy: [32-go-generics-sigs.md](32-go-generics-sigs.md).
-`result` coercion (`import go raw` opt-out).
+
+**1.23:** generate-on-miss for any path `packages.Load` succeeds (curated list
+is quality, not permission). Codegen of bare imports loads the same stubs so
+H6 wrapping fires. `goop get` on a Go path also runs `get-go-sig`.
 
 When changing the generator or FFI diagnostics, follow
 [31-language-update-checklist.md](31-language-update-checklist.md).

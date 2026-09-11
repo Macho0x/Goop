@@ -1,12 +1,13 @@
-// Record field @[tag "…"] lowers to Go struct tags (json / msgpack / …).
+// Record field @[json] / @[tag "…"] lowers to Go struct tags.
 module main
 
 type wire_meta = {
-  name : string @[tag "json:\"name\""];
-  sz   : int @[tag "json:\"sz,omitempty\""];
+  name : string @[json];
+  sz   : int @[json omitempty];
+  user_id : string @[json "userID"];
 }
 
-let sample : wire_meta = { name = "ETH"; sz = 1 }
+let sample : wire_meta = { name = "ETH"; sz = 1; user_id = "u1" }
 
 let main () =
   println sample.name

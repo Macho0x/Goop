@@ -66,6 +66,8 @@ func formatLetDecl(p *Printer, d *ast.LetDecl) {
 		p.WriteIndent()
 		if d.ActivePattern {
 			p.Write("let (|" + b.Name + "|_|)")
+		} else if b.RecvType != nil {
+			p.Write("let " + priv + rec + mut + "(" + b.RecvName + " : " + formatType(b.RecvType) + ")." + b.Name)
 		} else {
 			p.Write("let " + priv + rec + mut + b.Name)
 		}

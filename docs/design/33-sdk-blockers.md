@@ -31,7 +31,8 @@ type Meta = {
 Payload is the exact body inside Go backticks. Multiple keys in one string:
 `"json:\"n\" msgpack:\"n\""`.
 
-Unknown `@[…]` on a field → **TAG001**.
+**1.23 shorthand:** `@[json]` / `@[json "name"]` / `@[json omitempty]` desugar
+to the same `json:"…"` tags. `@[tag "…"]` remains the escape hatch.
 
 ## B2 — Multi-file same module
 

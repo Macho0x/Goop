@@ -33,6 +33,10 @@ type point = { x: int; y: int }
 let origin () : point = { x = 0; y = 0 }
 ```
 
+JSON tags: `@[json]` / `@[json "userID"]` / `@[json omitempty]` (or `@[tag "…"]`).
+Native methods use the FFI selector spelling: `let (p : point).sum () : int = p.x + p.y`, then `a.sum ()`.
+Strings: `^` concat and prelude `sprintf` (no interpolation lexer).
+
 Field punning: `{ x; y }` means `{ x = x; y = y }` when `x` and `y` are in scope.
 
 ## Lists
@@ -44,7 +48,8 @@ let nums = [1; 2; 3]
 let more = 0 :: nums
 ```
 
-Prelude: `list_length`, `list_append`. Optional `std.list.Map` for higher-order mapping (see [stdlib](../stdlib/std-list.md)).
+Prelude: `list_length`, `list_append`, `List.filter` / `map` / `fold` / `find` (also `xs.filter f`). `std.list` re-exports `Filter` / `Map` / `Fold`.
+See [`list_combinators.goop`](../examples/list_combinators.goop), [`point_distance.goop`](../examples/point_distance.goop), [`record_tags.goop`](../examples/record_tags.goop).
 
 ## Options and results
 

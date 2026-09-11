@@ -42,6 +42,10 @@ Pure / non-effectful code aims for idiomatic Go. Effect-handler code may emit CP
 | `function \| P -> e` | `func(x T) U { switch … }` |
 | `x :: xs` | `append([]T{x}, xs...)` |
 | `[a; b; c]` | `[]T{a, b, c}` |
+| `List.filter f xs` / `xs.filter f` | generic `list_filter` |
+| `sprintf fmt args…` | `fmt.Sprintf` |
+| `let (p : T).m …` | `func (p *T) M(…)` |
+| field `@[json]` / `@[tag "…"]` | Go struct tag |
 | `{ x = 1; y = 2 }` | `Point{X: 1, Y: 2}` |
 | `ref e` | `func() *T { p := new(T); *p = e; return p }()` (or equivalent) |
 | `!r` | `*r` |

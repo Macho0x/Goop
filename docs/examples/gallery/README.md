@@ -16,7 +16,7 @@ and press **Compile** (Copy copies the generated Go).
 |------|------|
 | [`hello.goop`](hello.goop) / [`hello.go`](hello.go) | Prelude `println` vs `fmt.Println` |
 | [`branded_ids.goop`](branded_ids.goop) / [`branded_ids.go`](branded_ids.go) | Nominal brands vs distinct defined types |
-| [`result_match.goop`](result_match.goop) / [`result_match.go`](result_match.go) | `result` + `match` vs `(T, error)` |
+| [`point_distance.goop`](point_distance.goop) / [`point_distance.go`](point_distance.go) | Native `let (p : T).m` vs Go methods |
 
 Each `.goop` file is checked in CI (`goop check`). The `.go` files are
 hand-written for readability and may differ from `goop compile --stdout`

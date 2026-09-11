@@ -18,20 +18,24 @@ host the tree under a canonical import path, tag releases, and let consumers
 `goop get` that path. Goop does not invent a parallel index, mirror, or
 `goop.dev/pkg/…` registry for third-party code.
 
-Go packages used from Goop (`import go "…"`) continue to resolve through the
-normal Go toolchain (`go.mod` / the module proxy). That path is independent of
-`goop get`.
+Go packages used from Goop (`import go "…"`) resolve through the normal Go
+toolchain (`go.mod` / the module proxy). **1.23:** `goop get` on a Go import
+path (stdlib like `os`, or `github.com/…`) also runs `get-go-sig` and ensures
+a consumer `go.mod`. `goop get-go-sig` remains the low-level command. See
+[28-go-sig-resolution.md](28-go-sig-resolution.md).
 
 ## `goop get`
 
-Fetch a remote Goop module and pin it in the project:
+Fetch a remote Goop module and pin it, or prefetch a Go `.gosig`:
 
 ```bash
 goop get github.com/acme/lib
 goop get github.com/acme/lib@v1.2.3
+goop get os
+goop get github.com/shopspring/decimal
 ```
 
-This:
+For **Goop** modules (`github.com/…` with Goop sources) this:
 
 1. Requires a project-root `goop.toml` (creates/updates `[dependencies]`).
 2. Clones `https://<module-path>` into `$GOOP_HOME/pkg/mod/<module-path>`
@@ -40,6 +44,9 @@ This:
    is omitted.
 3. Upserts a pin in `goop.lock`.
 4. Writes `"<module-path>" = "<version>"` under `[dependencies]` in `goop.toml`.
+
+For **Go** import paths it also generates/caches a `.gosig`. Stdlib paths
+(`os`, `encoding/json`) skip the git clone.
 
 `$GOOP_HOME` defaults to `~/.cache/goop` (override with the `GOOP_HOME`
 environment variable). See [20-cli-artifacts.md](20-cli-artifacts.md).
@@ -50,7 +57,7 @@ environment variable). See [20-cli-artifacts.md](20-cli-artifacts.md).
 |------|---------|
 | `$GOOP_HOME/pkg/mod` | Source cache for `goop get` |
 | `$GOOP_HOME/build` | Compile/build/test sandboxes ([20-cli-artifacts.md](20-cli-artifacts.md)) |
-| `$GOOP_HOME/build/go-sigs` | Generated Go `.gosig` stubs ([23-go-sig-resolution.md](23-go-sig-resolution.md)) |
+| `$GOOP_HOME/build/go-sigs` | Generated Go `.gosig` stubs ([28-go-sig-resolution.md](28-go-sig-resolution.md)) |
 
 ## `goop.lock`
 

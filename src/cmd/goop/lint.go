@@ -144,6 +144,8 @@ func lintFile(file string) (nErr, nWarn int) {
 	emitWarns(r.RefineWarnings)
 	emitErrs(r.ExhaustErrors)
 	emitWarns(r.ExhaustWarns)
+	emitErrs(r.GoIdiomErrors)
+	emitWarns(r.GoIdiomWarns)
 
 	return nErr, nWarn
 }
