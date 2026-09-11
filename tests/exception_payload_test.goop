@@ -1,6 +1,6 @@
 module ExceptionPayloadTest
 
-(* Multiple exception types caught independently. *)
+// Multiple exception types caught independently.
 exception Outer
 exception Inner
 

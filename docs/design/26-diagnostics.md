@@ -2,22 +2,22 @@
 
 Lisette advertises **250+** diagnostics. Goop’s catalog lives in
 [10-error-reference.md](10-error-reference.md). Counted from `###` headings
-there (2026-07-28, release 1.14):
+there (1.22; recount after LEX002 comment change):
 
 | Prefix | Count | Notes |
 |--------|------:|-------|
-| PARSE / PARSE-MIG | ~22 | PARSE001+ and MIG* on the wire; MIG001 retired |
+| PARSE / PARSE-MIG | 32 | 10 MIG headings + PARSE001–023 (019/020 combined) |
 | UNIFY | 22 | includes UNIFY020–022 |
 | TYPE | 13 | TYPE002–013 on the wire (TYPE001 obsolete) |
 | CLI | 13 | |
-| LEX | 10 | |
+| LEX | 10 | LEX001–009 + LEX005b |
 | LINEAR | 8 | |
 | VIS | 2 | |
 | IMPORT | 4 | IMPORT001–004 |
 | EXHAUST | 3 | |
 | REFINE | 3 | |
 | CODEGEN | 3 | |
-| GOSIG | 4 | GOSIG001–004 (GOSIG003 behind `verify_ffi`; GOSIG004 always) |
+| GOSIG | 4 | GOSIG001–004 (GOSIG003 error when `verify_ffi`; GOSIG004 always warn) |
 | TAG | 1 | TAG001 record `@[tag]` |
 | MODULE | 1 | MODULE001 sibling merge duplicate |
 | UNUSED | 2 | |
@@ -27,7 +27,7 @@ there (2026-07-28, release 1.14):
 | DEADLOCK | 1 | |
 | NIL | 1 | |
 | FFI-IMPL | 1 | |
-| **Total** | **~120+** | unique codes |
+| **Total** | **~130** | unique catalog headings |
 
 CLI diagnostics also print a short `help:` line via `src/internal/report`.
 
@@ -45,7 +45,7 @@ file**. `goop lint <file-or-dir>` packages that pipeline for CI:
 - Prints each diagnostic, then `N error(s), M warning(s)`
 - Exits non-zero on errors; `goop.toml` `[check]` severities elevate warnings
 
-## `[check]` keys (1.14)
+## `[check]` keys (1.21)
 
 | Key | Default | Codes |
 |-----|---------|-------|
@@ -59,7 +59,7 @@ file**. `goop lint <file-or-dir>` packages that pipeline for CI:
 | `unused` | `warn` | UNUSED001/002 |
 | `private_in_public` | `warn` | VIS002 |
 | `money_float` | `warn` | DECIMAL001 |
-| `verify_ffi` | `false` | GOSIG003 |
+| `verify_ffi` | `true` | GOSIG003 |
 | `smt` | `false` | optional Z3 |
 | `effect_inference` | `true` | effect row inference |
 

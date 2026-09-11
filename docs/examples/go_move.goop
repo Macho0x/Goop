@@ -1,7 +1,7 @@
 module main
 
-(* go (move x) transfers a ref into the goroutine,
-   suppressing data-race warnings when the parent no longer uses x. *)
+// go (move x) transfers a ref into the goroutine,
+// suppressing data-race warnings when the parent no longer uses x.
 
 let launch () : unit =
   let counter = ref 0 in

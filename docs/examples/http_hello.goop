@@ -1,4 +1,4 @@
-(* Minimal HTTP surface — typed import (no live server). *)
+// Minimal HTTP surface — typed import (no live server).
 module main
 
 import go "net/http" {

@@ -1,8 +1,8 @@
 module main
 
-(* Compile-time goroutine sharing analysis demo (good patterns only).
-   Flow-sensitive liveness suppresses false positives when a binding
-   is captured by go but not used afterward in the spawning scope. *)
+// Compile-time goroutine sharing analysis demo (good patterns only).
+// Flow-sensitive liveness suppresses false positives when a binding
+// is captured by go but not used afterward in the spawning scope.
 
 let immutableExample () : unit =
   let x = 42 in

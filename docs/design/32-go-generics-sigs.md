@@ -21,20 +21,21 @@ faithful surface yet.
    gated by `[check] verify_ffi`.)
 3. **Do not** monomorphize common instantiations in 1.14.
 4. Prefer thin `@[go]` wrappers that expose a concrete API when users need a
-   generic Go helper.
+   generic Go helper. Example: [`go_generic_wrappers.goop`](../examples/go_generic_wrappers.goop)
+   (`slices.Contains` on `[]string`).
 
 ## Relation to shipped tooling
 
 - Auto-load + cache + overrides: [28-go-sig-resolution.md](28-go-sig-resolution.md)
 - Generator: [23-gosig-generator.md](23-gosig-generator.md)
 - Boundary honesty: [27-ffi-boundary.md](27-ffi-boundary.md)
-- Optional hand-sig arity check: `[check] verify_ffi` → **GOSIG003**
+- Hand-sig arity / missing-export check: `[check] verify_ffi` (default on) → **GOSIG003**
 - Hand generic honesty: **GOSIG004** (always warn)
 
 ## Curated skip catalog (1.14 baseline)
 
 Regenerate: `goop gen-sig <pkg>` for each entry in `CuratedPackages`
-(`src/internal/gosiggen/curated.go`), then inspect `(* Skipped exports: … *)`.
+(`src/internal/gosiggen/curated.go`), then inspect `// Skipped exports:`.
 
 | Package | Skipped | Notes |
 |---------|--------:|-------|
@@ -62,7 +63,8 @@ Regenerate: `goop gen-sig <pkg>` for each entry in `CuratedPackages`
 | log/slog | 0 | |
 
 Generic-heavy stdlib outside curated (e.g. `slices`) can skip dozens of
-exports; use `@[go]` or hand concrete wrappers for the few APIs you need.
+exports; use `@[go]` or hand concrete wrappers for the few APIs you need
+([`go_generic_wrappers.goop`](../examples/go_generic_wrappers.goop)).
 
 ## Follow-ups
 

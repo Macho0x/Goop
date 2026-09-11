@@ -1,0 +1,6 @@
+// Trimmed Hyperliquid/B3 stub for github.com/ethereum/go-ethereum/crypto.
+// Full dump: goop get-go-sig github.com/ethereum/go-ethereum/crypto
+type PrivateKey
+
+val HexToECDSA : string -> PrivateKey ptr * error
+val Keccak256 : bytes -> bytes

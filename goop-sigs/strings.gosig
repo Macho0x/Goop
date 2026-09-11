@@ -1,4 +1,4 @@
-(* Hand-curated strings stubs. *)
+// Hand-curated strings stubs.
 type Builder
 
 val Contains : string -> string -> bool

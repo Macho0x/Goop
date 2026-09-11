@@ -1,7 +1,7 @@
 module main
 
-(* Cross-package record literals must lower to pkg.Cfg{...}, not struct{...}.
-   Option fields must use pkg.NewOptionString{Some,None}, not local undefs. *)
+// Cross-package record literals must lower to pkg.Cfg{...}, not struct{...}.
+// Option fields must use pkg.NewOptionString{Some,None}, not local undefs.
 
 import goop . "github.com/Macho0x/Goop/tests/fixtures/recpkg"
 

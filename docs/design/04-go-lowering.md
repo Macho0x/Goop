@@ -135,8 +135,8 @@ multi-value assignment into the generated `F0`/`F1`/… struct:
 
 ```goop
 import go "strconv" { val Atoi : string -> (int, error) }
-(* … *)
-let pair = Atoi "42" in  (* pair.F0 : int, pair.F1 : error *)
+// …
+let pair = Atoi "42" in  // pair.F0 : int, pair.F1 : error
 ```
 
 Hand-written `@[go]` wrappers may return any mappable multi-value shape

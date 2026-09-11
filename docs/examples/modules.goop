@@ -1,6 +1,6 @@
 module ModulesDemo
 
-(* Canonical modules demo: signature, sealing, open. *)
+// Canonical modules demo: signature, sealing, open.
 
 module type Counter = sig
   val step : int -> int

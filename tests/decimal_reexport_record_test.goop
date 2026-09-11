@@ -1,6 +1,6 @@
 module main
 
-(* Cross-module FFI opaque type: Decimal via import goop . "std.decimal". *)
+// Cross-module FFI opaque type: Decimal via import goop . "std.decimal".
 import goop . "std.decimal"
 
 type Order = { price: Decimal; qty: int }

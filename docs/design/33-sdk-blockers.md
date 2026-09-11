@@ -13,7 +13,7 @@ upstream Go and consume it with `import go` — minimize `@[go]` embeds.
 |----|--------|--------|
 | B1 | JSON / msgpack field tags on Goop records | **Shipped 1.18** — `@[tag "…"]` on record fields |
 | B2 | Multi-file Goop modules → one Go package | **Shipped 1.19** — sibling `.goop` with same `module` merge (not `main`) |
-| B3 | Third-party `.gosig` depth | Open — hand `{ type; val }` / project `goop-sigs/` / `goop get-go-sig` |
+| B3 | Third-party `.gosig` depth | **Shipped (trimmed corpus)** — Hyperliquid-adjacent stubs in `goop-sigs/`; not a full SDK rewrite |
 | B4 | Go generics in FFI (GOSIG004) | Accepted — concrete wrappers; see [32-go-generics-sigs.md](32-go-generics-sigs.md) |
 | — | `?` on `result` | **Rejected** — prefer `match`; see [STYLE.md](STYLE.md) |
 
@@ -44,14 +44,25 @@ See [05-modules-and-packages.md](05-modules-and-packages.md).
 
 ## B3 — Third-party sigs
 
-No curated trees for ethereum / gorilla / msgpack / vago / fastjson in the
-toolchain. Use hand signatures, project `goop-sigs/`, and `goop get-go-sig`.
-See [23-gosig-generator.md](23-gosig-generator.md), [28-go-sig-resolution.md](28-go-sig-resolution.md).
+**Shipped (trimmed):** project overrides under `goop-sigs/` for Hyperliquid-
+adjacent imports (not added to compiler `CuratedPackages` / `src/go.mod`):
+
+- `github.com/ethereum/go-ethereum/crypto` and `…/common`
+- `github.com/gorilla/websocket`
+- `github.com/vmihailenco/msgpack/v5`
+- `github.com/sonirico/vago`
+- `github.com/valyala/fastjson`
+
+Regenerate via `goop get-go-sig [--override]` from [testdata/sdk-b3](../../testdata/sdk-b3)
+then trim. Example: [`sdk_sigs.goop`](../examples/sdk_sigs.goop) (`goop check` only).
+These stubs are **not** a native SDK rewrite. See
+[23-gosig-generator.md](23-gosig-generator.md), [28-go-sig-resolution.md](28-go-sig-resolution.md).
 
 ## B4 — Generics
 
 Do not monomorphize. Prefer thin Go wrappers exposing concrete APIs; hand
-`{ val }` naming a generic warns **GOSIG004**.
+`{ val }` naming a generic warns **GOSIG004**. See
+[`go_generic_wrappers.goop`](../examples/go_generic_wrappers.goop).
 
 ## Rejected: `?` on `result`
 

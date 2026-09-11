@@ -80,24 +80,23 @@ the parser cannot proceed.
 - **Bad**: `let x = @ 1`
 - **Good**: `let x = 1`
 
-### LEX002: Unterminated block comment
+### LEX002: Block comments removed
 
 - **Error code**: `LEX002`
 - **Severity**: Error
-- **Message**: `unterminated block comment (depth %d)`
-- **Example**: `test.goop:1:1: unterminated block comment (depth 1)`
-- **Trigger**: A block comment `(* ... *)` is opened but never closed before
-  end of file. The `depth` indicates the nesting level — a value > 1 means
-  you opened more `(*` than you closed `*)`.
-- **Fix**: Add the missing `*)` to close the block comment.
+- **Message**: `LEX002: block comments (* *) were removed; use //`
+- **Example**: `test.goop:1:1: LEX002: block comments (* *) were removed; use //`
+- **Trigger**: Source contains `(*`, the OCaml block-comment opener. Goop
+  comments are `//` to end of line only.
+- **Fix**: Rewrite each `(* … *)` as one or more `//` lines.
 - **Bad**:
   ```goop
-  (* This is a comment that never ends
+  (* this is not a comment *)
   let x = 1
   ```
 - **Good**:
   ```goop
-  (* This is a comment *)
+  // this is a comment
   let x = 1
   ```
 
@@ -734,7 +733,7 @@ cannot be resolved. All type errors stop compilation.
 - **Bad**:
   ```goop
   let f t = match t with | (x, y, z) -> x + y + z
-  (* called with 2-tuple *)
+  // called with 2-tuple
   ```
 - **Good**:
   ```goop
@@ -1281,7 +1280,7 @@ control-flow path. All linear errors stop compilation.
   let open_file () : file_handle = ...
   let bad () =
     let fh = open_file () in
-    ()  (* fh never used — leak detected *)
+    ()  // fh never used — leak detected
   ```
 - **Good**:
   ```goop
@@ -1312,15 +1311,15 @@ control-flow path. All linear errors stop compilation.
   let close_file (fh : file_handle) = ...
   let double_use () =
     let fh = open_file () in
-    read_file fh;   (* first use — discharged *)
-    close_file fh   (* second use — ERROR *)
+    read_file fh;   // first use — discharged
+    close_file fh   // second use — ERROR
   ```
 - **Good**:
   ```goop
   type file_handle : 1
   let read_and_close (fh : file_handle) =
-    read_file fh;  (* pass ownership to read_file, no return value *)
-    ()             (* or restructure so close_file is the only consumer *)
+    read_file fh;  // pass ownership to read_file, no return value
+    ()             // or restructure so close_file is the only consumer
   ```
 
 ### LINEAR003: Variable not discharged in then-branch
@@ -1339,7 +1338,7 @@ control-flow path. All linear errors stop compilation.
     if flag then
       close_file fh
     else
-      ()  (* fh not discharged in else branch *)
+      ()  // fh not discharged in else branch
   ```
 - **Good**:
   ```goop
@@ -1376,7 +1375,7 @@ control-flow path. All linear errors stop compilation.
   let f (opt_fh : option) =
     match opt_fh with
     | Some fh -> close_file fh
-    | None -> ()  (* no discharge needed, but all live variables still checked *)
+    | None -> ()  // no discharge needed, but all live variables still checked
   ```
 - **Good**: Ensure all live linear variables from before the match are
   handled in every arm.
@@ -1420,7 +1419,7 @@ control-flow path. All linear errors stop compilation.
   ```goop
   let x = ref 0 in
   let _ = go (fun () -> x := 42) in
-  x := 1  (* race with goroutine *)
+  x := 1  // race with goroutine
   ```
 - **Good**:
   ```goop
@@ -1443,7 +1442,7 @@ control-flow path. All linear errors stop compilation.
   let state = ref 0 in
   let ch = Chan.make () in
   let _ = go (fun () -> Chan.send ch state) in
-  state := !state + 1   (* race with goroutine via shared ref *)
+  state := !state + 1   // race with goroutine via shared ref
   ```
 - **Good**: Send a copy, or use `go (move state)` and do not touch `state` in the parent afterward.
 
@@ -1464,7 +1463,7 @@ Narrow static analysis for circular channel communication between two goroutines
 - **Fix**: Reorder operations, use buffered channels, or introduce a third goroutine to break the cycle. For complex concurrency, rely on Go's runtime deadlock detector and testing.
 - **Bad**:
   ```goop
-  (* G1: send ch1, recv ch2; G2: send ch2, recv ch1 — can deadlock *)
+  // G1: send ch1, recv ch2; G2: send ch2, recv ch1 — can deadlock
   let _ = go (fun () -> Chan.send ch1 1; Chan.recv ch2) in
   let _ = go (fun () -> Chan.send ch2 2; Chan.recv ch1) in
   ```
@@ -1485,7 +1484,7 @@ Narrow static analysis for circular channel communication between two goroutines
 - **Bad**:
   ```goop
   begin
-    parseInt "x";   (* RESULT001 *)
+    parseInt "x";   // RESULT001
     ()
   end
   ```
@@ -1643,7 +1642,7 @@ Flow-sensitive analysis for channel initialization before use.
 - **Fix**: Initialize the channel with `let ch = Chan.make ()` (or `OwnedChan.make ()`) before any send, receive, or close. Ensure initialization happens on every control-flow path.
 - **Bad**:
   ```goop
-  let ch = () in   (* not a channel *)
+  let ch = () in   // not a channel
   Chan.send ch 42
   ```
 - **Good**:
@@ -1680,12 +1679,12 @@ three possible outcomes for each refinement:
 - **Bad**:
   ```goop
   let sqrt (x : int where x >= 0) = ...
-  let _ = sqrt (-5)  (* -5 >= 0 is disproven → ERROR *)
+  let _ = sqrt (-5)  // -5 >= 0 is disproven → ERROR
   ```
 - **Good**:
   ```goop
   let sqrt (x : int where x >= 0) = ...
-  let _ = sqrt 4   (* 4 >= 0 is proven → no error *)
+  let _ = sqrt 4   // 4 >= 0 is proven → no error
   ```
 
 ### REFINE002: Unproven refinement
@@ -1706,15 +1705,15 @@ three possible outcomes for each refinement:
 - **Bad**:
   ```goop
   let sqrt (x : int where x >= 0) = ...
-  let x = read_int ()   (* compiler can't know if x >= 0 *)
-  let _ = sqrt x        (* WARNING: runtime check for x >= 0 *)
+  let x = read_int ()   // compiler can't know if x >= 0
+  let _ = sqrt x        // WARNING: runtime check for x >= 0
   ```
 - **Good**:
   ```goop
   let sqrt (x : int where x >= 0) = ...
   let x = read_int () in
   if x >= 0 then
-    sqrt x   (* solver sees x >= 0 in then-branch → PROVEN *)
+    sqrt x   // solver sees x >= 0 in then-branch → PROVEN
   else
     ...
   ```
@@ -1731,7 +1730,7 @@ three possible outcomes for each refinement:
 - **Good**:
   ```goop
   let sqrt (x : int where x >= 0) = ...
-  let _ = sqrt 4   (* runtime check skipped *)
+  let _ = sqrt 4   // runtime check skipped
   ```
 
 ---

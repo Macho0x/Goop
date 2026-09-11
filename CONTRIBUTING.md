@@ -34,7 +34,7 @@ go test ./...
 ../goop new /tmp/goop-new-smoke --force && ../goop check /tmp/goop-new-smoke/main.goop
 
 # All examples (CI does this)
-for f in ../docs/examples/*.goop; do ../goop check "$f"; done
+for f in ../docs/examples/*.goop ../docs/examples/gallery/*.goop; do ../goop check "$f"; done
 
 # Cache-only build smoke (no .go left in docs/examples)
 ../goop build ../docs/examples/hello.goop && ./goop-out && rm -f ./goop-out

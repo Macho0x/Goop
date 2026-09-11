@@ -1,7 +1,8 @@
 // Package lexer implements a hand-written lexer for Goop.
 //
 // It handles:
-//   - Nested block comments (* ... *) and line comments //
+//   - Line comments //
+//   - (* *) is a lexer error; use //
 //   - Double-quoted strings with escapes (\n \t \r \\ \" \e \xHH \ooo)
 //   - Integers, floats, chars, polymorphic variants (`Tag)
 //   - All keywords and operators defined in the token package
@@ -82,7 +83,8 @@ func (l *Lexer) run() {
 		case isWhitespace(r):
 			l.skipWhitespace()
 		case r == '(' && l.peekByte(1) == '*':
-			l.skipBlockComment()
+			l.errorf("LEX002: block comments (* *) were removed; use //")
+			l.skipRejectedBlockComment()
 		case r == '/' && l.peekByte(1) == '/':
 			l.skipLineComment()
 		case r == '"':
@@ -351,12 +353,9 @@ func (l *Lexer) skipWhitespace() {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// Block comments with nesting
-// ---------------------------------------------------------------------------
-
-func (l *Lexer) skipBlockComment() {
-	// We already matched "(*"
+// skipRejectedBlockComment consumes a nested (* … *) span so a single
+// diagnostic is reported instead of a parse cascade.
+func (l *Lexer) skipRejectedBlockComment() {
 	l.consumeN(2) // skip (*
 	depth := 1
 	for l.pos < len(l.src) {
@@ -374,7 +373,6 @@ func (l *Lexer) skipBlockComment() {
 			l.advance()
 		}
 	}
-	l.errorf("unterminated block comment (depth %d)", depth)
 }
 
 func (l *Lexer) skipLineComment() {

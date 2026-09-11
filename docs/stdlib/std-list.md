@@ -8,6 +8,8 @@
 | Name | Type | Description |
 |---|---|---|
 | `Map` | `('a -> 'b) -> 'a list -> 'b list` | Map a function over every element |
+| `Filter` | `('a -> bool) -> 'a list -> 'a list` | Keep elements where `f` is true |
+| `Fold` | `('acc -> 'a -> 'acc) -> 'acc -> 'a list -> 'acc` | Left fold |
 
 ## Implementation
 
@@ -29,5 +31,7 @@ let doubleAll (xs: int list) : int list =
   Map (fun x -> x + x) xs
 ```
 
-List construction (`[]`, `::`) is builtin — this module only adds `Map`.
-That small surface is intentional under the [`std.*` doctrine](README.md#doctrine): prefer writing `match` over growing a Go-stdlib-sized list package.
+List construction (`[]`, `::`) is builtin — this module adds `Map`, `Filter`,
+and `Fold` only. `goop check` covers them; polymorphic lowering through a
+Goop module still uses `interface{}`, so prefer local `match` in `goop build`
+hot paths.

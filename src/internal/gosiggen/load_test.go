@@ -3,6 +3,9 @@ package gosiggen
 import (
 	"go/token"
 	gotypes "go/types"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"goop.dev/compiler/internal/ast"
@@ -10,7 +13,7 @@ import (
 
 func TestParseSigContent(t *testing.T) {
 	content := `
-(* comment *)
+// comment
 type Builder
 val Contains : string -> string -> bool
 val Sprintf : string -> ...obj -> string
@@ -39,6 +42,28 @@ val (b : Builder ptr).Len : unit -> int
 	}
 	if !foundAny {
 		t.Error("expected obj rewritten to any in Sprintf")
+	}
+}
+
+func TestHyperliquidSigsParse(t *testing.T) {
+	dir := filepath.Join("..", "..", "..", "goop-sigs")
+	matches, err := filepath.Glob(filepath.Join(dir, "github_com_*.gosig"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(matches) < 6 {
+		t.Fatalf("expected trimmed B3 stubs, got %d in %s", len(matches), dir)
+	}
+	for _, path := range matches {
+		data, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		base := strings.TrimSuffix(filepath.Base(path), ".gosig")
+		_, _, err = ParseSigContent(base, string(data))
+		if err != nil {
+			t.Errorf("%s: %v", path, err)
+		}
 	}
 }
 

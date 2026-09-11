@@ -31,7 +31,7 @@ The linear checker flags `ref` (or other mutable state) captured by `go` while s
 let race () : unit =
   let counter = ref 0 in
   let ignored = go (fun () -> println (int_to_string (!counter))) in
-  println (int_to_string (!counter))   (* error: counter still in scope *)
+  println (int_to_string (!counter))   // error: counter still in scope
 ```
 
 Good patterns: [`race_detection.goop`](../examples/race_detection.goop).

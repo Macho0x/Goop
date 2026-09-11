@@ -1,6 +1,6 @@
 module main
 
-(* Heap Buffer via ptr_of {} — no @[go] constructor. *)
+// Heap Buffer via ptr_of {} — no @[go] constructor.
 
 import go "bytes" {
   type Buffer

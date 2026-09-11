@@ -77,8 +77,8 @@ Surface effect **rows** (`… with { io }`) are removed (PARSE-MIG016). See [14-
 ## Mutability
 
 ```goop
-let x = 1              (* immutable *)
-let r = ref 1 in       (* ref cell *)
+let x = 1              // immutable
+let r = ref 1 in       // ref cell
 r := !r + 1
 
 type counter = { mutable value: int }

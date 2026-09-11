@@ -6,7 +6,7 @@ import go "math" {
   val Mod : float -> float -> float
 }
 
-(* ------ Data Generation ------ *)
+// ------ Data Generation ------
 
 let rec gen_data (n: float) (s: float) (prev: float) : float list =
   if n <= 0.0 then []
@@ -19,7 +19,7 @@ let rec gen_data (n: float) (s: float) (prev: float) : float list =
     let p = prev *. base in
     p :: gen_data (n -. 1.0) s2 p
 
-(* ------ Statistics ------ *)
+// ------ Statistics ------
 
 let rec sum (xs: float list) : float =
   match xs with
@@ -41,9 +41,9 @@ let rec variance (xs: float list) (m: float) : float =
     let diff = x -. m in
     diff *. diff +. variance rest m
 
-(* ------ Technical Indicators ------ *)
+// ------ Technical Indicators ------
 
-(* Get element at position n (0-indexed) *)
+// Get element at position n (0-indexed)
 let rec nth_price (xs: float list) (n: float) : float =
   match xs with
   | [] -> 0.0
@@ -51,13 +51,13 @@ let rec nth_price (xs: float list) (n: float) : float =
     if n <= 0.0 then x
     else nth_price rest (n -. 1.0)
 
-(* Current price from head of list *)
+// Current price from head of list
 let head_price (xs: float list) : float =
   match xs with
   | [] -> 0.0
   | x :: _ -> x
 
-(* Rate of change over N periods *)
+// Rate of change over N periods
 let roc (xs: float list) (lookback: float) : float =
   let curr = head_price xs in
   let prev = nth_price xs lookback in
@@ -66,7 +66,7 @@ let roc (xs: float list) (lookback: float) : float =
     let diff = curr -. prev in
     diff /. prev
 
-(* Compute periodic returns (percentage changes) *)
+// Compute periodic returns (percentage changes)
 let rec rets_of (xs: float list) : float list =
   match xs with
   | [] -> []
@@ -77,7 +77,7 @@ let rec rets_of (xs: float list) : float list =
       let diff = a -. b in
       diff /. b :: rets_of rest
 
-(* Count rising consecutive periods *)
+// Count rising consecutive periods
 let rise_of (a: float) (b: float) : float =
   if a > b then 1.0 else 0.0
 
@@ -90,7 +90,7 @@ let rec count_rising (xs: float list) (n: float) : float =
       let b = head_price rest in
       rise_of a b +. count_rising rest (n -. 1.0)
 
-(* ------ Decision ------ *)
+// ------ Decision ------
 
 let decision (current: float) (mu: float) (momentum: float) (rising: float) : string =
   let above_mean = current > mu in
@@ -101,7 +101,7 @@ let decision (current: float) (mu: float) (momentum: float) (rising: float) : st
   else
     "HOLD: no clear signal"
 
-(* ------ Main ------ *)
+// ------ Main ------
 
 let main () =
   let prices = gen_data 500.0 12345.0 50000.0 in

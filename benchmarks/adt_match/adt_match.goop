@@ -1,6 +1,6 @@
 module Bench.AdtMatch
 
-(* Microbenchmark: ADT match (interface + type switch in generated Go). *)
+// Microbenchmark: ADT match (interface + type switch in generated Go).
 
 type shape =
   | Circle of { radius: float }

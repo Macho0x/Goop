@@ -49,7 +49,7 @@ type CheckConfig struct {
 	Unused             Severity // UNUSED001/002 (default warn)
 	PrivateInPublic    Severity // VIS002 (default warn)
 	MoneyFloat         Severity // DECIMAL001 (default warn)
-	VerifyFFI          bool     // GOSIG003 hand-sig verify (default false)
+	VerifyFFI          bool     // GOSIG003 hand-sig verify (default true)
 	SMT                bool     // use Z3 for refinement VCs when available (default false)
 }
 
@@ -77,7 +77,7 @@ func DefaultConfig() *Config {
 			Unused:             SeverityWarn,
 			PrivateInPublic:    SeverityWarn,
 			MoneyFloat:         SeverityWarn,
-			VerifyFFI:          false,
+			VerifyFFI:          true,
 		},
 		Dependencies: make(map[string]string),
 		Mappings: map[string]string{

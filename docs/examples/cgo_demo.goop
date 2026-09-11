@@ -1,6 +1,6 @@
 module main
 
-(* Full cgo-shaped @[c] embed with Goop val bindings. *)
+// Full cgo-shaped @[c] embed with Goop val bindings.
 @[c] {
   #include <string.h>
 

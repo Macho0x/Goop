@@ -1,11 +1,11 @@
-# Goop 1.20.0
+# Goop 1.22.0
 
-Codegen fixes for `@[go]` embed imports and multi-file `import goop` packages.
+Comments are `//` only. `(* … *)` is LEX002.
 
 ## Highlights
 
-- Hoist `import` out of `@[go]` bodies into the generated package imports
-- Identifier-safe Option/Result names for `*` / `[]` types
-- Sibling merge when loading Goop dependencies
+- Lexer rejects OCaml block comments; rewrite as `//`
+- `.gosig` headers and `goop new` scaffold use `//`
+- Editor grammars / comment toggles are line comments only
 
-See `CHANGELOG.md` and [15-lang-embeds.md](docs/design/15-lang-embeds.md).
+See `CHANGELOG.md`.

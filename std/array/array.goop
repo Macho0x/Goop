@@ -1,6 +1,6 @@
 module array
 
-(* Thin re-exports of prelude Array.* — implementation stays in the compiler prelude. *)
+// Thin re-exports of prelude Array.* — implementation stays in the compiler prelude.
 
 let make (n: int) (init: 'a) : 'a array = Array.make n init
 

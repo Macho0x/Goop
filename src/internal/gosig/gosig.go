@@ -7,6 +7,7 @@ package gosig
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -178,6 +179,15 @@ func LookupFunc(importPath, funcName string) (*FuncSig, error) {
 	cr := cachedResult{sig: fsig}
 	cache.Store(key, cr)
 	return fsig, nil
+}
+
+// LookupMiss reports whether a LookupFunc error means the package loaded but
+// the name is not a package-level function. Load/timeout errors are not misses.
+func LookupMiss(err error) bool {
+	if err == nil {
+		return false
+	}
+	return strings.Contains(err.Error(), "not found in package")
 }
 
 // FuncHasTypeParams reports whether the named package-level function is generic

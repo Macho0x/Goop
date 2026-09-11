@@ -6,7 +6,7 @@ This file tracks the remaining work to make Goop a usable language. It is kept i
 
 - [x] Project structure and documentation
 - [x] Bootstrap compiler skeleton in Go
-- [x] Lexer with nested block comments and source locations
+- [x] Lexer with `//` comments and source locations
 - [x] Recursive-descent parser for the core grammar
 - [x] AST and pretty-printer
 - [x] CLI: lex, parse, check, compile, build, test, get, resolve, fmt, lsp
@@ -37,7 +37,10 @@ This file tracks the remaining work to make Goop a usable language. It is kept i
 - [x] Go interface FFI (1.3.0): `type` imports, `implements`, `ptr`/`null`, `error`, and `go_slice`; Stringer and slog.Handler examples
 - [x] Go method/field FFI (1.4.0): `val (x : T).M` imports, selector lowering, callbacks, `go_slice` indexing, and variadic `any`
 - [x] `private` module visibility; branding via single-ctor ADT (no `newtype`)
-- [x] Nested modules / `sig` / functors / `.mli` (minimal)
+- [x] Nested modules / `sig` / functors / inline sealing (no `.mli`)
+- [x] Maps (`map[K] V`, `Map.*`)
+- [x] Record field `@[tag "…"]` → Go struct tags (1.18)
+- [x] Multi-file same `module` → one Go package (1.19)
 - [x] Golang import 2-tuple returns
 - [x] Flow-sensitive goroutine liveness (fewer race false positives)
 - [x] std/ modules (`std.io`, `std.list`, `std.array`, `std.option`, `std.result`)
@@ -77,14 +80,17 @@ This file tracks the remaining work to make Goop a usable language. It is kept i
 - [x] Examples (`docs/examples/`; CI `goop check` on all files)
 - [x] `goop.toml` project configuration
 - [x] Package manager (`goop get`, `goop.lock`; see `docs/design/11-package-manager.md`)
-- [x] Language tutorial — [docs/tutorial/](docs/tutorial/) (7 chapters + examples)
+- [x] Language tutorial — [docs/tutorial/](docs/tutorial/) (8 chapters + examples)
 - [x] Standard library reference — [docs/stdlib/](docs/stdlib/) (prelude, builtins, std.*)
 - [x] Contributing guide — [CONTRIBUTING.md](CONTRIBUTING.md) (build, editors, doc accuracy)
 
-## Long term
+## Remaining (post-1.21)
 
-- [ ] Comprehensive standard library
-- [ ] Stable 1.0 release
+Goop already ships as **v1.21.x** (compiler → Go). Open work is maturity, not bootstrap.
+
+- [ ] Language / interop **freeze** (API stability bar — not “never shipped 1.0”). See [30-freeze-checklist.md](docs/design/30-freeze-checklist.md).
+- [x] **B3:** trimmed third-party `.gosig` corpus for Hyperliquid deps — [33-sdk-blockers.md](docs/design/33-sdk-blockers.md).
+- **`std.*` stays thin by doctrine.** Go’s stdlib is the library surface (`import go`). Do not grow `std.net` / `std.json`. Optional: more `std.list` combinators. See [docs/stdlib/README.md](docs/stdlib/README.md).
 
 ## Deferred or rejected
 

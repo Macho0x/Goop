@@ -1,4 +1,4 @@
-(* Hand-curated path/filepath stubs. *)
+// Hand-curated path/filepath stubs.
 val Base : string -> string
 val Clean : string -> string
 val Dir : string -> string

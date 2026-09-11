@@ -27,6 +27,15 @@ func TestRenderHelpTip(t *testing.T) {
 	}
 }
 
+func TestRenderLEX002HelpTip(t *testing.T) {
+	src := []byte("module T\n(* nope *)\n")
+	err := &mockErr{msg: "t.goop:2:1: LEX002: block comments (* *) were removed; use //"}
+	out := Render(err, src)
+	if !contains(out, "help:") || !contains(out, "//") {
+		t.Errorf("expected LEX002 help tip: %s", out)
+	}
+}
+
 type mockErr struct{ msg string }
 
 func (e *mockErr) Error() string { return e.msg }

@@ -7,7 +7,7 @@ Syntax highlighting, file icons, and LSP integration for the [Goop language](htt
 - **File icon** — `.goop` files show the Goop logo in the file tree
 - **Syntax highlighting** — full TextMate grammar for keywords, types, operators, literals, comments
 - **LSP integration** — diagnostics, completions, hover, and go-to-definition via the `goop` compiler
-- **Block comments** — `(* ... *)` support
+- **Line comments** — `//` support
 - **Language config** — proper tab/comment settings for `.goop` files
 
 ## Installation

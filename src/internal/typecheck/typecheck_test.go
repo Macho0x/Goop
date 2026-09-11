@@ -7,8 +7,10 @@ import (
 	"testing"
 
 	"goop.dev/compiler/internal/ast"
+	"goop.dev/compiler/internal/config"
 	"goop.dev/compiler/internal/desugar"
 	"goop.dev/compiler/internal/exhaustive"
+	"goop.dev/compiler/internal/gosig"
 	"goop.dev/compiler/internal/parser"
 	"goop.dev/compiler/internal/token"
 	"goop.dev/compiler/internal/typecheck"
@@ -1287,5 +1289,107 @@ let main () = ()
 	}
 	if !strings.Contains(out, "slices.Contains") && !strings.Contains(out, "slices") {
 		t.Fatalf("expected slices.Contains in GOSIG004 message, got %q", out)
+	}
+}
+
+func skipIfNoStringsLookup(t *testing.T) {
+	t.Helper()
+	if _, err := gosig.LookupFunc("strings", "ToUpper"); err != nil && !gosig.LookupMiss(err) {
+		t.Skipf("packages.Load unavailable: %v", err)
+	}
+}
+
+func checkWithFFI(t *testing.T, src string, on bool) []error {
+	t.Helper()
+	mod, err := parser.Parse("gosig003.goop", []byte(src))
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	mod = desugar.DesugarModule(mod)
+	cfg := config.DefaultConfig()
+	cfg.Check.VerifyFFI = on
+	_, _, errs := typecheck.CheckWithTypesForFile(mod, "", cfg, nil)
+	return errs
+}
+
+func TestGOSIG003ArityMismatch(t *testing.T) {
+	skipIfNoStringsLookup(t)
+	errs := checkWithFFI(t, `module main
+import go "strings" {
+  val ToUpper : string -> string -> string
+}
+let main () = ()
+`, true)
+	if len(errs) == 0 {
+		t.Fatal("expected GOSIG003 arity error")
+	}
+	if !strings.Contains(errs[0].Error(), "GOSIG003") {
+		t.Fatalf("got %v", errs)
+	}
+}
+
+func TestGOSIG003UnitElisionOK(t *testing.T) {
+	if _, err := gosig.LookupFunc("time", "Now"); err != nil && !gosig.LookupMiss(err) {
+		t.Skipf("packages.Load unavailable: %v", err)
+	}
+	errs := checkWithFFI(t, `module main
+import go "time" {
+  type Time
+  val Now : unit -> Time
+}
+let main () = ()
+`, true)
+	for _, e := range errs {
+		if strings.Contains(e.Error(), "GOSIG003") {
+			t.Fatalf("unit -> should not GOSIG003: %v", e)
+		}
+	}
+}
+
+func TestGOSIG003UnknownName(t *testing.T) {
+	skipIfNoStringsLookup(t)
+	errs := checkWithFFI(t, `module main
+import go "strings" {
+  val ThisFuncDoesNotExist : string -> string
+}
+let main () = ()
+`, true)
+	found := false
+	for _, e := range errs {
+		if strings.Contains(e.Error(), "GOSIG003") {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatalf("expected GOSIG003 missing export, got %v", errs)
+	}
+}
+
+func TestGOSIG003LoadFailureNotError(t *testing.T) {
+	errs := checkWithFFI(t, `module main
+import go "github.com/goop-lang/no-such-module-zzzz/pkg" {
+  val Foo : int -> int
+}
+let main () = ()
+`, true)
+	for _, e := range errs {
+		if strings.Contains(e.Error(), "GOSIG003") {
+			t.Fatalf("load failure must not be GOSIG003: %v", e)
+		}
+	}
+}
+
+func TestGOSIG003Disabled(t *testing.T) {
+	errs := checkWithFFI(t, `module main
+import go "strings" {
+  val ToUpper : string -> string -> string
+}
+let main () = ()
+`, false)
+	for _, e := range errs {
+		if strings.Contains(e.Error(), "GOSIG003") {
+			t.Fatalf("verify_ffi=false must skip GOSIG003: %v", e)
+		}
 	}
 }

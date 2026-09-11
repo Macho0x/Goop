@@ -19,12 +19,6 @@
     "comments": {
       "patterns": [
         {
-          "name": "comment.block.goop",
-          "begin": "\\(\\*",
-          "end": "\\*\\)",
-          "patterns": [{ "include": "#comments" }]
-        },
-        {
           "name": "comment.line.goop",
           "match": "//.*$"
         }

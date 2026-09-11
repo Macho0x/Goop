@@ -36,7 +36,7 @@ Reach Go packages with `import go "net/http" { ... }` (and curated `.gosig`s as 
 | Module | Import path | Role | Reference |
 |---|---|---|---|
 | `std.io` | `import goop "std.io"` | Thin `fmt` wrapper (`Println`) | [std.io](std-io.md) |
-| `std.list` | `import goop "std.list"` | Higher-order list (`Map`) | [std.list](std-list.md) |
+| `std.list` | `import goop "std.list"` | Higher-order list (`Map`, `Filter`, `Fold`) | [std.list](std-list.md) |
 | `std.map` | `import goop "std.map"` | Thin re-export of prelude `Map.*` | [prelude Maps](prelude.md#maps) · [tutorial](../tutorial/08-maps.md) · [`maps.goop`](../examples/maps.goop) |
 | `std.array` | `import goop "std.array"` | Re-export of prelude `Array.*` | [std.array](std-array.md) |
 | `std.option` | `import goop "std.option"` | Option predicates | [std.option](std-option.md) |
@@ -50,17 +50,17 @@ Reach Go packages with `import go "net/http" { ... }` (and curated `.gosig`s as 
 
 | Candidate | Status | Notes |
 |---|---|---|
-| More `std.list` combinators (`Filter`, `Fold`, …) | Optional | Only if used often enough to beat writing `match`; keep thin |
-| `std.lazy` | Deferred | Prelude `Lazy.*` / `lazy e` stay; a thin wrapper does not lower cleanly through polymorphic Goop functions yet |
+| More `std.list` combinators | **Landed** `Filter` / `Fold` | Keep thin; prefer `match` for the rest |
+| `std.lazy` | **Deferred** | Keyword `lazy` cannot appear in `'a lazy` annotations inside a `std.lazy` wrapper (`PARSE001`); prelude `Lazy.*` / `lazy e` stay |
 | Decimal / money | **Landed** | `std.decimal` + cross-module `Decimal` annotations ([25-decimal.md](../design/25-decimal.md)); H5/H6 polish remain |
 | `std.net` / `std.codec` / … | **Out of scope** | Use `import go` |
 
 ## Import forms
 
 ```goop
-import goop "std.io"           (* qualified: must use module exports by name *)
-import goop . "std.io"         (* dot: Println in scope *)
-import io goop "std.io"        (* alias: io.Println *)
+import goop "std.io"           // qualified: must use module exports by name
+import goop . "std.io"         // dot: Println in scope
+import io goop "std.io"        // alias: io.Println
 ```
 
 Resolution is configured in `goop.toml` `[mappings]` and defaults in the compiler. See [modules guide](../design/05-modules-and-packages.md).

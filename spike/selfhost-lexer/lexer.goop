@@ -1,5 +1,5 @@
-(* Archival spike only — self-hosting is not planned (compiler stays Go).
-   Kept as a small map/brand exercise; not a Stage1 compiler fragment. *)
+// Archival spike only — self-hosting is not planned (compiler stays Go).
+// Kept as a small map/brand exercise; not a Stage1 compiler fragment.
 module selfhost_lexer
 
 type token_kind = | Ident | Int | String | Other

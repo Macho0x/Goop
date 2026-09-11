@@ -1,6 +1,6 @@
 module main
 
-(* result + exhaustive match vs Go's (T, error) idiom. *)
+// result + exhaustive match vs Go's (T, error) idiom.
 
 let div (x: float) (y: float) : (float, string) result =
   if y = 0.0 then Error "division by zero"

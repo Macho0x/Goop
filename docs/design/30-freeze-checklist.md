@@ -35,4 +35,4 @@ For **every** language / diagnostics / CLI change (not only freezes), use
 
 ## Optional polish
 
-- [ ] Benchmarks for branded IDs closer to hand Go
+- [x] Benchmarks for branded IDs closer to hand Go

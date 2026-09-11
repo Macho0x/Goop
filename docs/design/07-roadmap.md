@@ -68,9 +68,9 @@ This file presents the same task list as `TODO.md`, organized by development pha
 
 - [x] IDE support (LSP) - full implementation with diagnostics, hover, definition, completion
 - [x] Formatter (`goop fmt` command)
-- [ ] Comprehensive standard library.
 - [x] Documentation generator (`goop doc` — see [20-cli-artifacts.md](20-cli-artifacts.md)).
-- [ ] Stable 1.0 release.
+- [ ] Language / interop **freeze** (stability bar at current 1.22.x — not a missing 1.0). See [30-freeze-checklist.md](30-freeze-checklist.md).
+- **`std.*` stays thin.** Go’s stdlib is the coverage layer; do not add `std.net` / `std.json`.
 
 ## Documentation
 
@@ -80,7 +80,7 @@ This file presents the same task list as `TODO.md`, organized by development pha
 - [x] Examples (`docs/examples/`; CI checks all files)
 - [x] `goop.toml` project configuration
 - [x] Package manager guide (`docs/design/11-package-manager.md`)
-- [x] Language tutorial — `docs/tutorial/` (7 chapters, CI-linked examples)
+- [x] Language tutorial — `docs/tutorial/` (8 chapters, CI-linked examples)
 - [x] Standard library reference — `docs/stdlib/` (hand-written from prelude.go + std/*)
 - [x] Contributing guide — `CONTRIBUTING.md` (build, editors, documentation accuracy)
 
@@ -90,7 +90,7 @@ See [33-sdk-blockers.md](33-sdk-blockers.md).
 
 - [x] **B1 (1.18):** record `@[tag "…"]` → Go struct tags.
 - [x] **B2 (1.19):** multi-file same `module` → one Go package.
-- [ ] **B3:** deeper third-party `.gosig` (project hand-sigs for now).
+- [x] **B3 (trimmed corpus):** Hyperliquid-adjacent `goop-sigs/` stubs + `goop get-go-sig --override`.
 - [x] **B4 policy:** GOSIG004 + concrete wrappers ([32-go-generics-sigs.md](32-go-generics-sigs.md)).
 - [x] **No `?` on `result`** — rejected (STYLE).
 

@@ -1,6 +1,6 @@
 module main
 
-(* Cross-package Capitalized multi-arg apps must flatten to one Go call. *)
+// Cross-package Capitalized multi-arg apps must flatten to one Go call.
 
 import goop . "github.com/Macho0x/Goop/tests/fixtures/callpkg"
 

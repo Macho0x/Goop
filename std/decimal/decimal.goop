@@ -1,14 +1,13 @@
 module decimal
 
-(* std.decimal — fixed-point decimal for money and trading quantities.
- *
- * Backed by github.com/shopspring/decimal. Do not use float64 for money;
- * see docs/design/25-decimal.md and docs/design/12-trading-bot-safety.md.
- *
- * H5 auto-sigs are not ready: signatures below are hand-written.
- * H6 (T, error) → result is not ready: OfString uses RequireFromString
- * (panics on parse failure). Prefer OfInt for trusted integers.
- *)
+// std.decimal — fixed-point decimal for money and trading quantities.
+//
+// Backed by github.com/shopspring/decimal. Do not use float64 for money;
+// see docs/design/25-decimal.md and docs/design/12-trading-bot-safety.md.
+//
+// H5 auto-sigs are not ready: signatures below are hand-written.
+// H6 (T, error) → result is not ready: OfString uses RequireFromString
+// (panics on parse failure). Prefer OfInt for trusted integers.
 
 import go "github.com/shopspring/decimal" {
   type Decimal
@@ -24,7 +23,7 @@ import go "github.com/shopspring/decimal" {
   val (d : Decimal).String : unit -> string
 }
 
-(* NewFromInt takes Go int64; bridge from Goop int. *)
+// NewFromInt takes Go int64; bridge from Goop int.
 @[go] {
   func fromInt(n int) decimal.Decimal {
     return decimal.NewFromInt(int64(n))
@@ -32,13 +31,13 @@ import go "github.com/shopspring/decimal" {
 }
 val fromInt : int -> Decimal
 
-(* --- Construction --- *)
+// --- Construction ---
 
 let OfString (s: string) : Decimal = RequireFromString s
 
 let OfInt (n: int) : Decimal = fromInt n
 
-(* --- Arithmetic (also available as method sugar: a.Add b) --- *)
+// --- Arithmetic (also available as method sugar: a.Add b) ---
 
 let Add (a: Decimal) (b: Decimal) : Decimal = a.Add b
 
@@ -48,7 +47,7 @@ let Mul (a: Decimal) (b: Decimal) : Decimal = a.Mul b
 
 let Div (a: Decimal) (b: Decimal) : Decimal = a.Div b
 
-(* --- Comparison --- *)
+// --- Comparison ---
 
 let Cmp (a: Decimal) (b: Decimal) : int = a.Cmp b
 

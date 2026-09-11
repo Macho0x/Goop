@@ -1,0 +1,8 @@
+// Trimmed Hyperliquid/B3 stub for github.com/valyala/fastjson.
+// Full dump: goop get-go-sig github.com/valyala/fastjson
+type Parser
+type Value
+
+val (p : Parser ptr).Parse : string -> Value ptr * error
+val (v : Value ptr).GetInt : string -> int
+val (v : Value ptr).GetStringBytes : string -> bytes

@@ -42,12 +42,14 @@ API: `gosiggen.ResolveSigPath` / `gosiggen.LoadImportBindings`.
 ```bash
 goop get-go-sig encoding/json
 goop get-go-sig github.com/shopspring/decimal
+goop get-go-sig --override github.com/gorilla/websocket
 ```
 
 1. Loads the Go package via `go/packages` (from the nearest `go.mod` dir).
 2. Emits a `.gosig` with exported types, funcs, methods, consts/vars that
    map to representable Goop types.
-3. Writes under `$GOOP_HOME/build/go-sigs/` (never into the project tree).
+3. Writes under `$GOOP_HOME/build/go-sigs/` (never into the project tree
+   unless `--override`, which also copies to `./goop-sigs/`).
 4. Prints **warnings** for every skipped / unrepresentable export and hints
    at `goop-sigs/` for overrides.
 5. Notes when `P` is outside the curated H5 set (quality may vary).

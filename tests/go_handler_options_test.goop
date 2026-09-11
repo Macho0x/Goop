@@ -1,6 +1,6 @@
 module main
 
-(* Native slog.HandlerOptions via Go struct literal + ptr_of. *)
+// Native slog.HandlerOptions via Go struct literal + ptr_of.
 
 import go "bytes" {
   type Buffer

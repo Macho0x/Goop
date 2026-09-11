@@ -45,7 +45,7 @@ match Map.get table "foo" with
 ```goop
 import goop . "std.map"
 
-let m = make ()   (* same as Map.make *)
+let m = make ()   // same as Map.make
 ```
 
 ## Runnable example

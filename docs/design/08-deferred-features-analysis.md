@@ -146,7 +146,7 @@ If Goop were to adopt effect types (even without resumption), the syntax should 
 #### Effect type declarations
 
 ```goop
-(* Declare an effect *)
+// Declare an effect
 effect state (s: 's) where
   val get : unit -> s
   val put : s -> unit
@@ -155,7 +155,7 @@ effect state (s: 's) where
 #### Effect rows in function types
 
 ```goop
-(* A function that uses state and may perform IO *)
+// A function that uses state and may perform IO
 let incrementCounter () : int
   with { state<int>; io }
 =
@@ -163,7 +163,7 @@ let incrementCounter () : int
   state.put (n + 1);
   n
 
-(* Row-polymorphic: works with any effect set that includes state *)
+// Row-polymorphic: works with any effect set that includes state
 let readTwice () : (int, int)
   with { state<int> | e }
 =
@@ -171,7 +171,7 @@ let readTwice () : (int, int)
   let b = state.get () in
   (a, b)
 
-(* Pure function: no effects *)
+// Pure function: no effects
 let double (x: int) : int = x * 2
 ```
 
@@ -180,7 +180,7 @@ The effect row syntax `with { eff1; eff2 | .. }` mirrors record row syntax `{ fi
 #### Effect handlers (if resumption is added)
 
 ```goop
-(* Handle the state effect with a mutable cell *)
+// Handle the state effect with a mutable cell
 let withCounter (initial: int) (f: unit -> 'a with { state<int> | e }) : 'a with { e } =
   let mutable cell = initial in
   handle state<a> =
@@ -188,21 +188,21 @@ let withCounter (initial: int) (f: unit -> 'a with { state<int> | e }) : 'a with
     | put (v)  resume -> resume (cell <- v)
   in f ()
 
-(* Usage *)
+// Usage
 let result =
   withCounter 0 (fun () ->
-    let a = state.get () in    (* a = 0 *)
+    let a = state.get () in    // a = 0
     state.put 5;
-    let b = state.get () in    (* b = 5 *)
-    a + b                       (* 5 *)
+    let b = state.get () in    // b = 5
+    a + b                       // 5
   )
-(* result = 5 *)
+// result = 5
 ```
 
 Without resumption (capability-passing model):
 
 ```goop
-(* State handler as a record of functions *)
+// State handler as a record of functions
 effect state (s: 's) where
   val get : unit -> s
   val put : s -> unit
@@ -233,7 +233,7 @@ The main challenge is **effect inference at the `let` boundary**. HM generalizes
 Koka uses **row-polymorphic effect inference** — a function's inferred effect row is the union of all effects in its body, generalized. This works with HM and is well-understood.
 
 ```goop
-(* Inferred: f : 'a -> 'b -> 'a with { io } *)
+// Inferred: f : 'a -> 'b -> 'a with { io }
 let f (x: 'a) (y: 'b) =
   println "computing";
   x
@@ -314,20 +314,20 @@ If Goop adopts **limited resumption** (generators via state machines):
 **What the minimal viable version looks like**:
 
 ```goop
-(* Phase 1: Effect rows in types, erased at runtime *)
+// Phase 1: Effect rows in types, erased at runtime
 let readConfig (path: string) : result<config, string> with { io } =
   let bytes = File.readAllBytes path ? in
   let text = Encoding.utf8.getString bytes ? in
   Json.parse<config> text
 
-(* Row-polymorphic: works in any context *)
+// Row-polymorphic: works in any context
 let catchAll (f: unit -> 'a with { e }) (handler: string -> 'a) : 'a with { e } =
   ...
 
-(* Pure by default; the compiler warns if no with clause and effects detected *)
-let double (x: int) : int = x * 2  (* inferred pure *)
+// Pure by default; the compiler warns if no with clause and effects detected
+let double (x: int) : int = x * 2  // inferred pure
 
-(* Phase 2 (optional, later): Capability-passing for extern Go *)
+// Phase 2 (optional, later): Capability-passing for extern Go
 let withLogger (l: Logger) (f: unit -> 'a with { log | e }) : 'a with { e } =
   ...
 ```
@@ -375,10 +375,10 @@ This is a **two-phase** approach: infer base types, then check refinements. Goop
 The key constraint: **without user annotations, refinements cannot be inferred.** LiquidHaskell infers refinement types for local variables automatically (using the SMT solver to propagate constraints), but function signatures usually need annotations. This means:
 
 ```goop
-(* Without annotation: base type inferred *)
-let bad (x: int) : int = x / 0  (* HM infers int -> int *)
+// Without annotation: base type inferred
+let bad (x: int) : int = x / 0  // HM infers int -> int
 
-(* With annotation: refinement checked *)
+// With annotation: refinement checked
 let safe (x: int) (y: int where y <> 0) : int =
   x / y
 ```
@@ -392,16 +392,16 @@ Goop already has `where` as a reserved word (for pattern guards). Refinements wo
 #### Refinement types
 
 ```goop
-(* Positive integers *)
+// Positive integers
 type pos = int where it > 0
 
-(* Non-empty strings *)
+// Non-empty strings
 type nonempty = string where len it > 0
 
-(* Index in bounds *)
+// Index in bounds
 type index (n: int) = int where it >= 0 && it < n
 
-(* A vector of known length (length-indexed via refinement) *)
+// A vector of known length (length-indexed via refinement)
 type vec ('a, n: int) = { data: 'a list where length data = n }
 ```
 
@@ -410,10 +410,10 @@ The `it` keyword refers to the value being constrained. This mirrors how F# uses
 #### Function types with refinements
 
 ```goop
-(* Division requires nonzero divisor *)
+// Division requires nonzero divisor
 let safeDiv (a: int) (b: int where b <> 0) : int = a / b
 
-(* Taking the nth element requires a valid index *)
+// Taking the nth element requires a valid index
 let nth (xs: 'a list) (n: int where n >= 0 && n < length xs) : 'a =
   ...
 ```
@@ -421,10 +421,10 @@ let nth (xs: 'a list) (n: int where n >= 0 && n < length xs) : 'a =
 #### Dependent function types (if full dependent types)
 
 ```goop
-(* Full dependent: return type depends on input value *)
+// Full dependent: return type depends on input value
 let replicate (n: int) (x: 'a) : vec<'a, n> = ...
 
-(* Pi-type syntax: n is available in the return type *)
+// Pi-type syntax: n is available in the return type
 let replicate (n: int) (x: 'a) : vec<'a, n> = ...
 ```
 
@@ -440,10 +440,10 @@ For Goop, the minimal viable approach is:
 Goop already uses `when` for pattern guards. There's no conflict:
 
 ```goop
-(* `where` in a type annotation: refinement *)
+// `where` in a type annotation: refinement
 let f (x: int where x > 0) : int = x + 1
 
-(* `when` in a pattern match: guard *)
+// `when` in a pattern match: guard
 match x with
 | Some v when v > 0 -> v
 | _ -> 0
@@ -456,7 +456,7 @@ Refinements are **completely erased** in the Go output — no runtime representa
 #### Minimal lowering (refinements only, no dependent types)
 
 ```goop
-(* Goop source *)
+// Goop source
 let safeDiv (a: int) (b: int where b <> 0) : int = a / b
 ```
 
@@ -470,14 +470,14 @@ func SafeDiv(a, b int) int {
 For extern Go functions called from Goop, the compiler cannot verify the refinement. It must insert runtime assertions at the call site:
 
 ```goop
-(* Goop calls extern Go *)
+// Goop calls extern Go
 extern "go" "math" {
   val sqrt : float where it >= 0.0 -> float
 }
 
 let compute (x: float) : float option =
   if x >= 0.0 then
-    Some (sqrt x)   (* compiler knows x >= 0.0 from the if-condition, no runtime check *)
+    Some (sqrt x)   // compiler knows x >= 0.0 from the if-condition, no runtime check
   else None
 ```
 
@@ -609,8 +609,8 @@ let sqrt (x: float) : float
 4. **Const generics for array types** as a separate, lighter feature:
 
 ```goop
-(* Fixed-size array, known at compile time *)
-type fixed_array ('a, const n: int) = ...  (* lowered to Go [N]T *)
+// Fixed-size array, known at compile time
+type fixed_array ('a, const n: int) = ...  // lowered to Go [N]T
 
 let zeros (const n: int) : fixed_array<float, n> = ...
 ```

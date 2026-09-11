@@ -1,0 +1,12 @@
+// Trimmed Hyperliquid/B3 stub for github.com/gorilla/websocket.
+// Full dump: goop get-go-sig github.com/gorilla/websocket
+type Conn
+type Dialer
+
+val TextMessage : int
+val BinaryMessage : int
+val CloseMessage : int
+
+val (c : Conn ptr).Close : unit -> error
+val (c : Conn ptr).WriteMessage : int -> bytes -> error
+val (c : Conn ptr).ReadMessage : unit -> int * bytes * error

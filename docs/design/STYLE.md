@@ -48,6 +48,7 @@ See also: [14-ocaml-parity.md](14-ocaml-parity.md), [03-syntax.md](03-syntax.md)
 | Bug / abort | `failwith "msg"` / `raise E` | `panic` |
 | Branding | `type order_id = Order_id of string` | `newtype` |
 | Pipeline | `x \|> f` | — |
+| Comments | `//` to end of line | `(* … *)` (LEX002) |
 | Concurrency | `go (fun () -> …)`, `go (move x) …` | Capturing `ref` without `move` |
 
 ## Profiles

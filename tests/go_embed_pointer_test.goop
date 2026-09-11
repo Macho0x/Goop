@@ -1,6 +1,6 @@
 module main
 
-(* Regression: Go pointer types inside @[go] must parse (Goop Lang embed opacity). *)
+// Regression: Go pointer types inside @[go] must parse (Goop Lang embed opacity).
 
 @[go] {
   type box struct{ n int }

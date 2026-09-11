@@ -56,7 +56,7 @@ import (
   orderbook goop "github.com/you/app/orderbook"
 )
 
-import goop . "std.list"   (* dot import: unqualified exports *)
+import goop . "std.list"   // dot import: unqualified exports
 ```
 
 | Form | Meaning | Block contents |
@@ -93,7 +93,7 @@ See [15-lang-embeds.md](15-lang-embeds.md).
 
 ```goop
 private let helper x = x + 1
-let main () = helper 1   (* OK in same module *)
+let main () = helper 1   // OK in same module
 ```
 
 `private type` brands ADT constructors at the module boundary (preferred over removed `newtype`).

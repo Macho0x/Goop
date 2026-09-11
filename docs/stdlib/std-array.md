@@ -7,8 +7,8 @@ Goop provides OCaml-style arrays via prelude bindings (no import required). The 
 ## Types
 
 ```goop
-int array          (* int array *)
-decision array     (* user type T array *)
+int array          // int array
+decision array     // user type T array
 ```
 
 ## Functions

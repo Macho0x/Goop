@@ -1,0 +1,4 @@
+// Trimmed Hyperliquid/B3 stub for github.com/sonirico/vago.
+// Most helpers live in subpackages (e.g. vago/lol). Full dump:
+// goop get-go-sig github.com/sonirico/vago
+type Unit

@@ -1,7 +1,7 @@
 module BeginMatchReturnTest
 
-(* Regression: match as the last stmt of begin in an if-else return
-   position must not lower to `return _s := ...` inside an IIFE. *)
+// Regression: match as the last stmt of begin in an if-else return
+// position must not lower to `return _s := ...` inside an IIFE.
 
 type kind =
   | A

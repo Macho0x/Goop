@@ -1,5 +1,36 @@
 # Changelog
 
+## 1.22.0
+
+### Breaking
+
+- **Comments are `//` only.** `(* … *)` is **LEX002** on the wire
+  (`LEX002: block comments (* *) were removed; use //`). Editors, `.gosig`
+  generation, `goop new`, examples, and the grammar follow.
+
+## 1.21.0
+
+### Breaking
+
+- **`[check] verify_ffi` defaults to true.** **GOSIG003** is now a check error
+  (arity / missing package-level function), not a stderr warning. A lone
+  `unit -> R` counts as Go arity 0. `packages.Load` failures do not fail the
+  check. Opt out: `verify_ffi = false`.
+
+### Interop
+
+- Trimmed Hyperliquid-adjacent `.gosig` stubs in `goop-sigs/` (ethereum
+  common/crypto, gorilla/websocket, msgpack, vago, fastjson).
+- `goop get-go-sig --override` copies the cache file into `./goop-sigs/`.
+- Example: [`docs/examples/sdk_sigs.goop`](docs/examples/sdk_sigs.goop) (check-only).
+
+### Docs / stdlib
+
+- TODO / roadmap remaining-work wording matches v1.20+ (freeze, thin `std.*`, B3).
+- `std.list` **Filter** and **Fold**.
+- Concrete `@[go]` generic wrapper example (`slices.Contains` on strings).
+- Branded-ID benches ≈ hand Go; freeze polish checked off.
+
 ## 1.20.0
 
 ### Codegen / modules

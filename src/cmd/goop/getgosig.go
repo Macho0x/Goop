@@ -15,16 +15,27 @@ import (
 // exports as warnings. Project overrides live in goop-sigs/ — see
 // docs/design/23-go-sig-resolution.md.
 func runGetGoSig(args []string) int {
-	if len(args) == 0 || args[0] == "-h" || args[0] == "--help" {
-		fmt.Fprintf(os.Stderr, "usage: goop get-go-sig <go-import-path>\n")
-		fmt.Fprintf(os.Stderr, "  Generate a .gosig stub for a Go package and cache it under\n")
-		fmt.Fprintf(os.Stderr, "  $GOOP_HOME/build/go-sigs/. Hand-curated overrides win via goop-sigs/.\n")
-		return 1
+	writeOverride := false
+	importPath := ""
+	for _, a := range args {
+		switch a {
+		case "-h", "--help":
+			fmt.Fprintf(os.Stderr, "usage: goop get-go-sig [--override] <go-import-path>\n")
+			fmt.Fprintf(os.Stderr, "  Generate a .gosig stub under $GOOP_HOME/build/go-sigs/.\n")
+			fmt.Fprintf(os.Stderr, "  --override also copies it to ./goop-sigs/ (project override).\n")
+			return 1
+		case "--override":
+			writeOverride = true
+		default:
+			if strings.HasPrefix(a, "-") {
+				fmt.Fprintf(os.Stderr, "goop get-go-sig: unknown flag %s\n", a)
+				return 1
+			}
+			importPath = strings.TrimSpace(a)
+		}
 	}
-
-	importPath := strings.TrimSpace(args[0])
 	if importPath == "" {
-		fmt.Fprintf(os.Stderr, "usage: goop get-go-sig <go-import-path>\n")
+		fmt.Fprintf(os.Stderr, "usage: goop get-go-sig [--override] <go-import-path>\n")
 		return 1
 	}
 
@@ -39,7 +50,6 @@ func runGetGoSig(args []string) int {
 		LoadDir: loadDir,
 	}, home, "")
 	if err != nil {
-		// Graceful failure when the generator / package load is unavailable.
 		fmt.Fprintf(os.Stderr, "goop get-go-sig: %v\n", err)
 		if isGeneratorUnavailable(err) {
 			fmt.Fprintf(os.Stderr, "goop get-go-sig: generator not yet available\n")
@@ -54,7 +64,23 @@ func runGetGoSig(args []string) int {
 
 	printSigWarnings(res)
 
-	if ov := gosiggen.OverridePath(cwd, importPath); ov != "" {
+	if writeOverride {
+		ov := gosiggen.OverridePath(cwd, importPath)
+		if ov == "" {
+			fmt.Fprintf(os.Stderr, "goop get-go-sig: cannot resolve override path\n")
+			return 1
+		}
+		data, readErr := os.ReadFile(path)
+		if readErr != nil {
+			fmt.Fprintf(os.Stderr, "goop get-go-sig: read cache: %v\n", readErr)
+			return 1
+		}
+		if err := gosiggen.WriteSig(ov, string(data)); err != nil {
+			fmt.Fprintf(os.Stderr, "goop get-go-sig: --override: %v\n", err)
+			return 1
+		}
+		fmt.Printf("wrote override %s\n", ov)
+	} else if ov := gosiggen.OverridePath(cwd, importPath); ov != "" {
 		if st, err := os.Stat(ov); err == nil && !st.IsDir() {
 			fmt.Fprintf(os.Stderr, "goop: note: project override exists at %s (wins over cache at compile time)\n", ov)
 		}

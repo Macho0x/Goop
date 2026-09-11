@@ -1,13 +1,11 @@
 # Goop Strategic Update: Interop, Ergonomics, and Domain Fit
 
-> Status: Revised 2026-07-27. Supersedes the 2026-07-16 draft.
-> The Go-interop-first direction from the council review is retained, but the
-> original plan covered only the interop axis. This revision adds the two axes
-> it ignored — developer ergonomics and domain fit — and reorganizes all work
-> into HIGH / MEDIUM / LOW priority tiers.
+> **Historical.** All H / M / L tiers below are closed or not planned.
+> Remaining work lives in [`TODO.md`](TODO.md) and
+> [`docs/design/07-roadmap.md`](docs/design/07-roadmap.md) (freeze, B3, thin `std.*`).
 >
-> **Progress tracker (updated 2026-07-27):** items marked ✅ DONE are landed in
-> tree; ⏸️ DEFERRED are explicitly out of this release train; unmarked remain.
+> Written 2026-07-27. Supersedes the 2026-07-16 draft. Keep the best-practices
+> section; do not treat §3 “facts” as current product status.
 
 ## 1. What we are doing
 
@@ -44,24 +42,16 @@ is necessary; it is not sufficient.
 
 ## 3. Why this direction
 
-Facts from the repo:
+Facts that motivated the 2026-07 plan (**all addressed**):
 
-1. Goop already compiles to Go, runs on Go's runtime, and deploys as Go
-   binaries. Go's stdlib is already reachable through `import go`; the
-   friction is the hand-written `.gosig` ceremony. No `.gosig` files exist in
-   the repo today — greenfield problem.
-2. The compiler has a **silent degradation path**: the codegen expression
-   dispatcher's default case emits `/* TODO: <Type> */` into generated Go
-   (`src/internal/codegen/codegen.go:2202`), so unsupported expressions fail
-   at *Go* compile time instead of producing a Goop diagnostic. That
-   contradicts the "safe defaults" identity.
-3. The trading story is thinner than the trading docs. The repo ships
-   `docs/design/12-trading-bot-safety.md`, yet `docs/examples/orderbook.goop`
-   is skipped in three test files (still uses removed `newtype`), there is no
-   decimal type anywhere, and branded IDs require a single-constructor ADT
-   wrapper since `newtype` was removed (PARSE-MIG015).
-4. The adoption surface is minimal: no playground, LSP clients for VS Code
-   and Zed only. Lisette ships a playground and five editors.
+1. Goop compiles to Go and deploys as Go binaries. Hand `.gosig` ceremony was
+   the interop friction — **H5/M7 shipped:** `goop-sigs/` overrides, cache
+   under `$GOOP_HOME/build/go-sigs/`, `goop gen-sig` / `goop get-go-sig`.
+2. Silent `/* TODO */` codegen fallbacks are **gone (H1):** unhandled
+   expressions are `CODEGEN001` at Goop compile time.
+3. Trading examples, `std.decimal`, and single-ctor branded IDs (zero-cost
+   H4c) are in tree; `newtype` stays removed (PARSE-MIG015).
+4. Playground is on GitHub Pages; editors: VS Code, Zed, Neovim, Helix.
 
 ---
 
@@ -266,29 +256,22 @@ Removed from the roadmap. The compiler stays Go; see non-goals in
 
 ---
 
-## 9. Open questions
+## 9. Open questions (closed)
 
-- Should the auto-sig generator live in `goop` itself, or as a separate
-  `goop-sig` tool? (Recommendation: start inside `goop`, extract later if
-  the cache/CLI surface becomes too complex.) — *Started inside `goop`.*
-- How do we represent Go generics in Goop signatures? Go 1.18+ generics are
-  real in the wild. A first pass can monomorphize common instantiations or
-  emit a warning; a proper design is needed for 1.0.
-- ~~What is the exact override resolution order…~~ → see
-  [`28-go-sig-resolution.md`](docs/design/28-go-sig-resolution.md).
-- How do we test generated sigs in CI? (Suggestion: generate for the curated
-  set, run `goop check` against a corpus of example files, fail on new
-  warnings.)
-- ~~**(H4)** Branded IDs…~~ **Decided:** ADT surface + zero-cost plan
-  (`21-branded-ids.md`).
-- ~~**(M3)** String interpolation…~~ **NO for 1.0**
-  (`22-string-interpolation.md`).
-- ~~**(M1)** Which decimal library…~~ **`shopspring/decimal`.**
+- Auto-sig generator lives **inside `goop`** (`gen-sig`, `get-go-sig`).
+- Go generics: **no monomorphization.** Skip in generated stubs;
+  **GOSIG004** on hand `{ val }` that names a generic. Concrete `@[go]`
+  wrappers — [32-go-generics-sigs.md](docs/design/32-go-generics-sigs.md).
+- Override order: [28-go-sig-resolution.md](docs/design/28-go-sig-resolution.md).
+- CI: `goop gen-sig --smoke` plus `goop check` on `writing_tools.goop` / `maps.goop`.
+- **H4** branded IDs: ADT surface + zero-cost codegen (`21-branded-ids.md`).
+- **M3** string interpolation: **NO** (`22-string-interpolation.md`).
+- **M1** decimal: `shopspring/decimal`.
 
 ## 10. Related documents
 
 - `docs/design/STYLE.md` — language surface, including removed features
-- `TODO.md` — remaining work (stdlib / 1.0; self-host explicitly not planned)
+- `TODO.md` — remaining work (freeze / B3; self-host explicitly not planned)
 - `docs/design/07-roadmap.md` — phased plan
 - `docs/design/12-trading-bot-safety.md` — the domain-fit motivation for H4, M1
 - `docs/design/18-go-methods.md` — FFI method/field lowering guarantees

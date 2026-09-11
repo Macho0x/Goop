@@ -1,6 +1,6 @@
 module StringTest
 
-(* Test string operations from the prelude. *)
+// Test string operations from the prelude.
 
 let main () =
   let chk1 = assert (string_concat "hello" " world" = "hello world") in

@@ -47,17 +47,17 @@ benchmarks/
   should match hand Go closely.
 - **`list_fold` map** allocates heavily on both sides; fold is allocation-free.
 
-## Indicative numbers (2026-07-28)
+## Indicative numbers (2026-09-11)
 
 Machine: Linux amd64, 11th Gen Intel i7-1165G7 @ 2.80GHz.  
-Compiler: Goop 1.13.0 (built from `src/`). One `./benchmarks/run.sh` pass.
+Compiler: Goop 1.21.0 (built from `src/`). One `./benchmarks/run.sh` pass.
 
 | Bench | Hand ns/op | Generated ns/op | Notes |
 |-------|------------|-----------------|-------|
-| list_fold FoldAdd | ~1357 | ~2579 | 0 allocs both |
-| list_fold MapInc | ~74k | ~93k | heavy allocs both |
-| adt_match Area | ~3.8 | ~6.8 | multi-ctor interface lowering |
-| branded_id Roundtrip | ~0.36 | ~0.36 | zero-cost brands ≈ hand Go |
+| list_fold FoldAdd | ~2406 | ~4053 | 0 allocs both |
+| list_fold MapInc | ~208k | ~281k | heavy allocs both |
+| adt_match Area | ~8.3 | ~15.5 | multi-ctor interface lowering |
+| branded_id Roundtrip | ~0.52 | ~0.53 | zero-cost brands ≈ hand Go |
 
 Treat these as **smoke / scaffolding**, not a ranking. Re-run locally before
 any public claim.

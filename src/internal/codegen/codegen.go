@@ -99,6 +99,7 @@ type Generator struct {
 
 	currentFunc         string // function being generated (for ? operator)
 	optionCtorHint      string // OptionGoType hint while emitting typed record fields
+	recordLiteralHint   string // preferred Go record type name for `{…}` literals (from let : T)
 	varCounter          int    // for generating unique tmp variable names
 	needFmt             bool   // whether to import "fmt"
 	needCgo             bool   // whether @[c] embeds require import "C"
@@ -2098,6 +2099,7 @@ func (g *Generator) emitLetDecl(d *ast.LetDecl) {
 					g.buf.WriteString(" " + retGo)
 				}
 				g.funcRetType[funcName] = retGo
+				g.funcRetType[b.Name] = retGo // currentFunc uses Goop name
 			}
 
 			g.buf.WriteString(" {\n")
@@ -4539,9 +4541,11 @@ func groupMatchArms(arms []ast.MatchArm, g *Generator) []armGroup {
 func (g *Generator) emitReturnExpr(e ast.Expr) {
 	// Check if the enclosing function has a non-unit return type
 	hasRet := false
+	retHint := ""
 	if g.currentFunc != "" {
 		if rt, ok := g.funcRetType[g.currentFunc]; ok && rt != "struct{}" {
 			hasRet = true
+			retHint = rt
 		}
 	}
 	if !hasRet {
@@ -4554,6 +4558,12 @@ func (g *Generator) emitReturnExpr(e ast.Expr) {
 		g.emitExpr(e, true)
 		return
 	}
+
+	prevRec := g.recordLiteralHint
+	if retHint != "" {
+		g.recordLiteralHint = retHint
+	}
+	defer func() { g.recordLiteralHint = prevRec }()
 
 	// Emit as a return statement if it's not already a statement
 	switch e := e.(type) {
@@ -5715,8 +5725,17 @@ func (g *Generator) emitRecord(e *ast.RecordExpr) {
 			return
 		}
 	}
-	// Determine the record type from fields
-	recName := g.inferRecordName(e)
+	// Prefer annotated let/fun return type when multiple records share field names
+	// (e.g. infoDexRequest vs remoteAllMidsSubscriptionPayload).
+	recName := ""
+	if g.recordLiteralHint != "" && g.recordLiteralHint != "interface{}" && g.recordLiteralHint != "struct{}" {
+		if g.recordHintMatches(e, g.recordLiteralHint) {
+			recName = g.recordLiteralHint
+		}
+	}
+	if recName == "" {
+		recName = g.inferRecordName(e)
+	}
 	g.buf.WriteString(recName + "{")
 	fieldTypes := g.recordFieldASTTypes(recName)
 	for i, f := range e.Fields {
@@ -5725,18 +5744,38 @@ func (g *Generator) emitRecord(e *ast.RecordExpr) {
 		}
 		g.buf.WriteString(exported(f.Name) + ": ")
 		if f.Value != nil {
-			prevHint := g.optionCtorHint
+			prevOpt := g.optionCtorHint
+			prevRec := g.recordLiteralHint
+			g.recordLiteralHint = "" // nested literals must re-resolve
 			if ft, ok := fieldTypes[f.Name]; ok {
 				g.optionCtorHint = g.optionGoTypeFromAST(ft)
+				if nested := g.typeToGo(ft); nested != "" && nested != "interface{}" {
+					g.recordLiteralHint = nested
+				}
 			}
 			g.emitExpr(f.Value, false)
-			g.optionCtorHint = prevHint
+			g.optionCtorHint = prevOpt
+			g.recordLiteralHint = prevRec
 		} else {
 			// Field punning
 			g.buf.WriteString(f.Name)
 		}
 	}
 	g.buf.WriteString("}")
+}
+
+// recordHintMatches reports whether lit fields are a subset of the named record's fields.
+func (g *Generator) recordHintMatches(e *ast.RecordExpr, recName string) bool {
+	fieldTypes := g.recordFieldASTTypes(recName)
+	if len(fieldTypes) == 0 {
+		return false
+	}
+	for _, f := range e.Fields {
+		if _, ok := fieldTypes[f.Name]; !ok {
+			return false
+		}
+	}
+	return true
 }
 
 func (g *Generator) emitGoStructLiteral(e *ast.RecordExpr, named *types.TGoNamed) {

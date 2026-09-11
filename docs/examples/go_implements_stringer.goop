@@ -1,6 +1,6 @@
 module GoImplementsStringer
 
-(* Example: satisfy fmt.Stringer from native Goop. *)
+// Example: satisfy fmt.Stringer from native Goop.
 
 import go "fmt" {
   type Stringer

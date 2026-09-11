@@ -6,7 +6,7 @@ Language and LSP configuration for the [Goop language](https://github.com/Macho0
 
 - **File type** — `*.goop` recognized as Goop
 - **LSP** — diagnostics, completions, hover, and go-to-definition via `goop lsp`
-- **Comments / indent** — `//` and `(* ... *)`, 2-space indent
+- **Comments / indent** — `//` line comments, 2-space indent
 
 There is no Tree-sitter grammar yet, so Helix will not syntax-highlight Goop until one exists. LSP features still work. A TextMate grammar lives at [`../../syntaxes/goop.tmLanguage.json`](../../syntaxes/goop.tmLanguage.json) (used by [VS Code](../vscode/README.md) and [Zed](../zed/README.md)).
 
@@ -42,7 +42,6 @@ injection-regex = "goop"
 file-types = ["goop"]
 roots = ["goop.toml"]
 comment-tokens = "//"
-block-comment-tokens = { start = "(*", end = "*)" }
 indent = { tab-width = 2, unit = "  " }
 language-servers = ["goop"]
 ```

@@ -1,6 +1,6 @@
 module map
 
-(* Thin re-exports of prelude Map.* — Go maps via language `map[K] V`. *)
+// Thin re-exports of prelude Map.* — Go maps via language `map[K] V`.
 
 let make () = Map.make ()
 

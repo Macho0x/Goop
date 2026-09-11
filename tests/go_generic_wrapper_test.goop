@@ -1,0 +1,23 @@
+module main
+
+@[go] {
+  import "slices"
+
+  func stringsContains(hay []interface{}, needle string) bool {
+    xs := make([]string, 0, len(hay))
+    for _, v := range hay {
+      if s, ok := v.(string); ok {
+        xs = append(xs, s)
+      }
+    }
+    return slices.Contains(xs, needle)
+  }
+}
+val stringsContains : string go_slice -> string -> bool
+
+let main () =
+  begin
+    let xs = go_slice_of_list ["a"; "b"; "c"] in
+    assert (stringsContains xs "b");
+    assert (not (stringsContains xs "z"))
+  end

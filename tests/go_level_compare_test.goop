@@ -1,6 +1,6 @@
 module main
 
-(* Native slog.Level ordered comparison in Enabled. *)
+// Native slog.Level ordered comparison in Enabled.
 
 import go "context" {
   type Context

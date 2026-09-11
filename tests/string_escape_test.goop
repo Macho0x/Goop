@@ -1,6 +1,6 @@
 module StringEscapeTest
 
-(* Hex, octal, and \e escapes decode in the lexer. *)
+// Hex, octal, and \e escapes decode in the lexer.
 
 let main () =
   let esc = "\x1b" in

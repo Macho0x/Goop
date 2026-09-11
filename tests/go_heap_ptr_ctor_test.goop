@@ -1,6 +1,6 @@
 module main
 
-(* Construct a slog.Handler implementor with ptr_of — no @[go] ctor. *)
+// Construct a slog.Handler implementor with ptr_of — no @[go] ctor.
 
 import go "context" {
   type Context

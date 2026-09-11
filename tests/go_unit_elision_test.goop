@@ -6,7 +6,7 @@ import go "time" {
   val (t : Time).IsZero : unit -> bool
 }
 
-(* OCaml `Now ()` must lower to time.Now(), not time.Now(struct{}{}). *)
+// OCaml `Now ()` must lower to time.Now(), not time.Now(struct{}{}).
 
 let main () =
   let t = Now () in

@@ -1,4 +1,4 @@
-(* CLI-style file tool: maps + os + path/filepath via bare import go. *)
+// CLI-style file tool: maps + os + path/filepath via bare import go.
 module main
 
 import go "os"

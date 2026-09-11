@@ -1,21 +1,21 @@
 module main
 
-(* Declare a linear resource type *)
+// Declare a linear resource type
 type Handle : 1
 
-(* The Close function discharges a linear handle *)
+// The Close function discharges a linear handle
 let Close (h: Handle) : unit =
   println "resource closed"
 
-(* A function that uses a handle *)
+// A function that uses a handle
 let useHandle (h: Handle) : unit =
   begin
     println "using handle";
     Close h
   end
 
-(* Scoped resource management without region CE:
-   use the handle, then Close discharges it. *)
+// Scoped resource management without region CE:
+// use the handle, then Close discharges it.
 let process (h: Handle) : unit =
   useHandle h
 

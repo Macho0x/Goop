@@ -1,6 +1,6 @@
 module main
 
-(* Empty Go struct literals for sync.Mutex and bytes.Buffer. *)
+// Empty Go struct literals for sync.Mutex and bytes.Buffer.
 
 import go "sync" {
   type Mutex

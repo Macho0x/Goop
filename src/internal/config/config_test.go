@@ -14,6 +14,9 @@ func TestDefaultConfig(t *testing.T) {
 	if cfg == nil {
 		t.Fatal("expected non-nil config")
 	}
+	if !cfg.Check.VerifyFFI {
+		t.Error("expected verify_ffi default true")
+	}
 }
 
 func TestDefaultResolution(t *testing.T) {

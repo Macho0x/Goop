@@ -1,6 +1,6 @@
 module main
 
-(* ptr / null / is_null / ptr_of *)
+// ptr / null / is_null / ptr_of
 
 type box = { n : int }
 

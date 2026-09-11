@@ -54,7 +54,7 @@ binding is a **method**; otherwise it is a **field**.
 
 ```goop
 Record.Attrs r (fun a -> true)
-r.Attrs (fun a -> true)          (* equivalent via field-select-then-app *)
+r.Attrs (fun a -> true)          // equivalent via field-select-then-app
 let k = a.Key in
 let s = (v.Resolve ()).String () in
 Mutex.Lock mu; ...; Mutex.Unlock mu
@@ -70,12 +70,12 @@ When a field or method short name collides with an imported `type` (e.g.
 ### `any`, spread, `go_slice` indexing
 
 ```goop
-(* builtin *)
+// builtin
 type any
 val any_of : 'a -> any
 val go_slice_get : 'a go_slice -> int -> 'a
 
-xs.(i)   (* when xs : 'a go_slice → go_slice_get xs i *)
+xs.(i)   // when xs : 'a go_slice → go_slice_get xs i
 spread xs
 ```
 

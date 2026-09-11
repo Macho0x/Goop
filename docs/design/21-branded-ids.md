@@ -29,10 +29,10 @@ then erase the runtime cost when it is safe.
 ## Idiomatic surface
 
 ```goop
-(* Public brand — constructor usable from other modules *)
+// Public brand — constructor usable from other modules
 type order_id = Order_id of string
 
-(* Opaque brand — only this module may construct / deconstruct *)
+// Opaque brand — only this module may construct / deconstruct
 private type client_order_id = Client_order_id of string
 
 type symbol = Symbol of string

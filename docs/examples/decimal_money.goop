@@ -1,9 +1,8 @@
 module main
 
-(* Money demo: fixed-point Decimal (including record fields), not float64.
- * See docs/design/25-decimal.md and docs/design/12-trading-bot-safety.md.
- * Integer cents remain fine for order-book ordering; use Decimal for money values.
- *)
+// Money demo: fixed-point Decimal (including record fields), not float64.
+// See docs/design/25-decimal.md and docs/design/12-trading-bot-safety.md.
+// Integer cents remain fine for order-book ordering; use Decimal for money values.
 
 import goop . "std.decimal"
 

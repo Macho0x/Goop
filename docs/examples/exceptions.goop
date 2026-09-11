@@ -1,6 +1,6 @@
 module ExceptionsDemo
 
-(* Canonical exceptions demo: raise / try / with. *)
+// Canonical exceptions demo: raise / try / with.
 
 exception Boom
 exception Fail of string

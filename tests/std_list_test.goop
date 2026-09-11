@@ -1,6 +1,6 @@
 module main
 
-(* List construction + match behavioral coverage. *)
+// List construction + match behavioral coverage.
 let rec list_length (xs: 'a list) : int =
   match xs with
   | [] -> 0

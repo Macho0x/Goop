@@ -1,7 +1,7 @@
 module Bench.BrandedId
 
-(* Microbenchmark: single-ctor branded ID wrap/unwrap.
-   Today this lowers to interface + struct (not yet zero-cost; see design/21). *)
+// Microbenchmark: single-ctor branded ID wrap/unwrap.
+// Zero-cost H4c: lowers to `type order_id string` (see docs/design/21-branded-ids.md).
 
 type order_id = | Order_id of string
 

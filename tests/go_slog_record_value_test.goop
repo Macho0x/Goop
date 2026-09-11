@@ -1,6 +1,6 @@
 module main
 
-(* Record.Attrs + Value.Kind / Group / Resolve from native Goop. *)
+// Record.Attrs + Value.Kind / Group / Resolve from native Goop.
 
 import go "log/slog" {
   type Record

@@ -112,12 +112,12 @@ Resolution order for `import goop "path"` (simplified):
 module Main
 
 import (
-  go "fmt"                              (* Go package — go.mod / Go toolchain *)
-  goop "std.io"                         (* logical path via mappings *)
-  orderbook goop "github.com/you/app/orderbook"  (* canonical Go module path *)
+  go "fmt"                              // Go package — go.mod / Go toolchain
+  goop "std.io"                         // logical path via mappings
+  orderbook goop "github.com/you/app/orderbook"  // canonical Go module path
 )
 
-import goop . "std.list"                (* dot import: unqualified exports *)
+import goop . "std.list"                // dot import: unqualified exports
 ```
 
 | Form | Resolved by |

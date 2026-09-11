@@ -65,7 +65,7 @@ let main () =
     title: "Transparent Go (match)",
     source: `module main
 
-(* Press Compile to see readable Go lowering. *)
+// Press Compile to see readable Go lowering.
 let classify (opt: int option) : string =
   match opt with
   | Some x when x > 0 -> "positive"

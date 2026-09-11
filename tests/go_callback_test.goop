@@ -1,6 +1,6 @@
 module main
 
-(* Pass a Goop closure where Go expects func(int) bool via thin @[go] bridge. *)
+// Pass a Goop closure where Go expects func(int) bool via thin @[go] bridge.
 
 @[go] {
   func filterFirst(xs []int, pred func(int) bool) int {

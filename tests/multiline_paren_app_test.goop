@@ -1,6 +1,6 @@
 module main
 
-(* Cross-line parenthesized / indented application must parse and run. *)
+// Cross-line parenthesized / indented application must parse and run.
 
 let add (a : int) (b : int) : int = a + b
 

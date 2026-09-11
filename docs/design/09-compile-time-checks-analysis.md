@@ -27,7 +27,7 @@ let safeDiv (a: int) (b: int where b <> 0) : int = a / b
 
 let compute (x: int) (y: int) : int =
   if y <> 0 then
-    safeDiv x y    (* typechecker proves y <> 0 from if-condition → VC discharged *)
+    safeDiv x y    // typechecker proves y <> 0 from if-condition → VC discharged
   else
     0
 ```
@@ -118,7 +118,7 @@ let counter = ref 0
 
 let launch (n: int) : unit =
   for i = 0 to n do
-    go (fun () -> counter := !counter + 1)  (* ⚠️ RACE: counter shared between goroutines *)
+    go (fun () -> counter := !counter + 1)  // ⚠️ RACE: counter shared between goroutines
   done
 ```
 
@@ -140,11 +140,11 @@ The analysis tracks closure captures across `go` expressions. It's a pure **flow
 Require explicit annotations for cross-goroutine mutable state:
 
 ```goop
-let shared counter : int = 0       (* explicitly shared *)
-let atomic counter : atomic<int> = 0  (* sync/atomic protected *)
+let shared counter : int = 0       // explicitly shared
+let atomic counter : atomic<int> = 0  // sync/atomic protected
 
-(* No shared/atomic annotation → cannot capture in go closure *)
-go (fun () -> counter <- counter + 1)  (* error: counter not shared *)
+// No shared/atomic annotation → cannot capture in go closure
+go (fun () -> counter <- counter + 1)  // error: counter not shared
 ```
 
 This is simpler to implement than flow analysis but adds annotation burden. It's effectively a type-level opt-in: "I promise this is safe" annotations that the compiler enforces structurally.
@@ -156,11 +156,11 @@ This is simpler to implement than flow analysis but adds annotation burden. It's
 Extend Goop's existing linear type system to track "unique access" patterns. If a variable is linear (not shared), passing it to a `go` closure transfers ownership — the spawning goroutine can no longer access it. This prevents races by construction: two goroutines cannot simultaneously access a linear value.
 
 ```goop
-type Data : 1  (* linear resource *)
+type Data : 1  // linear resource
 
 let process (d: Data) : unit =
-  go (fun () -> useData d)  (* d is handed-off to goroutine *)
-  (* d is no longer accessible here — linear discharge *)
+  go (fun () -> useData d)  // d is handed-off to goroutine
+  // d is no longer accessible here — linear discharge
 ```
 
 This is sound but limited: it works well for linear resources (files, handles) but not for general mutable state like counters. You can't make a counter linear in a useful way because multiple goroutines genuinely need to access it.
@@ -228,14 +228,14 @@ Goroutine 1 sends on `ch1` then receives on `ch2`. Goroutine 2 sends on `ch2` th
 ```goop
 let g1 (ch1: int chan) (ch2: int chan) : unit =
   go (fun () ->
-    Chan.send ch1 42;       (* blocks until someone receives *)
-    let v = Chan.recv ch2;  (* waits for g2 to send *)
+    Chan.send ch1 42;       // blocks until someone receives
+    let v = Chan.recv ch2;  // waits for g2 to send
     println (int_to_string v))
 
 let g2 (ch1: int chan) (ch2: int chan) : unit =
   go (fun () ->
-    Chan.send ch2 99;       (* blocks until someone receives *)
-    let v = Chan.recv ch1;  (* waits for g1 to send *)
+    Chan.send ch2 99;       // blocks until someone receives
+    let v = Chan.recv ch1;  // waits for g1 to send
     println (int_to_string v))
 ```
 
@@ -322,18 +322,18 @@ There is **no `close` operation and no misuse detection.** The four misuse patte
 Goop's existing **linear type system** (`type handle : 1` → flow-sensitive discharge checking) is a natural fit for channel close safety. The idea:
 
 ```goop
-type 'a chan : 1  (* channels are linear resources *)
+type 'a chan : 1  // channels are linear resources
 
 let producer (ch: int chan) : unit =
   Chan.send ch 42;
   Chan.send ch 99;
-  Chan.close ch     (* close consumes (discharges) the channel *)
-  (* ch is no longer accessible — linear discharge *)
+  Chan.close ch     // close consumes (discharges) the channel
+  // ch is no longer accessible — linear discharge
 
 let consumer (ch: int chan) : unit =
   let v1 = Chan.recv ch;
   let v2 = Chan.recv ch;
-  let v3 = Chan.recv ch;  (* receives zero value on closed channel — not a panic *)
+  let v3 = Chan.recv ch;  // receives zero value on closed channel — not a panic
 ```
 
 **What this catches:**
@@ -370,9 +370,9 @@ If `chan` is linear, each sender must receive its own reference to the channel, 
 **Option 1 (minimal, boring, works):** Don't make channels linear. Add `Chan.close` as a regular (non-linear) operation. Detect send-after-close via **runtime tracking** — the lowered Go emits a wrapper around channels that tracks the closed state:
 
 ```goop
-let ch = Chan.make ()   (* lowered to: ch := NewChannel() — wraps make(chan int) with a closed flag *)
-Chan.close ch            (* ch.closed = true; close(ch.raw) *)
-Chan.send ch 42          (* if ch.closed { panic("send on closed channel") }; ch.raw <- 42 *)
+let ch = Chan.make ()   // lowered to: ch := NewChannel() — wraps make(chan int) with a closed flag
+Chan.close ch            // ch.closed = true; close(ch.raw)
+Chan.send ch 42          // if ch.closed { panic("send on closed channel") }; ch.raw <- 42
 ```
 
 This adds a small runtime cost (one extra boolean check per send) but catches the most dangerous misuse (send-on-closed panics with a clear Goop-level error message). The cost is minimal — one `if` per `Chan.send`.
@@ -380,12 +380,12 @@ This adds a small runtime cost (one extra boolean check per send) but catches th
 **Option 2 (linear-sender model):** Make channels linear, but provide a **borrow** mechanism: `Chan.borrow` creates a non-linear view of the channel that can be shared but cannot close it. Only the linear owner can close.
 
 ```goop
-let ch : int chan = Chan.make ()    (* linear owner *)
-let view = Chan.borrow ch           (* non-linear reference, can send/recv but not close *)
-go (fun () -> Chan.send view 42)    (* OK: view is non-linear *)
-Chan.send ch 99                     (* OK: owner can send *)
-Chan.close ch                       (* OK: owner closes *)
-(* after close: view is dead but compiler can't prove this — runtime check *)
+let ch : int chan = Chan.make ()    // linear owner
+let view = Chan.borrow ch           // non-linear reference, can send/recv but not close
+go (fun () -> Chan.send view 42)    // OK: view is non-linear
+Chan.send ch 99                     // OK: owner can send
+Chan.close ch                       // OK: owner closes
+// after close: view is dead but compiler can't prove this — runtime check
 ```
 
 This is elegant but complex: `Chan.borrow` requires tracking that borrows don't outlive the owner, which is drifting into Rust-style lifetime territory.
@@ -397,8 +397,8 @@ This is elegant but complex: `Chan.borrow` requires tracking that borrows don't 
 Go's nil channel blocks forever on send/receive. This is easy to catch with flow-sensitive nil checking:
 
 ```goop
-let ch : int chan    (* declared but never assigned — nil *)
-Chan.send ch 42      (* compile error: ch is nil *)
+let ch : int chan    // declared but never assigned — nil
+Chan.send ch 42      // compile error: ch is nil
 ```
 
 Goop already forbids null — `option` is explicit. Extending this to channels: `Chan.make` always returns a non-nil channel. If a channel variable is not initialized before use, the compiler can flag it with flow-sensitive analysis. This is ~200 LoC and reuses the existing variable-liveness infrastructure.

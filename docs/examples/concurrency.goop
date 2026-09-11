@@ -1,7 +1,7 @@
 module main
 
-(* Concurrency example: typed channel + goroutine send + recv.
-   The annotation `: int chan` constrains the channel element type. *)
+// Concurrency example: typed channel + goroutine send + recv.
+// The annotation `: int chan` constrains the channel element type.
 
 let compute () : int chan =
   let ch : int chan = Chan.make () in

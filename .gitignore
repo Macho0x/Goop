@@ -1,8 +1,12 @@
 # Binaries
 /goop
 /goop.exe
-/main
+/goop-out
+/goop-out.exe
 src/goop
+src/goop-out
+src/goop-out.exe
+/main
 tests/goop-out
 *.o
 *.test

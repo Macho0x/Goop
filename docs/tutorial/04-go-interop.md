@@ -130,8 +130,8 @@ Bodies become a cgo preamble (`import "C"`). Primitive `val` types are auto-wrap
 ## Import Goop modules
 
 ```goop
-import goop . "std.io"    (* dot import: Println *)
-import io goop "std.io"   (* qualified: io.Println *)
+import goop . "std.io"    // dot import: Println
+import io goop "std.io"   // qualified: io.Println
 ```
 
 See [modules guide](../design/05-modules-and-packages.md).

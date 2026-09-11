@@ -1,4 +1,4 @@
-(* Hand-curated encoding/json stubs. *)
+// Hand-curated encoding/json stubs.
 type Decoder
 type Encoder
 type RawMessage

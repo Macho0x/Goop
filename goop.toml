@@ -15,7 +15,7 @@ discarded_option = "warn"
 unused = "warn"
 private_in_public = "warn"
 money_float = "warn"
-verify_ffi = false
+verify_ffi = true
 smt = false
 
 [mappings]

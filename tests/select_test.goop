@@ -1,6 +1,6 @@
 module SelectTest
 
-(* select as a statement: default branch when no sender is ready. *)
+// select as a statement: default branch when no sender is ready.
 let default_path () : unit =
   let result = ref (-1) in
   let ch : int chan = Chan.make () in
@@ -12,7 +12,7 @@ let default_path () : unit =
     assert (!result = 99)
   end
 
-(* select without default: blocks until a send arrives. *)
+// select without default: blocks until a send arrives.
 let recv_path () : unit =
   let result = ref (-1) in
   let ch : int chan = Chan.make () in

@@ -1,6 +1,6 @@
 module BoolTest
 
-(* Test boolean operators. *)
+// Test boolean operators.
 
 let main () =
   let chk1 = assert (true && true) in

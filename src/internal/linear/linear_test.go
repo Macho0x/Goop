@@ -445,7 +445,7 @@ func TestOwnedChanNotDischarged_Error(t *testing.T) {
 let bad () : unit =
   let ch : int owned_chan = OwnedChan.make () in
   OwnedChan.send ch 1
-  (* no close — ch is never discharged *)
+  // no close — ch is never discharged
 
 let main () = println "test"
 `

@@ -3,7 +3,7 @@ module main
 import goop . "std.string"
 import goop . "std.chan"
 
-(* Smoke coverage for M4 thin std.string / std.chan re-exports. *)
+// Smoke coverage for M4 thin std.string / std.chan re-exports.
 let main () =
   begin
     assert (length "abc" = 3);

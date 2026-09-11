@@ -1,4 +1,4 @@
-(* Writing tools: maps + Go file IO via import go (no @[go]). *)
+// Writing tools: maps + Go file IO via import go (no @[go]).
 module main
 
 import go "os"

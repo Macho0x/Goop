@@ -1,6 +1,6 @@
 module main
 
-(* Capitalized multi-arg lets must lower to one Go call, not curried apps. *)
+// Capitalized multi-arg lets must lower to one Go call, not curried apps.
 
 let Add (a: int) (b: int) : int = a + b
 

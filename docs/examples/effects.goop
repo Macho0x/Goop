@@ -1,6 +1,6 @@
 module EffectsDemo
 
-(* Minimal OCaml 5-style effect demo (CPS-lowered). *)
+// Minimal OCaml 5-style effect demo (CPS-lowered).
 
 effect Flip : unit -> bool
 

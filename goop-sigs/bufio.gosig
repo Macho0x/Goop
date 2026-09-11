@@ -1,4 +1,4 @@
-(* Hand-curated bufio stubs. *)
+// Hand-curated bufio stubs.
 type Reader
 type Writer
 type Scanner

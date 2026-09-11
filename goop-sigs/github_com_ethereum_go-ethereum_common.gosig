@@ -1,0 +1,9 @@
+// Trimmed Hyperliquid/B3 stub for github.com/ethereum/go-ethereum/common.
+// Full dump: goop get-go-sig github.com/ethereum/go-ethereum/common
+type Address
+type Hash
+
+val HexToAddress : string -> Address
+val BytesToAddress : bytes -> Address
+val HexToHash : string -> Hash
+val (a : Address).Hex : unit -> string

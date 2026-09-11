@@ -1,7 +1,7 @@
 module main
 
-(* OwnedChan provides compile-time close safety via linear types.
-   Send-after-close is a compile error (linear double-use), not a runtime failwith. *)
+// OwnedChan provides compile-time close safety via linear types.
+// Send-after-close is a compile error (linear double-use), not a runtime failwith.
 
 let producer () : unit =
   let ch : int owned_chan = OwnedChan.make () in
@@ -9,7 +9,7 @@ let producer () : unit =
   let _u2 = OwnedChan.send ch 2 in
   let _u3 = OwnedChan.send ch 3 in
   OwnedChan.close ch
-  (* OwnedChan.send ch 99  (* this would be a COMPILE ERROR: ch already discharged *) *)
+  // OwnedChan.send ch 99   this would be a COMPILE ERROR: ch already discharged
 
 let main () =
   producer ()

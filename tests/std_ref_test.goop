@@ -2,7 +2,7 @@ module main
 
 import goop . "std.ref"
 
-(* Smoke coverage for M4 thin std.ref re-export. *)
+// Smoke coverage for M4 thin std.ref re-export.
 let main () =
   let r = make 0 in
   begin

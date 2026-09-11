@@ -1,8 +1,8 @@
 module Trading.AllMidsBot
 
-(* Mid as integer cents — intentional for simple thresholds.
- * Prefer std.decimal.Decimal for money values; see docs/examples/decimal_money.goop.
- * DECIMAL001 still warns on float money names. *)
+// Mid as integer cents — intentional for simple thresholds.
+// Prefer std.decimal.Decimal for money values; see docs/examples/decimal_money.goop.
+// DECIMAL001 still warns on float money names.
 
 type symbol = | Symbol of string
 

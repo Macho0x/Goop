@@ -63,7 +63,7 @@ The refine pass proves simple arithmetic VCs at compile time. Optional Z3 (`[che
 let safeDiv (a: int) (b: int where b <> 0) : int = a / b
 
 let compute (x: int) (y: int) : int =
-  if y <> 0 then safeDiv x y else 0   (* proven — no call-site guard *)
+  if y <> 0 then safeDiv x y else 0   // proven — no call-site guard
 ```
 
 See [`refinement_solving.goop`](../examples/refinement_solving.goop) and [`contracts.goop`](../examples/contracts.goop).
@@ -88,7 +88,7 @@ smt = false                    # optional Z3
 | `unused` | `warn` | UNUSED001/002 |
 | `private_in_public` | `warn` | VIS002 |
 | `money_float` | `warn` | DECIMAL001 |
-| `verify_ffi` | `false` | GOSIG003 hand-sig arity check |
+| `verify_ffi` | `true` | GOSIG003 hand-sig arity / missing-export check |
 | `smt` | `false` | Optional Z3 for refinements |
 
 **Also:** hand `{ val … }` naming a **generic** Go export warns **GOSIG004**

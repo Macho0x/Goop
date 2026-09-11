@@ -3,9 +3,9 @@ package parser
 import "bytes"
 
 // maskLangEmbedBodies replaces the interior of @[go]/@[c] { ... } blocks with
-// spaces (newlines preserved) so the Goop lexer does not interpret Go/C syntax
-// such as func(*T) as Goop block comments. Offsets stay stable for Loc mapping.
-// The parser still reads embed bodies from the original source via readRawGoBlock.
+// spaces (newlines preserved) so the Goop lexer does not interpret Go/C syntax.
+// Offsets stay stable for Loc mapping. The parser still reads embed bodies from
+// the original source via readRawGoBlock.
 func maskLangEmbedBodies(src []byte) []byte {
 	out := bytes.Clone(src)
 	i := 0

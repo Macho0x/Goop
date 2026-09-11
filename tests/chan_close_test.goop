@@ -1,6 +1,6 @@
 module ChanCloseTest
 
-(* Send/recv then close — close after successful handoff. *)
+// Send/recv then close — close after successful handoff.
 let main () : unit =
   let ch : int chan = Chan.make () in
   let _ = go (fun () -> Chan.send ch 42) in

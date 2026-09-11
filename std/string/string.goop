@@ -1,6 +1,6 @@
 module string
 
-(* Thin re-exports of prelude string helpers — implementation stays in the compiler prelude. *)
+// Thin re-exports of prelude string helpers — implementation stays in the compiler prelude.
 
 let length (s: string) : int = String.length s
 

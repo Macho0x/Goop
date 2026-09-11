@@ -1,0 +1,4 @@
+// Trimmed Hyperliquid/B3 stub for github.com/vmihailenco/msgpack/v5.
+// Full dump: goop get-go-sig github.com/vmihailenco/msgpack/v5
+val Marshal : obj -> bytes * error
+val Unmarshal : bytes -> obj -> error

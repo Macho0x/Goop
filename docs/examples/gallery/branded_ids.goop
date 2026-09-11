@@ -1,6 +1,6 @@
 module Gallery.BrandedIds
 
-(* Nominal brands: order_id and symbol are distinct types. *)
+// Nominal brands: order_id and symbol are distinct types.
 
 type order_id = | Order_id of string
 type symbol = | Symbol of string

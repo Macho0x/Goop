@@ -1,6 +1,6 @@
 module main
 
-(* Linear resources can be handed off to a goroutine via go. *)
+// Linear resources can be handed off to a goroutine via go.
 
 let worker (ch: int owned_chan) : unit =
   let dummy = go (fun () ->

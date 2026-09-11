@@ -1,4 +1,4 @@
-(* Record field @[tag "…"] lowers to Go struct tags (json / msgpack / …). *)
+// Record field @[tag "…"] lowers to Go struct tags (json / msgpack / …).
 module main
 
 type wire_meta = {

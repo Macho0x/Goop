@@ -40,13 +40,17 @@ type Parser struct {
 
 // Parse reads a complete Goop source file and returns the AST module.
 func Parse(file string, src []byte) (*ast.Module, error) {
-	// Lex a masked copy so @[go]/@[c] bodies are opaque to the Goop lexer
-	// (e.g. Go's func(*T) must not start a (* *) comment). Parser.src stays
-	// the original bytes so readRawGoBlock recovers the real embed text.
+	// Lex a masked copy so @[go]/@[c] bodies are opaque to the Goop lexer.
+	// Parser.src stays the original bytes so readRawGoBlock recovers the embed.
 	lexSrc := maskLangEmbedBodies(src)
 	toks, err := lc0.Lex(file, lexSrc)
 	if err != nil {
 		return nil, err
+	}
+	for _, t := range toks {
+		if t.Type == token.ERROR {
+			return nil, &ParseError{Msg: t.Lexeme, Loc: t.Loc}
+		}
 	}
 	toks, attrs := stripAttributes(toks)
 	p := &Parser{file: file, src: src, tokens: toks}
@@ -186,7 +190,7 @@ func (p *Parser) readRawGoBlock(braceOffset int) (string, int) {
 				return strings.TrimSpace(content), pos
 			}
 		case '/':
-			// Skip line comments and block comments
+			// Skip Go line comments and /* */ comments
 			if pos+1 < len(p.src) && p.src[pos+1] == '/' {
 				pos += 2
 				for pos < len(p.src) && p.src[pos] != '\n' {

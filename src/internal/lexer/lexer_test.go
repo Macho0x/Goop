@@ -100,3 +100,32 @@ func TestCharEscapes(t *testing.T) {
 	}
 	t.Fatal("no CHAR token")
 }
+
+func TestLineCommentsSkipped(t *testing.T) {
+	toks, err := Lex("test.goop", []byte("module M\n// hi (* not a block *)\nlet x = 1\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tok := range toks {
+		if tok.Type == token.ERROR {
+			t.Fatalf("unexpected ERROR %s", tok.Lexeme)
+		}
+	}
+}
+
+func TestBlockCommentsRejected(t *testing.T) {
+	toks, err := Lex("test.goop", []byte("module M\n(* nope *)\nlet x = 1\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	found := false
+	for _, tok := range toks {
+		if tok.Type == token.ERROR && strings.Contains(tok.Lexeme, "LEX002") && strings.Contains(tok.Lexeme, "block comments") {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatalf("expected LEX002 block-comment ERROR; toks=%v", toks)
+	}
+}

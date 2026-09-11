@@ -7,9 +7,11 @@ Goop is case-sensitive. Blocks use explicit delimiters (`let … in`, `begin/end
 ## Comments
 
 ```goop
-(* Block comments; nested (* ok *). *)
-// Line comments also supported
+// Line comments to end of line
+let x = 1  // trailing is fine
 ```
+
+OCaml `(* … *)` is rejected (LEX002).
 
 ## String and character literals
 
@@ -89,9 +91,9 @@ let g = function | Some x -> x | None -> 0
 ```goop
 type point = { x: float; y: float }
 type option 'a = None | Some of 'a
-type handle : 1   (* linear resource *)
+type handle : 1   // linear resource
 
-(* Go struct tags for JSON / msgpack wire names — see 33-sdk-blockers.md *)
+// Go struct tags for JSON / msgpack wire names — see 33-sdk-blockers.md
 type Meta = {
   name : string @[tag "json:\"name\""];
   sz   : int @[tag "json:\"sz,omitempty\""];
@@ -102,7 +104,7 @@ type Meta = {
 
 ```goop
 type order_id = Order_id of string
-(* or private type order_id = Order_id of string *)
+// or private type order_id = Order_id of string
 ```
 
 ## Pattern matching
@@ -137,7 +139,7 @@ Bugs: `failwith "msg"` (lowers to Go `panic`). Recoverable domain errors: `('ok,
 ```goop
 effect Flip : unit -> bool
 
-(* perform / handlers; effectful code may CPS-lower — see 06-effects-and-safety.md *)
+// perform / handlers; effectful code may CPS-lower — see 06-effects-and-safety.md
 ```
 
 No `with { io }` effect rows on arrow types.

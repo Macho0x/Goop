@@ -1,7 +1,7 @@
 module channel
 
-(* Thin re-exports of prelude Chan.* / OwnedChan.* — implementation stays in the compiler prelude.
-   Physical package is std/channel (Go keyword "chan" cannot be a package name); import as std.chan. *)
+// Thin re-exports of prelude Chan.* / OwnedChan.* — implementation stays in the compiler prelude.
+// Physical package is std/channel (Go keyword "chan" cannot be a package name); import as std.chan.
 
 let make () : 'a chan = Chan.make ()
 

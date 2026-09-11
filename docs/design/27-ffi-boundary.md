@@ -39,7 +39,7 @@ import go "strings" {
   val ToUpper : string -> string
 }
 
-let s = ToUpper "hi"   (* checked *)
+let s = ToUpper "hi"   // checked
 ```
 
 Method and field selectors lower to ordinary Go selectors with **exact Go
@@ -52,7 +52,7 @@ import go "log/slog" {
   val (a : Attr).Key : string
 }
 
-let k = a.Key   (* → a.Key in Go *)
+let k = a.Key   // → a.Key in Go
 ```
 
 ### Pointer / nil is explicit at the FFI
@@ -117,7 +117,7 @@ Goop presents it as `('ok, error) result` at the call site:
 
 ```goop
 import go "strconv" {
-  val Atoi : string -> (int, error)   (* declared product *)
+  val Atoi : string -> (int, error)   // declared product
 }
 
 let r = Atoi "42" in
@@ -207,12 +207,13 @@ Goop cannot name precisely.
 **Does not guarantee:** that a value pulled from `obj`/`any` matches the
 type you expect. Treat it like `interface{}` in Go.
 
-### Extern multi-value returns are limited (M6)
+### Extern multi-value returns (M6 — shipped)
 
-Extern / FFI calls that need multi-value tuple returns beyond the
-`(T, error)` story are still constrained. Prefer a single Goop-visible
-return (record, ADT, or `result`) via a thin `@[go]` wrapper until M6
-closes.
+`(T, error)` coerces to `result` unless `import go raw`. Other multi-result
+Go functions that map become Goop tuples (`refineExternType`; see
+`tests/extern_tuple_test.goop`). Prefer a single Goop-visible return
+(record, ADT, or `result`) via a thin `@[go]` wrapper when the product is
+awkward.
 
 ### Import signatures are not yet auto-verified end-to-end
 
@@ -238,8 +239,9 @@ import go "bytes" {
 curated package set into the build cache (`$GOOP_HOME/build/go-sigs/…`), with
 repo overrides under `goop-sigs/`. Bare `import go "…"` auto-loads (override →
 cache → generate-on-miss for curated paths). Hand `{ val … }` blocks remain
-authoritative and are **not** a full proof against upstream Go — enable
-`[check] verify_ffi = true` for **GOSIG003** arity checks. Hand `{ val … }`
+authoritative and are **not** a full proof against upstream Go — `[check]
+verify_ffi` (default **true**) fails the check on **GOSIG003** arity /
+missing-export mismatches. Set `verify_ffi = false` to skip. Hand `{ val … }`
 that names a **generic** Go export always warns **GOSIG004** (not gated by
 `verify_ffi`). FFI opaque types from `import go { type … }` in a Goop module
 are re-exported through `import goop` (e.g. `std.decimal`’s `Decimal`). See

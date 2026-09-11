@@ -191,7 +191,7 @@ func TestLexOrderbook(t *testing.T) {
 }
 
 func TestParseGoEmbedPointerReceiver(t *testing.T) {
-	// Go's func(*T) contains "(*" which must not be treated as a Goop comment.
+	// Go's func(*T) must stay inside the embed; the Goop lexer never sees it.
 	src := `module main
 
 @[go] {
@@ -1085,5 +1085,22 @@ type Meta = { name : string @[bogus "x"] }
 	_, err := parser.Parse("t.goop", []byte(src))
 	if err == nil || !strings.Contains(err.Error(), "TAG001") {
 		t.Fatalf("expected TAG001, got %v", err)
+	}
+}
+
+func TestStdLazyWrapperBlockedByKeyword(t *testing.T) {
+	src := `module Lazy
+let force (x: 'a lazy) : 'a = x
+`
+	_, err := parser.Parse("lazy.goop", []byte(src))
+	if err == nil || !strings.Contains(err.Error(), "PARSE001") || !strings.Contains(err.Error(), "lazy") {
+		t.Fatalf("expected PARSE001 on 'a lazy annotation, got %v", err)
+	}
+}
+
+func TestParseRejectsBlockComments(t *testing.T) {
+	_, err := parser.Parse("t.goop", []byte("module T\n(* nope *)\nlet x = 1\n"))
+	if err == nil || !strings.Contains(err.Error(), "LEX002") {
+		t.Fatalf("expected LEX002 block-comment error, got %v", err)
 	}
 }

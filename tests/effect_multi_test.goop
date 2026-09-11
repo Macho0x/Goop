@@ -1,6 +1,6 @@
 module EffectMultiTest
 
-(* Two distinct effects, each handled in its own match. *)
+// Two distinct effects, each handled in its own match.
 effect Flip : unit -> bool
 effect Nod : unit -> bool
 

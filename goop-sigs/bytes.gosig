@@ -1,4 +1,4 @@
-(* Hand-curated bytes stubs. *)
+// Hand-curated bytes stubs.
 type Buffer
 
 val Contains : bytes -> bytes -> bool

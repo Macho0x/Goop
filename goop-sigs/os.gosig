@@ -1,4 +1,4 @@
-(* Hand-curated os stubs for toolchain examples (override wins over cache). *)
+// Hand-curated os stubs for toolchain examples (override wins over cache).
 type File
 type FileInfo
 

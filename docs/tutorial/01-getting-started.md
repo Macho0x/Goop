@@ -15,6 +15,8 @@ let main () =
 
 `println` is a **prelude** binding — available in every file without an import. It lowers to `fmt.Println`.
 
+Comments are `//` to end of line (including trailing). OCaml `(* … *)` is a compile error (LEX002).
+
 ## Build the compiler
 
 **Install (release binary):**

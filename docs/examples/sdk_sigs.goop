@@ -1,0 +1,17 @@
+// Trimmed third-party .gosig corpus (B3). Check-only — do not go build.
+module main
+
+import go "github.com/ethereum/go-ethereum/common"
+import go "github.com/ethereum/go-ethereum/crypto"
+import go "github.com/gorilla/websocket"
+import go "github.com/valyala/fastjson"
+import go "github.com/vmihailenco/msgpack/v5"
+import go "github.com/sonirico/vago"
+
+let main () =
+  begin
+    let _ = HexToAddress "0x0000000000000000000000000000000000000000" in
+    let _c : Conn ptr = null in
+    let _p : Parser ptr = null in
+    println "sdk sigs loaded"
+  end

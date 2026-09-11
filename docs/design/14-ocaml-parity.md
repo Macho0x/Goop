@@ -25,7 +25,8 @@ Status legend: `✅` same · `🔄` different-by-design · `➕` Goop extension 
 | `\|>` | Same | ✅ |
 | `let open` / `M.(…)` / `open!` | Same | 🆕 |
 | `;;` | Not used (file = module) | 🔄 |
-| `//` comments | Supported (+ `(* *)`) | ✅ |
+| `(* … *)` comments | `//` only (LEX002) | 🔄 |
+| `//` comments | Same | ✅ |
 | `[@@…]` / `[@…]` / `[%…]` | Parsed and stripped | 🆕 (no PPX) |
 
 ## Types

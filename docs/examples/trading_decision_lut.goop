@@ -1,8 +1,8 @@
 module TradingDecisionLutExample
 
-(* Inventory-aware MM LUT — condensed teaching version of tests/trading_decision_lut_test.goop
- * match/when decision logic + OCaml array surface:
- * Array.make · nested for · arr.(i) <- · begin/end · set_decision *)
+// Inventory-aware MM LUT — condensed teaching version of tests/trading_decision_lut_test.goop
+// match/when decision logic + OCaml array surface:
+// Array.make · nested for · arr.(i) <- · begin/end · set_decision
 
 type side = Buy | Sell
 
@@ -40,7 +40,7 @@ let default_decision : decision =
   ; log_tag = "DEFAULT"
   }
 
-(* Mini state space: inv[-1..1] x sig[-1..1] x vol[0..1] x liq[0..1] = 36 cells *)
+// Mini state space: inv[-1..1] x sig[-1..1] x vol[0..1] x liq[0..1] = 36 cells
 let lut_total_size = 36
 
 let lut_index (inv: int) (sig_: int) (vol: int) (liq: int) : int =

@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-const newMainGoop = `(* Scaffolded by goop new. Next: goop check main.goop && goop build main.goop *)
+const newMainGoop = `// Scaffolded by goop new. Next: goop check main.goop && goop build main.goop
 module main
 
 let main () =
@@ -28,7 +28,7 @@ discarded_option = "warn"
 unused = "warn"
 private_in_public = "warn"
 money_float = "warn"
-verify_ffi = false
+verify_ffi = true
 deadlock = "warn"
 smt = false
 `

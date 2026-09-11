@@ -72,7 +72,7 @@ let label c =
 ```goop
 import goop . "std.array"
 
-let xs = make 3 0   (* same as Array.make *)
+let xs = make 3 0   // same as Array.make
 ```
 
 See [std.array](../stdlib/std-array.md).

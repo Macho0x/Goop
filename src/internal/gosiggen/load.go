@@ -45,7 +45,7 @@ func alwaysGenerate(importPath string) bool {
 // ParseSigContent parses a .gosig file body into ExternType / ExternVal lists
 // by wrapping it in a synthetic `import go "…" { … }` module.
 func ParseSigContent(importPath, content string) ([]ast.ExternType, []ast.ExternVal, error) {
-	// Strip (* … *) comments so the import-block parser stays simple.
+	// Strip leftover (* … *) from old caches; // is skipped by the lexer.
 	stripped := stripGosigComments(content)
 	src := fmt.Sprintf("module __gosig\nimport go %q {\n%s\n}\n", importPath, stripped)
 	mod, err := parser.Parse("__gosig.gosig", []byte(src))

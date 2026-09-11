@@ -1,6 +1,6 @@
 module main
 
-(* Prelude Array behavioral coverage (std.array is a thin re-export). *)
+// Prelude Array behavioral coverage (std.array is a thin re-export).
 let main () =
   begin
     let arr = Array.make 3 0 in

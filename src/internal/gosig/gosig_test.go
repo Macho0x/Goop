@@ -1,6 +1,7 @@
 package gosig
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -263,5 +264,17 @@ func TestFuncHasTypeParamsSlicesContains(t *testing.T) {
 	}
 	if ok2 {
 		t.Error("expected strings.HasPrefix not to be generic")
+	}
+}
+
+func TestLookupMiss(t *testing.T) {
+	if !LookupMiss(fmt.Errorf(`function "X" not found in package "strings"`)) {
+		t.Error("missing export should be a miss")
+	}
+	if LookupMiss(fmt.Errorf(`package "foo" has errors: no required module`)) {
+		t.Error("load failure should not be a miss")
+	}
+	if LookupMiss(nil) {
+		t.Error("nil is not a miss")
 	}
 }

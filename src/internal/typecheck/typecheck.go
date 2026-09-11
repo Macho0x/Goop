@@ -202,16 +202,21 @@ func (c *Checker) bindExternValsOpts(importPath string, vals []ast.ExternVal, ra
 	}
 }
 
-// verifyExternArity emits GOSIG003 when hand { val } arity disagrees with go/types.
+// verifyExternArity emits GOSIG003 when a hand { val } disagrees with go/types.
+// packages.Load failures are skipped (unconfirmed ≠ bad sig). A loaded package
+// with a missing/non-func export or arity mismatch fails the check.
 func (c *Checker) verifyExternArity(importPath, funcName string, declared types.Type) {
 	sig, err := gosig.LookupFunc(importPath, funcName)
 	if err != nil {
-		return // keep GOSIG002 path in refine; do not double-noise
+		if gosig.LookupMiss(err) {
+			c.errorf("GOSIG003: %s.%s is not a package-level function in Go", importPath, funcName)
+		}
+		return
 	}
-	declaredArity := countCurriedParams(declared)
+	declaredArity := ffiArity(declared)
 	goArity := len(sig.Params)
 	if declaredArity != goArity {
-		fmt.Fprintf(os.Stderr, "GOSIG003: hand signature for %s.%s has %d param(s), Go has %d\n",
+		c.errorf("GOSIG003: hand signature for %s.%s has %d param(s), Go has %d",
 			importPath, funcName, declaredArity, goArity)
 	}
 }
@@ -236,6 +241,26 @@ func countCurriedParams(t types.Type) int {
 		n++
 		t = fn.To
 	}
+}
+
+// ffiArity is the Go parameter count implied by a Goop extern type.
+// A lone `unit -> R` erases to zero args (time.Now, os.Getwd).
+func ffiArity(t types.Type) int {
+	fn, ok := t.(*types.TFun)
+	if !ok {
+		return 0
+	}
+	if isUnitType(fn.From) {
+		if _, restIsFun := fn.To.(*types.TFun); !restIsFun {
+			return 0
+		}
+	}
+	return countCurriedParams(t)
+}
+
+func isUnitType(t types.Type) bool {
+	p, ok := t.(*types.Prim)
+	return ok && p.Name == "unit"
 }
 
 func goNamedTypeName(t types.Type) string {

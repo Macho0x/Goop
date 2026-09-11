@@ -8,7 +8,7 @@ Goop embeds foreign code with a single form:
 @[lang] {
   /* raw body — brace-balanced, opaque to the Goop parser */
 }
-val name : type   (* zero or more; Goop-visible bindings *)
+val name : type   // zero or more; Goop-visible bindings
 ```
 
 | Lang | Meaning | Lowering |

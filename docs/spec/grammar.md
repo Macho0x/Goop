@@ -17,11 +17,12 @@ escape   := '\' ( 'n' | 't' | 'r' | '\\' | '"' | "'" | 'e'
                 | 'x' hex hex | oct oct? oct? )
 hex      := [0-9a-fA-F]
 oct      := [0-7]
-(* \e = ESC (0x1b); \xHH = byte; \ooo = 1–3 octal digits, value ≤ 255 *)
+// \e = ESC (0x1b); \xHH = byte; \ooo = 1–3 octal digits, value ≤ 255
 unit     := '()'
 line_comment := '//' [^\n]*
-block_comment := '(*' … '*)'   (* nestable *)
 ```
+
+OCaml `(* … *)` is a lexer error (LEX002). Use `//`.
 
 ## Reserved words
 
@@ -166,7 +167,7 @@ primary_type := ident | tyvar | '(' type ')' | type 'array' | type 'ref'
               | '{' field_type (';' field_type)* ('|' '..')? '}'
               | '<' method_type (';' method_type)* ('|' '..')? '>'
               | poly_variant_type | '(' type (',' type)+ ')'
-              | '...' type   (* variadic FFI param type *)
+              | '...' type   // variadic FFI param type
 
 field_type   := 'mutable'? ident ':' type
 method_type  := ident ':' type
@@ -187,7 +188,7 @@ record_type  := '{' field_type (';' field_type)* '}'
 adt_type     := '|'? adt_case ('|' adt_case)*
 adt_case     := constr ('of' type)?
 gadt_type    := '|'? gadt_case ('|' gadt_case)*
-gadt_case    := constr (':' type)?   (* constr : args -> ret *)
+gadt_case    := constr (':' type)?   // constr : args -> ret
 ```
 
 ## Classes (OCaml OOP)
@@ -205,14 +206,14 @@ object_item  := 'val' 'mutable'? ident '=' expr
 ## Operators
 
 ```
-mod land lor lxor          (* integer; % removed *)
-+. -. *. /.                (* float *)
-^                          (* string concat *)
-= <> < > <= >=             (* compare *)
+mod land lor lxor          // integer; % removed
++. -. *. /.                // float
+^                          // string concat
+= <> < > <= >=             // compare
 && || not
-|>                         (* pipeline *)
-:=                         (* ref assign *)
-<-                         (* array / mutable field only *)
+|>                         // pipeline
+:=                         // ref assign
+<-                         // array / mutable field only
 ```
 
 ## Migration parse errors (removed in 1.0)

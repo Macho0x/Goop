@@ -1,9 +1,9 @@
 module TradingDecisionLutTest
 
-(* Inventory-aware market-making LUT — port of trading_decision_lut.ml
- * match/when decision logic + OCaml array surface:
- * Array.make · nested for · arr.(i) <- · set_decision · begin/end
- * 300 states: inv[5] x sig[5] x vol[4] x liq[3] *)
+// Inventory-aware market-making LUT — port of trading_decision_lut.ml
+// match/when decision logic + OCaml array surface:
+// Array.make · nested for · arr.(i) <- · set_decision · begin/end
+// 300 states: inv[5] x sig[5] x vol[4] x liq[3]
 
 type side = Buy | Sell
 
@@ -57,13 +57,13 @@ let abs_int (x: int) : int =
 let clamp (x: int) (lo: int) (hi: int) : int =
   if x < lo then lo else if x > hi then hi else x
 
-(* inv varies fastest for cache locality *)
+// inv varies fastest for cache locality
 let lut_index (inv: int) (sig_: int) (vol: int) (liq: int) : int =
   let i_inv = inv + 2 in
   let i_sig = sig_ + 2 in
   i_inv + (i_sig * 5) + (vol * 25) + (liq * 100)
 
-(* ------ Discretization (float feeds -> integer buckets) ------ *)
+// ------ Discretization (float feeds -> integer buckets) ------
 
 let bucket_inventory (current_pos: float) (max_abs_position: float) : int =
   if max_abs_position <= 0.0 then 0
@@ -252,7 +252,7 @@ let size_cap_for (vol: int) (extra_cap: float) : float =
   else if vol = 2 then 0.012
   else 0.025 *. extra_cap
 
-(* ------ Core base decision (integer-scaled net_bias: sig*55 - inv*85) ------ *)
+// ------ Core base decision (integer-scaled net_bias: sig*55 - inv*85) ------
 
 let compute_base_decision (inv: int) (sig_: int) (vol: int) (liq: int) : decision =
   let sit = classify inv sig_ in
@@ -300,7 +300,7 @@ let compute_base_decision (inv: int) (sig_: int) (vol: int) (liq: int) : decisio
   ; reason = reason
   }
 
-(* ------ Overrides ------ *)
+// ------ Overrides ------
 
 let qp_extreme_long_strong_sell : quote_params =
   { bid_offset_bps = 25; ask_offset_bps = -8
@@ -462,7 +462,7 @@ let override_wide_liq_caution : decision =
   ; reason = "Wide spread regime → smaller size, provide only"
   }
 
-(* ------ LUT API (OCaml-style set_decision + nested for populate) ------ *)
+// ------ LUT API (OCaml-style set_decision + nested for populate) ------
 
 let set_decision (lut: decision array) (inv: int) (sig_: int) (vol: int) (liq: int) (dec: decision) =
   lut.(lut_index inv sig_ vol liq) <- dec
