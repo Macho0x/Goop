@@ -1,0 +1,23 @@
+module IntArithTest
+
+// Integer arithmetic, division, modulo, comparison chains, precedence.
+// (abs_int is not a prelude builtin — the trading LUT defines its own;
+// a local definition is used here.)
+
+let abs_int (x: int) : int = if x < 0 then 0 - x else x
+
+let main () =
+  begin
+    assert (7 + 5 = 12);
+    assert (20 - 8 = 12);
+    assert (6 * 7 = 42);
+    assert (84 / 12 = 7);
+    assert (10 mod 3 = 1);
+    assert ((-7) mod 3 = -1);
+    assert (2 + 3 * 4 = 14);
+    assert ((2 + 3) * 4 = 20);
+    assert (7 < 8 && 8 <= 8 && 9 > 8 && 8 >= 8);
+    assert (7 <> 8);
+    assert (abs_int (-5) = 5);
+    assert (int_to_string (-42) = "-42")
+  end

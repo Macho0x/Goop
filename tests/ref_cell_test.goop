@@ -1,0 +1,24 @@
+module RefCellTest
+
+// Mutable refs: allocate, read, write, while-loop accumulation.
+
+let main () =
+  let r = ref 0 in
+  begin
+    r := 1;
+    assert (!r = 1);
+    r := !r * 5;
+    assert (!r = 5);
+    let acc = ref 0 in
+    let i = ref 0 in
+    while !i < 5 do
+      begin
+        acc := !acc + !i;
+        i := !i + 1
+      end
+    done;
+    assert (!acc = 10);
+    let swap = ref false in
+    swap := not !swap;
+    assert (!swap = true)
+  end

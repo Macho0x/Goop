@@ -1,0 +1,33 @@
+module CEmbedStringCmpTest
+
+// Inline C via @[c]: string comparison and length. (C char returns lower
+// to int8 and cannot round-trip through GoString — return int only.)
+
+@[c] {
+  #include <string.h>
+
+  int c_equal(const char *a, const char *b) {
+    return strcmp(a, b) == 0;
+  }
+
+  int c_longer(const char *a, const char *b) {
+    return strlen(a) > strlen(b);
+  }
+
+  int c_first_code(const char *s) {
+    return (int)s[0];
+  }
+}
+val c_equal : string -> string -> bool
+val c_longer : string -> string -> bool
+val c_first_code : string -> int
+
+let main () =
+  begin
+    assert (c_equal "goop" "goop");
+    assert (not (c_equal "goop" "lang"));
+    assert (c_longer "goop-lang" "goop");
+    assert (not (c_longer "hi" "there"));
+    assert (c_first_code "goop" = 103);
+    println "c string FFI ok"
+  end

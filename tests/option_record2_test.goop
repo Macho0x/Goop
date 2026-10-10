@@ -1,0 +1,27 @@
+module OptionRecordTest
+
+// option inside records: defaults via match, chained field access.
+// (A `Some _` wildcard payload arm emits an unused Go binding — bind the
+// payload and use it instead; recorded, avoided.)
+
+type user = { id: int; email: string option; nick: string option }
+
+let display_email (u: user) : string =
+  match u.email with
+  | Some e -> e
+  | None -> "no-email"
+
+let nick_len (u: user) : int =
+  match u.nick with
+  | Some n -> String.length n
+  | None -> 0
+
+let main () =
+  let u1 = { id = 1; email = Some "a@b.c"; nick = None } in
+  let u2 = { id = 2; email = None; nick = Some "bee" } in
+  begin
+    assert (display_email u1 = "a@b.c");
+    assert (display_email u2 = "no-email");
+    assert (nick_len u2 = 3);
+    assert (nick_len u1 = 0)
+  end

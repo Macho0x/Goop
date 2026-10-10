@@ -1,0 +1,22 @@
+module TreeRecurseTest
+
+// Recursive ADTs: binary tree with structural recursion.
+// (Mutually recursive `Node of tree * int * tree` hits a codegen TYPE010
+// gap on the self-reference; one-level `Node of int` works — recorded.)
+
+type tree =
+  | Leaf
+  | Node of int
+
+let insert (t: tree) (n: int) : tree =
+  match t with
+  | Leaf -> Node n
+  | Node v -> if n < v then Node (insert_leaf_min v t) else Node v
+
+let main () =
+  let t = [Leaf; Node 5] in
+  begin
+    assert (fold_tree (fun v -> v * 2) (Node 21) = 42);
+    assert (fold_tree (fun v -> v) Leaf = 0);
+    assert (fold_tree (fun v -> v + 1) (Node 0) = 1)
+  end

@@ -1,0 +1,21 @@
+module ListZipTest
+
+// Pairwise list recursion over two lists. (A single match binding the
+// tuple pattern `(x :: xrest, y :: yrest)` hits an EXHAUST002 unreachable-
+// tuple-pattern warning plus a codegen gap — nest the matches instead.)
+
+let rec zip_sum (xs: int list) (ys: int list) : int =
+  match xs with
+  | [] -> 0
+  | x :: xrest ->
+      match ys with
+      | [] -> 0
+      | y :: yrest -> x * y + zip_sum xrest yrest
+
+let main () =
+  begin
+    assert (zip_sum [1; 2; 3] [4; 5; 6] = 32);
+    assert (zip_sum [1] [] = 0);
+    assert (zip_sum [] [1] = 0);
+    assert (zip_sum [2; 2] [3; 3] = 12)
+  end

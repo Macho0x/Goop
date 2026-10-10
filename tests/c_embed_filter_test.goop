@@ -1,0 +1,42 @@
+module CEmbedFilterTest
+
+// Inline C via @[c]: string predicates and char counting.
+
+@[c] {
+  #include <string.h>
+  #include <ctype.h>
+
+  int c_count_upper(const char *s) {
+    int n = 0;
+    for (int i = 0; s[i] != 0; i++) {
+      if (isupper((unsigned char)s[i])) {
+        n++;
+      }
+    }
+    return n;
+  }
+
+  int c_all_digits(const char *s) {
+    if (strlen(s) == 0) {
+      return 0;
+    }
+    for (int i = 0; s[i] != 0; i++) {
+      if (!isdigit((unsigned char)s[i])) {
+        return 0;
+      }
+    }
+    return 1;
+  }
+}
+val c_count_upper : string -> int
+val c_all_digits : string -> bool
+
+let main () =
+  begin
+    assert (c_count_upper "Goop Lang" = 2);
+    assert (c_count_upper "" = 0);
+    assert (c_all_digits "12345");
+    assert (not (c_all_digits "12a45"));
+    assert (not (c_all_digits ""));
+    assert (c_count_upper "ABC" = 3)
+  end

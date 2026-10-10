@@ -1,0 +1,22 @@
+module ResultChainTest
+
+// result pipeline: parse, validate, render — error safety without exceptions.
+
+type cfg = { host: string; port: int }
+
+let parse_cfg (s: string) : (cfg, string) result =
+  if s = "ok" then
+    Ok { host = "localhost"; port = 8080 }
+  else
+    Error "bad config"
+
+let render (r: (cfg, string) result) : string =
+  match r with
+  | Ok c -> c.host ^ ":" ^ int_to_string c.port
+  | Error e -> "error: " ^ e
+
+let main () =
+  begin
+    assert (render (parse_cfg "ok") = "localhost:8080");
+    assert (render (parse_cfg "nope") = "error: bad config")
+  end

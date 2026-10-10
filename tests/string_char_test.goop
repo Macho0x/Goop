@@ -1,0 +1,19 @@
+module StringCharTest
+
+// String iteration via byte indexing + String.sub; char comparisons.
+
+let rec all_upper (s: string) (i: int) : bool =
+  if i >= String.length s then true
+  else
+    let c = String.sub s i 1 in
+    if c >= "A" && c <= "Z" then all_upper s (i + 1) else false
+
+let main () =
+  begin
+    assert (all_upper "ABC" 0);
+    assert (not (all_upper "AbC" 0));
+    assert (all_upper "" 0);
+    assert (String.sub "ABC" 0 1 = "A");
+    assert (String.sub "ABC" 2 1 = "C");
+    assert (String.length "ABC" = 3)
+  end

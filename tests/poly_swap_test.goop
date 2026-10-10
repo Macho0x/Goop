@@ -1,0 +1,11 @@
+module PolySwapTest
+
+// Parametric polymorphism: generic identity across types.
+
+let id (x: 'a) : 'a = x
+
+let main () =
+  begin
+    assert (id 42 = 42);
+    assert (id "goop" = "goop")
+  end

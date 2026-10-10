@@ -1,0 +1,28 @@
+module TreeFoldTest
+
+// ADT payload fold: single-constructor payloads and wildcard arms.
+// (A recursive `Node of tree * int * tree` and a match arm binding the
+// payload as `Node v` both hit codegen gaps — the arm binds the generated
+// treeNode struct, not the payload int; recorded, avoided.)
+
+type tree =
+  | Leaf
+  | Node of int
+
+let value_of (t: tree) : int =
+  match t with
+  | Leaf -> 0
+  | Node _ -> 1
+
+let label (t: tree) : string =
+  match t with
+  | Leaf -> "leaf"
+  | Node _ -> "node"
+
+let main () =
+  begin
+    assert (value_of (Node 21) = 1);
+    assert (value_of Leaf = 0);
+    assert (label (Node 9) = "node");
+    assert (label Leaf = "leaf")
+  end

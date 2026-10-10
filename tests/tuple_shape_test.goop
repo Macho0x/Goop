@@ -1,0 +1,28 @@
+module TupleShapeTest
+
+// Tuples: construction, destructuring via match on a let-bound pair, swap.
+// (The generated `if true { ... }` after a match arm falls through to
+// `panic("unreachable")` unless the arm ends in `return` — so each match
+// lives in a function that returns the destructured values; recorded.
+// Unused pattern bindings must be `_`.)
+
+let swap (p: int * string) : string * int =
+  match p with
+  | (n, s) -> (s, n)
+
+let fst2 (p: string * int) : string =
+  match p with
+  | (a, _) -> a
+
+let snd2 (p: string * int) : int =
+  match p with
+  | (_, b) -> b
+
+let check_swapped () : string =
+  let swapped = swap (1, "one") in
+  let s = fst2 swapped in
+  let n = snd2 swapped in
+  s ^ "=" ^ int_to_string n
+
+let main () =
+  assert (check_swapped () = "one=1")

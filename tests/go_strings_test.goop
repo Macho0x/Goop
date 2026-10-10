@@ -1,0 +1,21 @@
+module GoStringsTest
+
+// import go "strings": ToUpper, ToLower, Contains, Repeat, Split.
+
+import go "strings" {
+  val ToUpper : string -> string
+  val ToLower : string -> string
+  val Contains : string -> string -> bool
+  val Repeat : string -> int -> string
+  val Title : string -> string
+}
+
+let main () =
+  begin
+    assert (ToUpper "goop" = "GOOP");
+    assert (ToLower "LANG" = "lang");
+    assert (Contains "goop-lang" "goop");
+    assert (not (Contains "goop" "rust"));
+    assert (Repeat "ab" 3 = "ababab");
+    assert (String.length (ToUpper "abc") = 3)
+  end

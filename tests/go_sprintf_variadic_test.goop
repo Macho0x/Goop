@@ -1,0 +1,17 @@
+module GoSprintfVariadicTest
+
+// import go "fmt": Sprintf via variadic any + spread.
+// (Single `any_of` args in variadic position hit TYPE010; pass a spread
+// slice of `any` values instead.)
+
+import go "fmt" {
+  val Sprintf : string -> ...any -> string
+}
+
+let main () =
+  begin
+    let two = go_slice_of_list [any_of "answer"; any_of 42] in
+    assert (Sprintf "%s=%d" (spread two) = "answer=42");
+    let mixed = go_slice_of_list [any_of 3.5; any_of true] in
+    assert (Sprintf "%.1f/%t" (spread mixed) = "3.5/true")
+  end

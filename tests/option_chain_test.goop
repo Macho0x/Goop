@@ -1,0 +1,21 @@
+module OptionChainTest
+
+// option pipeline: safe div, List.find, describe via match.
+
+let safeDiv (a: int) (b: int) : int option =
+  if b = 0 then None else Some (a / b)
+
+let firstEven (xs: int list) : int option =
+  List.find (fun n -> n mod 2 = 0) xs
+
+let describe (x: int option) : string =
+  match x with
+  | Some n -> "got " ^ int_to_string n
+  | None -> "none"
+
+let main () =
+  begin
+    assert (describe (safeDiv 10 2) = "got 5");
+    assert (describe (safeDiv 1 0) = "none");
+    assert (describe (firstEven [1; 3; 5]) = "none")
+  end

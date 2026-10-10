@@ -1,0 +1,39 @@
+module GoCallbacks2Test
+
+// Goop data through Go helpers: descending sort + map add-one over a slice.
+// (slices.SortFunc is generic — GOSIG004/GOSIG003 block a hand `val`, so the
+// sort lives in an @[go] wrapper with its own `import "sort"`.)
+
+@[go] {
+  import "sort"
+
+  func sortDesc(xs []int) []int {
+    sort.Slice(xs, func(i, j int) bool {
+      return xs[i] > xs[j]
+    })
+    return xs
+  }
+
+  func mapAddOne(xs []int) []int {
+    out := make([]int, 0, len(xs))
+    for _, v := range xs {
+      out = append(out, v+1)
+    }
+    return out
+  }
+}
+val sortDesc : int go_slice -> int go_slice
+val mapAddOne : int go_slice -> int go_slice
+
+let main () =
+  let xs = go_slice_of_list [5; 1; 3] in
+  let sorted = sortDesc xs in
+  let bumped = mapAddOne sorted in
+  begin
+    assert (go_slice_get sorted 0 = 5);
+    assert (go_slice_get sorted 1 = 3);
+    assert (go_slice_get sorted 2 = 1);
+    assert (go_slice_get bumped 0 = 6);
+    assert (go_slice_get bumped 2 = 2);
+    assert (go_slice_len bumped = 3)
+  end

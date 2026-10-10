@@ -1,0 +1,16 @@
+module BoolLogicTest
+
+// Boolean operators and De Morgan identities.
+
+let main () =
+  begin
+    assert (true && true);
+    assert (not (true && false));
+    assert (true || false);
+    assert (false || true);
+    assert (not (true && false) = true);
+    assert ((not (true && true)) = false);
+    assert ((not (false || false)) = true);
+    assert (true && (false || true));
+    assert ((true && true) || (false && false))
+  end

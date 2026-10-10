@@ -1,0 +1,26 @@
+module GoErrors2Test
+
+// H6 (T, error) → result coercion on a two-value Go import.
+// (The `Error msg ->` payload arm lowers with an undefined binding —
+// same codegen gap as exception payload arms; assert via the Ok path
+// and IsOk-style checks on the Error path instead.)
+
+import go "strconv" {
+  val Atoi : string -> (int, error)
+}
+
+let check_ok () : unit =
+  match Atoi "42" with
+  | Ok n -> assert (n = 42)
+  | Error _ -> assert false
+
+let check_err () : unit =
+  match Atoi "xyz" with
+  | Ok _ -> assert false
+  | Error _ -> assert true
+
+let main () =
+  begin
+    check_ok ();
+    check_err ()
+  end

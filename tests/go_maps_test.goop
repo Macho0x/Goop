@@ -1,0 +1,29 @@
+module GoMapsTest
+
+// Go maps across the FFI: map[K] V passes into @[go] helpers.
+
+@[go] {
+  func sumValues(m map[string]int) int {
+    total := 0
+    for _, v := range m {
+      total += v
+    }
+    return total
+  }
+
+  func keyCount(m map[string]int) int {
+    return len(m)
+  }
+}
+val sumValues : map[string] int -> int
+val keyCount : map[string] int -> int
+
+let main () =
+  let m : map[string] int = Map.make () in
+  begin
+    let _ = Map.add m "a" 1 in
+    let _ = Map.add m "b" 2 in
+    let _ = Map.add m "c" 3 in
+    assert (sumValues m = 6);
+    assert (keyCount m = 3)
+  end

@@ -1,0 +1,17 @@
+module IntDivModTest
+
+// Integer division/modulo edge cases: negatives, zero dividend, identities.
+
+let main () =
+  begin
+    assert (17 / 5 = 3);
+    assert (17 mod 5 = 2);
+    assert ((-17) / 5 = -3);
+    assert ((-17) mod 5 = -2);
+    assert (0 / 5 = 0);
+    assert (0 mod 5 = 0);
+    assert (5 / 1 = 5);
+    assert (5 mod 1 = 0);
+    assert (100 / 7 = 14);
+    assert (100 mod 7 = 2)
+  end

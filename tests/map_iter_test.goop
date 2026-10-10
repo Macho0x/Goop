@@ -1,0 +1,26 @@
+module MapIterTest
+
+// map[K] V CRUD + aggregation via refs. (Tuple-list element types
+// `list<(string * int)>` hit a codegen arity mismatch — TYPE010 — and
+// match-tuple destructuring on them generates an undefined Tuple struct;
+// plain Map.* operations instead; recorded.)
+
+let main () =
+  let m : map[string] int = Map.make () in
+  begin
+    let _ = Map.add m "a" 1 in
+    let _ = Map.add m "b" 2 in
+    let _ = Map.add m "c" 3 in
+    assert (Map.size m = 3);
+    let total = ref 0 in
+    match Map.get m "b" with
+    | Some v -> total := !total + v
+    | None -> ();
+    match Map.get m "c" with
+    | Some v -> total := !total + v
+    | None -> ();
+    assert (!total = 5);
+    let _ = Map.remove m "a" in
+    assert (not (Map.mem m "a"));
+    assert (Map.size m = 2)
+  end

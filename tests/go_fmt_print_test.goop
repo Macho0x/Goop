@@ -1,0 +1,17 @@
+module GoFmtPrintTest
+
+// import go "fmt": Sprintf via variadic any + spread.
+// (Single any_of args in variadic position hit a TYPE010 codegen gap —
+// spread a homogeneous list instead; recorded, avoided.)
+
+import go "fmt" {
+  val Sprintf : string -> ...any -> string
+}
+
+let main () =
+  begin
+    let ab = go_slice_of_list [any_of "a"; any_of "b"] in
+    assert (Sprintf "%s/%s" (spread ab) = "a/b");
+    let solo = go_slice_of_list [any_of "solo"] in
+    assert (Sprintf "%s" (spread solo) = "solo")
+  end

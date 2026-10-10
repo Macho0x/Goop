@@ -1,0 +1,30 @@
+module AdtShapeTest
+
+// ADT constructor payloads: single payload per constructor, wildcards.
+
+type shape =
+  | Circle of float
+  | Square of float
+  | Point
+
+let area (s : shape) : float =
+  match s with
+  | Circle r -> 3.14159 *. r *. r
+  | Square w -> w *. w
+  | Point -> 0.0
+
+let label (s : shape) : string =
+  match s with
+  | Circle _ -> "circle"
+  | Square _ -> "square"
+  | Point -> "point"
+
+let main () =
+  begin
+    assert (area (Square 3.0) > 8.9 && area (Square 3.0) < 9.1);
+    assert (area (Circle 2.0) > 12.5);
+    assert (area (Circle 2.0) < 12.6);
+    assert (area Point = 0.0);
+    assert (label (Square 2.0) = "square");
+    assert (label Point = "point")
+  end

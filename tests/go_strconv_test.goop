@@ -1,0 +1,28 @@
+module GoStrconvTest
+
+// import go "strconv": Atoi error-pair via result match, FormatFloat, Quote.
+
+import go "strconv" {
+  val Atoi : string -> (int, error)
+  val FormatFloat : float -> int -> int -> int -> string
+  val Quote : string -> string
+}
+
+@[go] {
+  func mustAtoi(s string) int {
+    n, _ := strconv.Atoi(s)
+    return n
+  }
+}
+val mustAtoi : string -> int
+
+let main () =
+  let parsed = Atoi "123" in
+  begin
+    match parsed with
+    | Ok n -> assert (n = 123)
+    | Error _ -> assert false;
+    assert (mustAtoi "456" = 456);
+    assert (FormatFloat 3.14 102 2 64 = "3.14");
+    assert (Quote "hi" = "\"hi\"")
+  end

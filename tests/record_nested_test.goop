@@ -1,0 +1,23 @@
+module RecordNestedTest
+
+// Nested records: construction, field access, and functional update.
+
+type addr = { city: string; zip: int }
+
+type person = { name: string; home: addr }
+
+let main () =
+  let a = { city = "Oslo"; zip = 1 } in
+  let p = { name = "ada"; home = a } in
+  begin
+    assert (p.name = "ada");
+    assert (p.home.city = "Oslo");
+    assert (p.home.zip = 1);
+    let a2 = { a with zip = 999 } in
+    assert (a2.city = "Oslo");
+    assert (a2.zip = 999);
+    assert (a.zip = 1);
+    let p2 = { p with name = "bob" } in
+    assert (p2.name = "bob");
+    assert (p2.home.city = "Oslo")
+  end

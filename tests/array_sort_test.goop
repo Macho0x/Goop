@@ -1,0 +1,24 @@
+module ArraySortTest
+
+// OCaml arrays: make, index read/write, nested for loops, descending order.
+
+let main () =
+  let arr = Array.make 6 0 in
+  let n = Array.length arr in
+  begin
+    for i = 0 to n - 1 do
+      arr.(i) <- (i + 1) * (i + 1)
+    done;
+    assert (arr.(0) = 1);
+    assert (arr.(5) = 36);
+    assert (Array.length arr = 6);
+    // descending pass: shift larger values left, in place
+    for i = 0 to n - 2 do
+      for j = 0 to n - 2 - i do
+        if arr.(j) < arr.(j + 1) then arr.(j) <- arr.(j + 1) else ()
+      done
+    done;
+    assert (arr.(0) = 36);
+    assert (arr.(1) = 36);
+    assert (arr.(5) = 36)
+  end

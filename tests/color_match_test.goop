@@ -1,0 +1,25 @@
+module ColorMatchTest
+
+// Plain ADTs: exhaustive match, wildcard, or-pattern logic via guards.
+
+type color = Red | Green | Blue
+
+let name (c : color) : string =
+  match c with
+  | Red -> "red"
+  | Green -> "green"
+  | Blue -> "blue"
+
+let isWarm (c : color) : bool =
+  match c with
+  | Red | Green -> true
+  | Blue -> false
+
+let main () =
+  begin
+    assert (name Red = "red");
+    assert (name Green = "green");
+    assert (name Blue = "blue");
+    assert (isWarm Red);
+    assert (not (isWarm Blue))
+  end

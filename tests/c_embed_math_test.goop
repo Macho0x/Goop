@@ -1,0 +1,35 @@
+module CEmbedMathTest
+
+// Inline C via @[c]: integer and float math through the cgo boundary.
+
+@[c] {
+  int c_add(int a, int b) {
+    return a + b;
+  }
+
+  int c_mul(int a, int b) {
+    return a * b;
+  }
+
+  double c_average(double a, double b) {
+    return (a + b) / 2.0;
+  }
+
+  int c_max(int a, int b) {
+    return a > b ? a : b;
+  }
+}
+val c_add : int -> int -> int
+val c_mul : int -> int -> int
+val c_average : float -> float -> float
+val c_max : int -> int -> int
+
+let main () =
+  begin
+    assert (c_add 40 2 = 42);
+    assert (c_mul 6 7 = 42);
+    assert (c_average 3.0 5.0 = 4.0);
+    assert (c_max 10 3 = 10);
+    assert (c_max (-2) 5 = 5);
+    assert (c_add (c_mul 2 3) 4 = 10)
+  end

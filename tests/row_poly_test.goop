@@ -1,0 +1,14 @@
+module RowPolyTest
+
+// Row-polymorphic record access: `{ name: string | .. }` accepts any wider record.
+
+type tagged = { name: string; size: int }
+
+let name_of (r: { name: string | .. }) : string = r.name
+
+let main () =
+  let t = { name = "cfg"; size = 9 } in
+  begin
+    assert (name_of t = "cfg");
+    assert (name_of { name = "row"; size = 1 } = "row")
+  end

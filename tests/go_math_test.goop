@@ -1,0 +1,28 @@
+module GoMathTest
+
+// import go "math": Sqrt, Pow, Abs, Floor, Max.
+// (A parenthesised negative float literal `(-5.5)` parses as int negation —
+// TYPE010; write `0.0 -. 5.5` instead. Exact float equality trips FLOAT001,
+// so comparisons use tolerances.)
+
+import go "math" {
+  val Sqrt : float -> float
+  val Pow : float -> float -> float
+  val Abs : float -> float
+  val Floor : float -> float
+  val Max : float -> float -> float
+}
+
+let near (a: float) (b: float) : bool =
+  let d = a -. b in
+  d < 0.0001 && d > 0.0 -. 0.0001
+
+let main () =
+  begin
+    assert (near (Sqrt 16.0) 4.0);
+    assert (near (Pow 2.0 10.0) 1024.0);
+    assert (near (Abs (0.0 -. 5.5)) 5.5);
+    assert (near (Floor 3.7) 3.0);
+    assert (near (Max 2.0 9.0) 9.0);
+    assert (Sqrt 2.0 > 1.41 && Sqrt 2.0 < 1.42)
+  end

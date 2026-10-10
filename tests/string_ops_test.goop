@@ -1,0 +1,17 @@
+module StringOpsTest
+
+// String building: concat, byte slicing, sprintf, comparison, length.
+
+let main () =
+  begin
+    let s = "goop" ^ "-" ^ "lang" in
+    assert (s = "goop-lang");
+    assert (String.sub "goop-lang" 0 4 = "goop");
+    assert (String.sub "goop-lang" 5 4 = "lang");
+    assert (String.length "" = 0);
+    assert (int_to_string (-1) = "-1");
+    assert (float_to_string 2.5 = "2.5");
+    assert (sprintf "%s=%d" "n" 3 = "n=3");
+    assert ("abc" < "abd" && "b" > "a");
+    assert (("x" ^ "y") ^ "z" = "xyz")
+  end

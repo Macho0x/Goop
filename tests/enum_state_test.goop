@@ -1,0 +1,39 @@
+module EnumStateTest
+
+// ADT state machine: traffic-light transitions via exhaustive match.
+// Cycle: Red -> Green -> Yellow -> Red.
+
+type light = Red | Yellow | Green
+
+let next (l : light) : light =
+  match l with
+  | Red -> Green
+  | Yellow -> Red
+  | Green -> Yellow
+
+let action (l : light) : string =
+  match l with
+  | Red -> "stop"
+  | Yellow -> "caution"
+  | Green -> "go"
+
+let cycles_to_green (l : light) : int =
+  match l with
+  | Red -> 1
+  | Yellow -> 2
+  | Green -> 0
+
+let main () =
+  let l1 = next Red in
+  let l2 = next l1 in
+  let l3 = next l2 in
+  begin
+    assert (l1 = Green);
+    assert (l2 = Yellow);
+    assert (l3 = Red);
+    assert (action Red = "stop");
+    assert (action Green = "go");
+    assert (cycles_to_green Red = 1);
+    assert (cycles_to_green Yellow = 2);
+    assert (cycles_to_green Green = 0)
+  end

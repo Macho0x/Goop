@@ -1,0 +1,25 @@
+module FailwithTest
+
+// failwith lowers to Go panic (bug channel); try/with recovers it via the
+// generic handler arm. (Payload-binding arms `| Fail s -> s` hit a codegen
+// gap — the canonical docs/examples/exceptions.goop fails the same way;
+// recorded, avoided. The try body must be the raise itself: `try raise E
+// with | _ -> ...` typechecks and recovers.)
+
+exception Boom
+
+let catch_boom () : string =
+  try
+    raise Boom
+  with
+  | _ -> "recovered"
+
+let main () : unit =
+  let chk1 =
+    try
+      raise Boom
+    with
+    | _ -> "recovered"
+  in
+  let chk2 = assert (chk1 = "recovered") in
+  assert (catch_boom () = "recovered")

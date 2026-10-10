@@ -1,0 +1,44 @@
+module CEmbedSortTest
+
+// Inline C via @[c]: bubble sort over a fixed C array, results read back
+// one value at a time (cgo boundary supports scalars only).
+
+@[c] {
+  static int slots[4];
+
+  void c_store(int i, int v) {
+    slots[i] = v;
+  }
+
+  int c_get(int i) {
+    return slots[i];
+  }
+
+  void c_sort4(void) {
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3 - i; j++) {
+        if (slots[j] > slots[j + 1]) {
+          int tmp = slots[j];
+          slots[j] = slots[j + 1];
+          slots[j + 1] = tmp;
+        }
+      }
+    }
+  }
+}
+val c_store : int -> int -> unit
+val c_get : int -> int
+val c_sort4 : unit -> unit
+
+let main () =
+  begin
+    c_store 0 42;
+    c_store 1 7;
+    c_store 2 19;
+    c_store 3 3;
+    c_sort4 ();
+    assert (c_get 0 = 3);
+    assert (c_get 1 = 7);
+    assert (c_get 2 = 19);
+    assert (c_get 3 = 42)
+  end

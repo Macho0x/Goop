@@ -1,0 +1,24 @@
+module GoStructTest
+
+// Go struct construction via ptr_of, method calls, field mutation.
+
+import go "bytes" {
+  type Buffer
+  val (b : Buffer ptr).WriteString : string -> ...any -> unit
+  val (b : Buffer ptr).String : unit -> string
+  val (b : Buffer ptr).Len : unit -> int
+  val (b : Buffer ptr).Reset : unit -> unit
+}
+
+let main () =
+  let b : Buffer ptr = ptr_of {} in
+  begin
+    b.WriteString "hello";
+    b.WriteString " ";
+    b.WriteString "goop";
+    assert (b.String () = "hello goop");
+    assert (b.Len () = 10);
+    b.Reset ();
+    assert (b.Len () = 0);
+    assert (b.String () = "")
+  end

@@ -1,0 +1,20 @@
+module RecordWithTest
+
+// Functional record update `{ r with ... }`.
+// (Top-level `let moved = { origin with ... }` lowers to a Go func —
+// record-update must sit inside a function body; recorded, avoided.)
+
+type point = { x : int; y : int }
+
+let main () =
+  let origin = { x = 0; y = 0 } in
+  let moved = { origin with x = 3 } in
+  begin
+    assert (origin.x = 0);
+    assert (moved.x = 3);
+    assert (moved.y = 0);
+    let t = { x = 1; y = 2 } in
+    let t2 = { t with y = 9 } in
+    assert (t2.x = 1 && t2.y = 9);
+    assert (t.y = 2)
+  end

@@ -1,0 +1,25 @@
+module GoStringsFieldsTest
+
+// import go "strings": Fields, HasPrefix, HasSuffix, ReplaceAll, TrimSpace.
+
+import go "strings" {
+  val Fields : string -> string go_slice
+  val HasPrefix : string -> string -> bool
+  val HasSuffix : string -> string -> bool
+  val ReplaceAll : string -> string -> string -> string
+  val TrimSpace : string -> string
+  val Index : string -> string -> int
+}
+
+let main () =
+  let parts = Fields "  goop lang rocks  " in
+  begin
+    assert (go_slice_len parts = 3);
+    assert (go_slice_get parts 1 = "lang");
+    assert (HasPrefix "goop-lang" "goop");
+    assert (HasSuffix "goop-lang" "lang");
+    assert (not (HasPrefix "goop" "lang"));
+    assert (ReplaceAll "a-b-c" "-" "+" = "a+b+c");
+    assert (TrimSpace "  hi  " = "hi");
+    assert (Index "goop-lang" "-" = 4)
+  end

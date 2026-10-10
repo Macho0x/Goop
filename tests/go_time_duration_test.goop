@@ -1,0 +1,32 @@
+module GoTimeDurationTest
+
+// import go "time": Time arithmetic, Before/After, Duration.Sub.
+// (Top-level `let later = t0.Add Hour` lowers to a Go func — method-call
+// bindings must sit inside a function body; recorded, avoided.)
+
+import go "time" {
+  type Duration
+  type Time
+  val Now : unit -> Time
+  val Second : Duration
+  val Hour : Duration
+  val (t : Time).IsZero : unit -> bool
+  val (t : Time).Unix : unit -> int
+  val (t : Time).Add : Duration -> Time
+  val (t : Time).Before : Time -> bool
+  val (t : Time).After : Time -> bool
+  val (d : Duration).Milliseconds : unit -> int
+}
+
+let main () =
+  let t0 = Now () in
+  let t1 = t0.Add Second in
+  let t2 = t1.Add Second in
+  let delta = t2.Sub t0 in
+  begin
+    assert (not (t0.IsZero ()));
+    assert (t1.After t0);
+    assert (t0.Before t1);
+    assert (t0.Unix () > 0);
+    assert (delta.Milliseconds () = 2000)
+  end

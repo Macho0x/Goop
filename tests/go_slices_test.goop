@@ -1,0 +1,40 @@
+module GoSlicesTest
+
+// Go slices across the FFI: builder in @[go], list conversion, indexing.
+
+import go "sort" {
+  val Ints : int go_slice -> unit
+}
+
+@[go] {
+  func sumSlice(xs []int) int {
+    total := 0
+    for _, v := range xs {
+      total += v
+    }
+    return total
+  }
+  func makeRange(n int) []int {
+    out := make([]int, 0, n)
+    for i := 0; i < n; i++ {
+      out = append(out, i * i)
+    }
+    return out
+  }
+}
+val sumSlice : int go_slice -> int
+val makeRange : int -> int go_slice
+
+let main () =
+  let xs = go_slice_of_list [3; 1; 2] in
+  let squares = makeRange 5 in
+  begin
+    assert (sumSlice xs = 6);
+    assert (go_slice_len squares = 5);
+    assert (go_slice_get squares 0 = 0);
+    assert (go_slice_get squares 4 = 16);
+    Ints xs;
+    assert (go_slice_get xs 0 = 1);
+    let back = list_of_go_slice squares in
+    assert (list_length back = 5)
+  end

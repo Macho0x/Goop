@@ -1,0 +1,18 @@
+module UFCSListTest
+
+// UFCS on lists: xs.filter f, xs.map f — same lowering as List.*.
+// (A let-bound curried helper like `sum xs` hits the partial-application
+// codegen gap — fold via List.fold directly; recorded, avoided.)
+
+let main () =
+  let xs = [1; 2; 3; 4; 5; 6] in
+  begin
+    let evens = xs.filter (fun n -> n mod 2 = 0) in
+    assert (list_length evens = 3);
+    let squares = xs.map (fun n -> n * n) in
+    assert (list_length squares = 6);
+    let total = List.fold (fun acc n -> acc + n) 0 squares in
+    assert (total = 91);
+    let esum = List.fold (fun acc n -> acc + n) 0 evens in
+    assert (esum = 12)
+  end

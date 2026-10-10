@@ -1,0 +1,23 @@
+module WhileArrayTest
+
+// while + ref driving array writes. (`while ... done` cannot be followed by
+// `;` — PARSE004 — so the while is the last statement of its function and
+// main calls it as the sole statement of its own begin/end.)
+
+let fill (table: int array) (n: int) : unit =
+  let i = ref 0 in
+  while !i < n do
+    begin
+      table.(!i) <- !i * !i;
+      i := !i + 1
+    end
+  done
+
+let main () =
+  let table = Array.make 5 0 in
+  begin
+    fill table 5;
+    assert (table.(0) = 0);
+    assert (table.(1) = 1);
+    assert (table.(4) = 16)
+  end

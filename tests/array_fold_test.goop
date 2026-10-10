@@ -1,0 +1,16 @@
+module ArrayFoldTest
+
+// OCaml arrays: make, index read/write, for-loop fill and in-place update.
+
+let main () =
+  let arr = Array.make 4 0 in
+  begin
+    for i = 0 to 3 do
+      arr.(i) <- (i + 1) * 3
+    done;
+    assert (arr.(0) = 3);
+    assert (arr.(3) = 12);
+    assert (Array.length arr = 4);
+    arr.(1) <- arr.(0) + arr.(3);
+    assert (arr.(1) = 15)
+  end

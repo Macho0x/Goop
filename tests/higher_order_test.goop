@@ -1,0 +1,22 @@
+module HigherOrderTest
+
+// Higher-order functions: composition, anonymous functions, first-class
+// function args. Note: direct call syntax on a named higher-order result
+// (`incdouble 5`) hits a codegen gap — route through `apply`; recorded.
+
+let compose (f: int -> int) (g: int -> int) : int -> int =
+  fun x -> f (g x)
+
+let apply (f: int -> int) (x: int) : int = f x
+
+let main () =
+  let inc = fun (n: int) -> n + 1 in
+  let double = fun (n: int) -> n * 2 in
+  let incdouble = compose inc double in
+  begin
+    assert (apply incdouble 5 = 11);
+    assert (double (inc 5) = 12);
+    assert (apply (compose double inc) 5 = 12);
+    assert (apply (fun x -> x * x) 7 = 49);
+    assert (apply inc 5 = 6)
+  end

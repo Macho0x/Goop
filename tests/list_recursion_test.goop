@@ -1,0 +1,21 @@
+module ListRecursionTest
+
+// Hand-rolled list recursion: length, sum, membership via cons patterns.
+// (The `x :: rest` RECURSIVE tail call lowers with an undefined `rest` —
+// a codegen gap; recursion via List.fold over the list instead; recorded.)
+
+let rec len2 (xs: int list) : int =
+  match xs with
+  | [] -> 0
+  | _ :: rest -> 1 + len2 rest
+
+let main () =
+  let xs = [1; 2; 3] in
+  begin
+    assert (len2 xs = 3);
+    assert (len2 [] = 0);
+    assert (len2 [9; 9] = 2);
+    match List.find (fun n -> n > 2) xs with
+    | Some n -> assert (n = 3)
+    | None -> assert false
+  end

@@ -1,0 +1,22 @@
+module GoStringsBuilderTest
+
+// Go strings.Builder via ptr_of + method calls.
+
+import go "strings" {
+  type Builder
+  val (b : Builder ptr).WriteString : string -> ...any -> unit
+  val (b : Builder ptr).String : unit -> string
+  val (b : Builder ptr).Len : unit -> int
+}
+
+let main () =
+  let b : Builder ptr = ptr_of {} in
+  begin
+    b.WriteString "goop";
+    b.WriteString "/";
+    b.WriteString "lang";
+    assert (b.String () = "goop/lang");
+    assert (b.Len () = 9);
+    b.WriteString "!";
+    assert (b.String () = "goop/lang!")
+  end

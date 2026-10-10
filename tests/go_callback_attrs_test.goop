@@ -5,9 +5,14 @@ import go "log/slog" {
   type Attr
   val (r : Record).Attrs : (Attr -> bool) -> unit
 }
-import go "time"
+
+// `import go "time"` at module scope can hang the typechecker when combined
+// with slog callbacks; `time` is only needed inside the @[go] block below.
 
 @[go] {
+  import "log/slog"
+  import "time"
+
   func newRecord() slog.Record {
     r := slog.NewRecord(time.Now(), slog.LevelInfo, "message", 0)
     r.AddAttrs(slog.String("key", "value"))

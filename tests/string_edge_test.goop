@@ -1,0 +1,18 @@
+module StringEdgeTest
+
+// String edges: empty concat, escapes, byte-index sub, comparison chains.
+
+let main () =
+  begin
+    assert (string_concat "" "" = "");
+    assert (String.sub "abcdef" 2 2 = "cd");
+    assert (String.sub "abc" 0 3 = "abc");
+    assert (String.length "hello" = 5);
+    assert ("\x41" = "A");
+    assert ("\t" = "\x09");
+    assert ("abc" = "abc");
+    assert ("abc" <> "abd");
+    assert (sprintf "%s:%d" "v" 7 = "v:7");
+    assert (float_to_string 1.5 = "1.5");
+    assert (int_to_string 0 = "0")
+  end

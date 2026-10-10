@@ -1,0 +1,43 @@
+module RefSwapTest
+
+// Mutable refs in functions: swap via temp; counter via ref increment.
+// (A `fun () -> ...` closure lowers to Go `func(struct{})` — unit-arg
+// closures are not callable in generated code; recorded, avoided.
+// `begin...end; let ... in ...` after a prior begin/end block hits
+// PARSE004 — each assertion group lives in its own helper function.)
+
+let swap (a: int ref) (b: int ref) : unit =
+  let tmp = !a in
+  begin
+    a := !b;
+    b := tmp
+  end
+
+let make_counter (start: int) : int ref =
+  let n = ref start in
+  begin
+    n := !n + 1;
+    n
+  end
+
+let check_swap () : unit =
+  let a = ref 1 in
+  let b = ref 2 in
+  begin
+    swap a b;
+    assert (!a = 2 && !b = 1)
+  end
+
+let check_counters () : unit =
+  let c1 = make_counter 10 in
+  let c2 = make_counter 10 in
+  begin
+    assert (!c1 = 11);
+    assert (!c2 = 11)
+  end
+
+let main () =
+  begin
+    check_swap ();
+    check_counters ()
+  end

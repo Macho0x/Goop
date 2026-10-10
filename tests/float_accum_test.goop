@@ -1,0 +1,15 @@
+module FloatAccumTest
+
+// Float accumulation: ref cell updated inside a for loop, compared with
+// a tolerance (FLOAT001 discourages exact float equality).
+// (float_of_int is not a prelude builtin — accumulate float literals.)
+
+let main () =
+  let total = ref 0.0 in
+  begin
+    total := !total +. 0.0;
+    total := !total +. 1.5;
+    total := !total +. 2.25;
+    total := !total +. 2.25;
+    assert (!total > 5.9 && !total < 6.1)
+  end

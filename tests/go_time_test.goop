@@ -1,0 +1,26 @@
+module GoTimeTest
+
+// import go "time": Now, Duration constants, Before/After ordering.
+
+import go "time" {
+  type Duration
+  type Time
+  val Now : unit -> Time
+  val Second : Duration
+  val Hour : Duration
+  val (t : Time).IsZero : unit -> bool
+  val (t : Time).Unix : unit -> int
+  val (t : Time).Add : Duration -> Time
+  val (t : Time).Before : Time -> bool
+  val (t : Time).After : Time -> bool
+}
+
+let main () =
+  let t0 = Now () in
+  let later = t0.Add Hour in
+  begin
+    assert (not (t0.IsZero ()));
+    assert (later.After t0);
+    assert (t0.Before later);
+    assert (t0.Unix () > 0)
+  end

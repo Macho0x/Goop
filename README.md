@@ -138,6 +138,60 @@ let greet (name: string option) : string =
 ╰────
 ```
 
+## Quick reference
+
+One canonical surface, no surprises. The right column runs as Go.
+
+| Goop | Go |
+|---|---|
+| `let add (a: int) (b: int) : int = a + b` | `func Add(a, b int) int { return a + b }` |
+| `type color = Red \| Green \| Blue` | tagged interface + type switch |
+| `match c with \| Red -> "r" \| _ -> "other"` | exhaustive — compiler rejects a missing arm |
+| `let x = Some 42 in match x with \| Some n -> n \| None -> 0` | `option`, not `null` |
+| `("ok", "err") result` + `Ok` / `Error` | `(T, error)` — Goop makes it a `result` |
+| `let r = ref 0 in r := !r + 1` | `&` / `*` behind safe syntax |
+| `for i = 0 to n - 1 do ... done` | `for i := 0; i < n; i++` |
+| `while cond do ... done` | `for cond { ... }` |
+| `let m : map[string] int = Map.make ()` | `map[string]int` |
+| `[1; 2; 3]`, `x :: xs`, `List.map` / `filter` / `fold` / `find` | slices + helpers |
+| `Array.make n v`, `arr.(i) <- v` | `make([]T, n)` |
+| `import go "strings"` | uses `strings` directly |
+| `@[go] { … } ` / `@[c] { … }` | inline Go / cgo |
+| `exception E of string`, `try … with` | panic + recover |
+| `effect E`, `perform`, `match … \| effect (E _) k ->` | CPS-lowered handlers |
+
+Full surface: [syntax](docs/design/03-syntax.md) · [type system](docs/design/02-type-system.md) · [builtins](docs/stdlib/builtins.md).
+
+## Testing your code
+
+Goop test files are ordinary modules ending in `_test.goop` with a `main ()`;
+`goop test <dir>` compiles and runs each one, so `assert` failures are build
+failures.
+
+```bash
+# all *_test.goop files in a directory
+goop test tests/
+```
+
+```goop
+// tests/example_test.goop
+module ExampleTest
+
+let main () =
+  begin
+    assert (1 + 1 = 2);
+    match Some 41 with
+    | Some n -> assert (n + 1 = 42)
+    | None -> assert false
+  end
+```
+
+The repository ships **166 `*_test.goop` files** (core syntax, Go FFI, inline C,
+std modules) — run them all with `goop test tests/`. That command compiles and
+runs each file in isolation (`go mod tidy` + `go build` per test), so a full
+directory run is an integration suite and can take on the order of **30–60
+minutes**; use `goop check path/to/file.goop` for fast feedback while editing.
+
 ## Getting started
 
 ### Playground (fastest)
