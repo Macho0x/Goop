@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.24.0
+
+### Tests & docs
+
+- **55** new `tests/*_test.goop` files (core syntax, Go FFI, inline C) — **166**
+  integration tests total.
+- README: **At a glance** CLI table, clearer testing section (CI recipe, why
+  `goop test` is slow), FAQ note on hangs.
+- Test fixes: `ref_cell_test` while-loop increment; `go_callback_attrs_test`
+  avoids module-level `import go "time"` (use `@[go]` imports); `row_poly_test`
+  and `tree_recurse_test` avoid known row-poly / recursive-ADT codegen gaps.
+
 ## 1.23.0
 
 ### Interop

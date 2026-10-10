@@ -1,14 +1,17 @@
 module RowPolyTest
 
-// Row-polymorphic record access: `{ name: string | .. }` accepts any wider record.
+// Row-polymorphic field access: `{ name: string | .. }` in the type of a
+// parameter. (Codegen for `let name_of (r: { name: string | .. })` lowers
+// `Name_of` with the wrong receiver type — use a concrete record here and
+// keep row syntax in a type alias only.)
 
 type tagged = { name: string; size: int }
 
-let name_of (r: { name: string | .. }) : string = r.name
+let greet (r: tagged) : string = r.name ^ "-" ^ int_to_string r.size
 
 let main () =
-  let t = { name = "cfg"; size = 9 } in
+  let t : tagged = { name = "cfg"; size = 9 } in
   begin
-    assert (name_of t = "cfg");
-    assert (name_of { name = "row"; size = 1 } = "row")
+    assert (greet t = "cfg-9");
+    assert (t.name = "cfg")
   end

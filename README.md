@@ -31,6 +31,19 @@ Exhaustive ADTs · branded IDs · maps · Go interop · same binaries and stdlib
 
 Editors: [VS Code](editors/vscode/) · [Zed](editors/zed/) · [Neovim](editors/neovim/) · [Helix](editors/helix/)
 
+## At a glance
+
+| Goal | Command |
+|------|---------|
+| Type-check one file (fast) | `goop check main.goop` |
+| Build a runnable binary | `goop build main.goop` → `./goop-out` |
+| See generated Go | `goop compile --stdout main.goop` |
+| Run `*_test.goop` in a folder | `goop test tests/` |
+| New project | `goop new myapp` |
+
+Install: `curl -fsSL …/scripts/install.sh \| bash` or `cd src && go build -o ../goop ./cmd/goop`.
+Set **`GOOP_HOME`** (cache for builds and `.gosig` stubs); defaults under your home dir if unset.
+
 ## Goop in practice
 
 **Sum types you can trust** — every variant must be handled:
@@ -164,13 +177,13 @@ Full surface: [syntax](docs/design/03-syntax.md) · [type system](docs/design/02
 
 ## Testing your code
 
-Goop test files are ordinary modules ending in `_test.goop` with a `main ()`;
-`goop test <dir>` compiles and runs each one, so `assert` failures are build
-failures.
+A Goop test is a normal module named `*_test.goop` with `let main () = …` and
+`assert` checks. `goop test <dir>` finds every `*_test.goop` in that directory,
+compiles each to a small Go program, builds it, and runs it (exit 0 = pass).
 
 ```bash
-# all *_test.goop files in a directory
-goop test tests/
+goop test tests/          # run the whole integration corpus
+goop check tests/foo_test.goop   # parse + types only (seconds)
 ```
 
 ```goop
@@ -186,11 +199,22 @@ let main () =
   end
 ```
 
-The repository ships **166 `*_test.goop` files** (core syntax, Go FFI, inline C,
-std modules) — run them all with `goop test tests/`. That command compiles and
-runs each file in isolation (`go mod tidy` + `go build` per test), so a full
-directory run is an integration suite and can take on the order of **30–60
-minutes**; use `goop check path/to/file.goop` for fast feedback while editing.
+This repo has **166** such files (syntax, Go FFI, inline C, std modules). CI runs
+the same suite from `src/` after warming stubs:
+
+```bash
+cd src && go build -o /tmp/goop ./cmd/goop
+export GOOP_HOME="${TMPDIR:-/tmp}/goop-home" && mkdir -p "$GOOP_HOME"
+/tmp/goop gen-sig --smoke && /tmp/goop gen-sig strings os path/filepath
+/tmp/goop test ../tests/
+```
+
+**Why isn’t `goop test` instant?** Each file gets its own scratch module:
+codegen → `go mod tidy` → `go build` → run. There is no shared test binary and
+no parallelism yet, so a full directory run is an **integration** pass (often
+**30–60 minutes** on a laptop). Running several `goop test` processes at once
+also fights the Go build cache and can look “stuck” for hours — use one runner.
+For day-to-day work, prefer `goop check` on the file you are editing.
 
 ## Getting started
 
@@ -247,7 +271,7 @@ Compile-time checks Go leaves to tests or panics — without giving up Go’s ru
 
 ## Status
 
-**[v1.23.0](https://github.com/Macho0x/Goop/releases/tag/v1.23.0)** — automatic Go FFI, `List.*` generics, Go-idiom lints, `@[json]` / native methods / `sprintf`. **[Playground](https://macho0x.github.io/Goop/)** is the fastest way to try Goop.
+**[v1.24.0](https://github.com/Macho0x/Goop/releases/tag/v1.24.0)** — **166** integration tests, README CLI/testing guide. **[Playground](https://macho0x.github.io/Goop/)** is still the fastest way to try Goop without installing.
 
 [CHANGELOG](CHANGELOG.md) · [RELEASE_NOTES](RELEASE_NOTES.md) · [Benchmarks](benchmarks/README.md) · [Language-update checklist](docs/design/31-language-update-checklist.md)
 
@@ -256,6 +280,8 @@ Compile-time checks Go leaves to tests or panics — without giving up Go’s ru
 **Production-ready?** Compiler, checker, codegen, LSP, and CI e2e ship today. We are not claiming production load readiness yet.
 
 **Need OCaml or Z3?** No. Pattern matching from Rust/Swift/Kotlin transfers. Z3 is optional (`[check] smt = true`).
+
+**Tests hung or very slow?** See [Testing your code](#testing-your-code): one `goop test` at a time, warm `gen-sig` like CI, and use `goop check` while iterating. A missing `while` increment or a bad `import go` + callback combo can hang a single test until you fix the source.
 
 ## Documentation
 
